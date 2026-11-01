@@ -1,0 +1,42 @@
+
+{
+    "privileges": [
+        {
+            "name": "WebAccess",
+            "essential": true,
+            "parameters": [
+                "http://localhost:5056",
+                "http://127.0.0.1:5056"
+            ]
+        },
+        {
+            "name": "LocalStorage",
+            "essential": false
+        }
+    ],
+    "objects": {
+        "feedback": {
+            "displayName": "Report feedback",
+            "properties": {
+                "mode": {
+                    "displayName": "Mode",
+                    "type": {
+                        "text": true
+                    }
+                },
+                "requestId": {
+                    "displayName": "Request ID",
+                    "type": {
+                        "text": true
+                    }
+                },
+                "sessionId": {
+                    "displayName": "Session ID",
+                    "type": {
+                        "text": true
+                    }
+                }
+            }
+        }
+    }
+}

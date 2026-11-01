@@ -1,0 +1,17 @@
+{
+		"version": "1.0.1.0",
+		"author": {"name":"Abdul Basith","email":"basitharma@gmail.com"},
+		"resources": [
+			{
+				"resourceId": "rId0",
+				"sourceType": 5,
+				"file": "resources/billingChatbot79170476B0CA440F9F0C35FF45CF4C13.pbiviz.json"
+			}
+		],
+		"visual": {"name":"billingChatbot","displayName":"BillingChatbot","guid":"billingChatbot79170476B0CA440F9F0C35FF45CF4C13","visualClassName":"Visual","version":"1.0.1.0","description":"Interactive AI chatbot for generating billing analytics reports.","supportUrl":"https://learn.microsoft.com/en-us/power-bi/developer/visuals/","gitHubUrl":""},
+		"metadata": {
+			"pbivizjson": {
+				"resourceId": "rId0"
+			}
+		}
+	}

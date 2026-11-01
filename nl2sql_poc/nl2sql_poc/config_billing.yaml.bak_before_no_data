@@ -1,0 +1,63 @@
+# Billing-domain config for the chatbot. Separate from config.yaml (membership domain) -
+# same pipeline code, different database and different business-rule context.
+
+llm:
+  provider: groq
+  groq:
+    model: openai/gpt-oss-120b
+    max_tokens: 1500
+    reasoning_effort: low           # gpt-oss spends tokens on hidden reasoning; "low" leaves room for the answer
+    max_retries: 4                  # automatic back-off on HTTP 429 rate limits
+    base_url: https://api.groq.com/openai/v1
+  claude:
+    model: claude-sonnet-5-5
+    max_tokens: 1500
+    prompt_caching: true
+
+db:
+  type: sqlalchemy                  # MySQL via SQLAlchemy; dialect auto-detected as "mysql"
+  url_env: DATABASE_URL
+  url: mysql+pymysql://billing_readonly:billing_readonly@localhost:3306/billing
+  allowed_tables:
+    - products
+    - plans
+    - customers
+    - payment_methods
+    - subscriptions
+    - invoices
+    - charges
+    - refunds
+  max_rows: 1000
+
+context:
+  files:
+    - context/billing_runtime_context.md
+  extra_rules: |
+    Dialect is MySQL. Use backticks only if an identifier clashes with a reserved word -
+    none of these table/column names do, so plain identifiers are fine.
+
+pipeline:
+  max_retries: 2
+  log_file: logs/requests_billing.jsonl
+  conversation_log_file: logs/conversations_billing.jsonl   # every question and answer, one JSON line each
+  conversation_log_file: logs/conversations_billing.jsonl   # every question + answer, one JSON object per line
+  prompt_eval_threshold: 40         # a report request scoring below this is always clarified, never built
+  max_clarifications: 4             # safety cap on questions per request (0 = unlimited); below-threshold requests ignore it
+  history_chars: 3500               # how much recent conversation the assistant re-reads each turn
+  data_rows_in_prompt: 20           # rows of the last report the assistant can see when explaining it
+
+chat:
+  resume_latest_session: true       # visual falls back to the newest session if it has no local storage
+  resume_window_minutes: 480        # ...but only if it was active within this window (turn off for multi-user use)
+  ask_chart_type: true              # ask for the chart type as the LAST question, after all clarifications
+  allow_mock_sql: true              # lets /chat accept mock_sql for tests; set false in production
+
+powerbi:
+  enabled: true
+  report_dir: "C:/Users/basit/Documents/billing_POC.Report"
+  model_dir: "C:/Users/basit/Documents/billing_POC.SemanticModel"
+  include_detail_table: true
+  desktop_automation:
+    enabled: true
+    timeout_seconds: 180
+    reload_delay_seconds: 2         # wait after replying before Desktop reloads (the chatbot reloads too)

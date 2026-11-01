@@ -1,0 +1,756 @@
+#!/usr/bin/env python3
+"""Flask API for the billing-report chatbot (what the Power BI visual talks to).
+
+One conversational endpoint, POST /chat. For every message the assistant (app/conversation.py)
+decides whether to chat, explain the last report, ask ONE clarifying question, build a new or
+modified report, or just switch the chart type. The conversation (UI transcript, LLM memory, last
+report) is kept per session on the server, so the visual can restore it after Power BI Desktop
+reloads the project - the visual only has to remember its session id.
+
+Endpoints
+  POST /chat                         {session_id?, message, visual_type?, action?, requested_by?}
+  GET  /session/<id>/transcript      ?after=<last message id>   -> restore / poll the conversation
+  GET  /session/latest               most recent session (fallback when the visual has no storage)
+  POST /session/<id>/reset           "New chat"
+  GET  /session/<id>/progress        what the running turn is doing ("Report generation in progress...")
+  GET  /session/<id>                 LLM memory (debugging)
+  GET  /audit/sessions               every recorded conversation (newest first)
+  GET  /audit/sessions/<id>          all questions and answers of one conversation (?format=text)
+  GET  /audit/requests/<request_id>  one report request: its metadata + the questions/answers behind it
+  POST /revise-report                {session_id, visual_type}  -> chart change without chatting
+  POST /complete-report              manual-SQL test hook
+  GET  /requests/<request_id>        metadata row
+  GET  /health
+Run:  python chatbot_api.py   (127.0.0.1:5056; set CHATBOT_HOST / CHATBOT_PORT / FLASK_DEBUG=1)
+"""
+from __future__ import annotations
+
+import logging
+import os
+import threading
+import time
+import uuid
+from pathlib import Path
+
+import yaml
+from flask import Flask, Response, jsonify, request
+
+from app.audit import ConversationRecorder, format_conversation_text
+from app.conversation import ConversationEngine, Outcome, quick_take
+from app.guardrails import GuardrailError, validate_sql
+from app.pipeline import VISUAL_TYPES, normalize_chart_type
+from app.powerbi_project_generator import PowerBIProjectError
+from app.session import ChatSession, SessionStore
+from app.util import json_safe
+
+BASE = Path(__file__).parent
+DEFAULT_CONFIG = BASE / "config_billing.yaml"
+ALLOWED_VISUAL_TYPES = set(VISUAL_TYPES)
+log = logging.getLogger("chatbot")
+
+VISUAL_LABELS = {
+    "auto": "Auto-select", "clusteredColumnChart": "Column chart", "barChart": "Bar chart",
+    "lineChart": "Line chart", "pieChart": "Pie chart", "donutChart": "Donut chart",
+    "tableEx": "Table",
+}
+CHART_CHIPS = [("clusteredColumnChart", "Column"), ("barChart", "Bar"), ("lineChart", "Line"),
+               ("pieChart", "Pie"), ("donutChart", "Donut"), ("tableEx", "Table only")]
+# Buttons for the chart question that closes the clarification phase.
+CHOICE_CHIPS = [{"label": label, "action": "choose_chart", "visual_type": visual_type, "message": label}
+                for visual_type, label in [("auto", "Auto"), ("clusteredColumnChart", "Column chart"),
+                                           ("barChart", "Bar chart"), ("lineChart", "Line chart"),
+                                           ("pieChart", "Pie chart"), ("donutChart", "Donut chart"),
+                                           ("tableEx", "Table only")]]
+
+
+def visual_label(visual_type) -> str:
+    return VISUAL_LABELS.get(visual_type or "auto", "Chart")
+
+
+class ChatService:
+    def __init__(self, cfg, pipeline, store, powerbi, sessions=None, background=None, recorder=None):
+        self.cfg = cfg
+        self.recorder = recorder or ConversationRecorder(store, None)
+        self.pipeline = pipeline
+        self.store = store
+        self.powerbi = powerbi
+        self.sessions = sessions or SessionStore()
+        self.engine = ConversationEngine(pipeline, cfg)
+        self.dialect = pipeline.db.dialect
+        self.allowed_tables = cfg["db"]["allowed_tables"]
+        self.max_rows = int(cfg["db"].get("max_rows", 1000))
+        self.source = f"{pipeline.llm.name}_api"
+        chat_cfg = cfg.get("chat", {}) or {}
+        self.allow_mock_sql = bool(chat_cfg.get("allow_mock_sql", True))
+        self.resume_latest = bool(chat_cfg.get("resume_latest_session", True))
+        self.resume_window_s = float(chat_cfg.get("resume_window_minutes", 480)) * 60
+        self._background = background or self._spawn
+
+    @staticmethod
+    def _spawn(fn):
+        threading.Thread(target=fn, daemon=True, name="powerbi-reload").start()
+
+    # ================================================================== /chat
+    def handle_chat(self, body: dict):
+        message = body.get("message")
+        if not isinstance(message, str) or not message.strip():
+            return {"error": "message is required"}, 400
+        message = message.strip()
+        if len(message) > 2000:
+            return {"error": "message is too long"}, 400
+        session_id = body.get("session_id")
+        if session_id is not None and (not isinstance(session_id, str) or not session_id.strip()
+                                       or len(session_id) > 64):
+            return {"error": "session_id must be a non-empty string of 64 characters or fewer"}, 400
+        visual_type = body.get("visual_type") or "auto"
+        if not isinstance(visual_type, str) or visual_type not in ALLOWED_VISUAL_TYPES:
+            return {"error": "visual_type must be one of: " + ", ".join(VISUAL_TYPES)}, 400
+        action = body.get("action")
+        if action not in (None, "change_chart", "choose_chart"):
+            return {"error": "unsupported action"}, 400
+        requested_by = body.get("requested_by")
+        if requested_by is not None:
+            if not isinstance(requested_by, str):
+                return {"error": "requested_by must be a string when provided"}, 400
+            requested_by = requested_by.strip()[:255] or None
+
+        session = self.sessions.get_or_create(session_id.strip() if session_id else None)
+        with session.lock:
+            try:
+                return self._handle_locked(session, message, visual_type, action, body, requested_by)
+            finally:
+                session.progress = None
+
+    def _handle_locked(self, session, message, visual_type, action, body, requested_by):
+        if requested_by and not session.requested_by:
+            session.requested_by = requested_by
+        first_new_id = session.last_id
+        session.add_message("user", message)
+        session.progress = "Understanding your request…"
+
+        mock_sql = body.get("mock_sql")
+        if isinstance(mock_sql, str) and mock_sql.strip() and self.allow_mock_sql:
+            return self._mock_sql_turn(session, message, mock_sql, first_new_id)
+
+        if action == "change_chart":
+            chart = normalize_chart_type(visual_type)
+            if chart in (None, "auto"):
+                outcome = Outcome(kind="reply", intent="chat",
+                                  reply="Which chart would you like: column, bar, line, pie, donut or table?")
+            elif not session.last_report:
+                outcome = Outcome(kind="reply", intent="chat",
+                                  reply="I don't have a report to change yet. What would you like to see?")
+            else:
+                outcome = Outcome(kind="chart_change", intent="change_chart", chart_type=chart)
+        elif action == "choose_chart":
+            outcome = self.engine.handle(session, message, chart_choice=visual_type)
+        else:
+            outcome = self.engine.handle(session, message, preferred_chart=visual_type)
+        return self._finish_turn(session, message, outcome, first_new_id)
+
+    # ------------------------------------------------------------------ turn dispatch
+    def _finish_turn(self, session: ChatSession, user_text: str, outcome: Outcome, first_new_id: int):
+        try:
+            if outcome.kind == "report":
+                payload, status = self._build_report(session, user_text, outcome)
+            elif outcome.kind == "chart_change":
+                payload, status = self._change_chart(session, user_text, outcome)
+            elif outcome.kind == "clarify":
+                payload, status = self._clarify(session, user_text, outcome)
+            elif outcome.kind == "choose_chart":
+                payload, status = self._ask_chart(session, user_text, outcome)
+            elif outcome.kind in ("failed", "error"):
+                payload, status = self._failed(session, user_text, outcome)
+            else:
+                entry = session.add_message("assistant", outcome.reply)
+                session.remember(user_text, outcome.reply)
+                self.pipeline.log_turn(question=user_text, status="chat", intent=outcome.intent,
+                                       prompt_score=outcome.confidence, latency_s=outcome.elapsed_ms / 1000)
+                payload, status = {"status": "chat", "message": outcome.reply}, 200
+        except Exception as exc:   # never lose the conversation because a side effect failed
+            log.exception("Turn failed after planning")
+            text = f"Something went wrong while finishing that request: {str(exc)[:300]}"
+            if session.request_id:
+                self._safe_update(session.request_id, request_status="error", error_message=str(exc)[:4000])
+            session.add_message("assistant", text, kind="error")
+            session.remember(user_text, text)
+            session.end_thread()
+            payload, status = {"status": "error", "message": text}, 500
+        return self._payload(session, first_new_id, outcome, payload), status
+
+    def _payload(self, session, first_new_id, outcome, payload):
+        payload = dict(payload)
+        payload.setdefault("reply", payload.get("message"))
+        entries = session.messages_after(first_new_id)
+        self.recorder.record(session, entries, request_id=payload.get("request_id"),
+                             intent=outcome.intent)
+        payload.update(session_id=session.session_id, intent=outcome.intent,
+                       messages=json_safe(entries),
+                       busy=session.busy, prompt_score=outcome.confidence,
+                       provider=self.pipeline.llm.name)
+        return json_safe(payload)
+
+    # ------------------------------------------------------------------ request-thread rows
+    def _ensure_row(self, session: ChatSession, requested_by=None) -> str:
+        if session.request_id is None:
+            request_id = uuid.uuid4().hex
+            first = (session.thread_messages or ["(unknown request)"])[0]
+            self.store.insert_metadata(request_id, session.session_id,
+                                       requested_by or session.requested_by, first, self.source)
+            session.request_id = request_id
+        return session.request_id
+
+    def _safe_update(self, request_id, **fields):
+        try:
+            self.store.update_metadata(request_id, **fields)
+        except Exception:
+            log.exception("Could not update metadata for %s", request_id)
+
+    # ------------------------------------------------------------------ clarify / failure
+    def _clarify(self, session, user_text, outcome):
+        session.runtime_ms += outcome.elapsed_ms
+        try:
+            rid = self._ensure_row(session)
+            self._safe_update(rid, resolved_request=" | ".join(session.thread_messages),
+                              sql_source=self.source, request_status="clarifying", error_message=None)
+        except Exception:
+            log.exception("Could not record the clarification request")
+        session.add_message("assistant", outcome.reply, kind="clarify")
+        session.remember(user_text, outcome.reply)
+        self.pipeline.log_turn(question=user_text, status="clarify", intent="clarify",
+                               prompt_score=outcome.confidence, latency_s=outcome.elapsed_ms / 1000)
+        return {"status": "clarify", "message": outcome.reply, "request_id": session.request_id}, 200
+
+    def _ask_chart(self, session, user_text, outcome):
+        """Everything is clarified; ask for the chart type. No SQL has run yet."""
+        session.runtime_ms += outcome.elapsed_ms
+        try:
+            rid = self._ensure_row(session)
+            self._safe_update(rid, resolved_request=outcome.request, sql_source=self.source,
+                              assumptions=" | ".join(outcome.assumptions) or None,
+                              request_status="awaiting_visual_choice", error_message=None)
+        except Exception:
+            log.exception("Could not record the chart question")
+        session.add_message("assistant", outcome.reply, kind="clarify",
+                            meta={"suggestions": CHOICE_CHIPS})
+        session.remember(user_text, outcome.reply)
+        self.pipeline.log_turn(question=user_text, status="awaiting_chart_choice",
+                               intent="choose_chart", prompt_score=outcome.confidence,
+                               latency_s=outcome.elapsed_ms / 1000)
+        return {"status": "awaiting_chart_choice", "message": outcome.reply,
+                "request_id": session.request_id}, 200
+
+    def _failed(self, session, user_text, outcome):
+        session.runtime_ms += outcome.elapsed_ms
+        status = "error" if outcome.kind == "error" else "failed"
+        request_id = session.request_id
+        if outcome.result is not None:            # a report attempt: keep the audit row
+            try:
+                request_id = self._ensure_row(session)
+                self._safe_update(request_id, resolved_request=outcome.request, sql_source=self.source,
+                                  generated_sql=outcome.result.sql or None, request_status=status,
+                                  sql_runtime_ms=outcome.result.sql_runtime_ms,
+                                  total_runtime_ms=session.runtime_ms, error_message=outcome.error[:4000])
+            except Exception:
+                log.exception("Could not record the failed request")
+        else:
+            self.pipeline.log_turn(question=user_text, status="error", intent="error", error=outcome.error)
+        session.add_message("assistant", outcome.reply, kind="error")
+        session.remember(user_text, outcome.reply)
+        session.end_thread()
+        return ({"status": status, "message": outcome.reply, "request_id": request_id},
+                500 if status == "error" else 400)
+
+    # ------------------------------------------------------------------ new / modified report
+    def _build_report(self, session, user_text, outcome):
+        result = outcome.result
+        session.runtime_ms += outcome.elapsed_ms
+        request_id = self._ensure_row(session)
+        title = outcome.title or report_title_from_request(outcome.request)
+        assumptions = list(dict.fromkeys(list(result.assumptions or []) + list(outcome.assumptions or [])))
+        try:
+            validated = validate_sql(result.sql, self.dialect, self.allowed_tables, self.max_rows)
+            self.store.update_metadata(
+                request_id, resolved_request=outcome.request, sql_source=self.source,
+                generated_sql=validated.sql, assumptions=" | ".join(assumptions) or None,
+                request_status="sql_generated", error_message=None)
+            from app.report_store import new_view_name
+            view_name = new_view_name(title)            # e.g. vw_refunds_by_reason_2026_3fa91c
+            session.progress = "Report generation in progress: saving the report view…"
+            started = time.perf_counter()
+            self.store.create_view(validated.sql, view_name)
+            view_ms = round((time.perf_counter() - started) * 1000)
+            self.store.log_view(session.session_id, outcome.request, validated.sql, view_name, assumptions)
+            total_ms = session.runtime_ms + view_ms
+            self.store.update_metadata(
+                request_id, resolved_request=outcome.request, sql_source=self.source,
+                generated_sql=validated.sql, view_name=view_name, request_status="view_created",
+                assumptions=" | ".join(assumptions) or None, result_row_count=len(result.rows),
+                sql_runtime_ms=result.sql_runtime_ms, view_creation_runtime_ms=view_ms,
+                total_runtime_ms=total_ms, error_message=None)
+        except GuardrailError as exc:
+            self._safe_update(request_id, request_status="failed", error_message=str(exc)[:4000])
+            text = f"That query didn't pass the safety checks: {exc}. Could you rephrase the request?"
+            session.add_message("assistant", text, kind="error")
+            session.remember(user_text, text)
+            session.end_thread()
+            return {"status": "failed", "message": text, "request_id": request_id}, 400
+
+        session.progress = "Report generation in progress: building the Power BI page…"
+        project = self._build_page(view_name, title, outcome.chart_type)
+        columns = list(result.columns)
+        rows = [[json_safe(v) for v in row] for row in result.rows]
+        report = {
+            "title": title, "request": outcome.request, "sql": validated.sql,
+            "assumptions": assumptions, "columns": columns, "rows": rows,
+            "truncated": bool(result.truncated), "view_name": view_name,
+            "page_name": project.get("page_name"),
+            "visual_type": project.get("visual_type") or outcome.chart_type or "auto",
+            "dimension_field": project.get("dimension_field"),
+            "measure_field": project.get("measure_field"), "request_id": request_id,
+            "model_table": project.get("model_table"),
+        }
+        session.last_report = report
+        session.reports.append({"title": title, "page_name": report["page_name"],
+                                "request": outcome.request, "view_name": view_name})
+        del session.reports[:-10]
+
+        text = self._report_message(outcome, project, report)
+        history_note = (f'{outcome.reply or "Built the report."} [Built Power BI page '
+                        f'"{report["page_name"] or title}" for: {outcome.request}]')
+        session.add_message("assistant", text, kind="report", meta={
+            "page_name": report["page_name"], "view_name": view_name,
+            "chart_type": report["visual_type"], "suggestions": self._suggestions(report)})
+        session.remember(user_text, history_note)
+        session.end_thread()
+        self._schedule_reload(session, project)
+
+        preview = [dict(zip(columns, row)) for row in rows[:10]]
+        return {
+            "status": "ok", "message": text, "request_id": request_id, "view_name": view_name,
+            "original_request": outcome.request, "sql": validated.sql, "assumptions": assumptions,
+            "result_row_count": len(rows), "truncated": bool(result.truncated),
+            "sql_runtime_ms": result.sql_runtime_ms, "view_creation_runtime_ms": view_ms,
+            "total_runtime_ms": total_ms, "preview_columns": columns, "preview_rows": preview,
+            "powerbi_project": project,
+        }, 200
+
+    def _build_page(self, view_name, title, chart_type, reuse=False) -> dict:
+        try:
+            return self.powerbi.build_page(view_name, title, chart_type, reuse_existing_table=reuse)
+        except Exception as exc:
+            log.exception("Power BI page generation failed for view=%s", view_name)
+            return {"status": "error", "message": str(exc)[:2000], "view_name": view_name}
+
+    # ------------------------------------------------------------------ chart-only change
+    def _change_chart(self, session, user_text, outcome):
+        last = session.last_report
+        label = visual_label(outcome.chart_type)
+        base_title = last.get("base_title") or last["title"]
+        title = f"{base_title} - {label}"
+        request_id = uuid.uuid4().hex
+        try:
+            self.store.insert_metadata(request_id, session.session_id, session.requested_by,
+                                       f"Change chart to {label} for: {last['request']}", self.source)
+        except Exception:
+            log.exception("Could not record the chart change")
+            request_id = None
+        session.progress = "Switching the chart: building the Power BI page…"
+        project = self._build_page(last["view_name"], title, outcome.chart_type, reuse=True)
+        if request_id:
+            self._safe_update(
+                request_id, resolved_request=last["request"], sql_source=self.source,
+                generated_sql=last["sql"], view_name=last["view_name"], request_status="view_created",
+                result_row_count=len(last["rows"]), view_creation_runtime_ms=0,
+                total_runtime_ms=outcome.elapsed_ms,
+                error_message=project.get("message") if project.get("status") == "error" else None)
+        if project.get("page_name"):
+            last.update(page_name=project["page_name"], base_title=base_title,
+                        visual_type=project.get("visual_type") or outcome.chart_type)
+        text = self._report_message(outcome, project, last, chart_change=True)
+        session.add_message("assistant", text, kind="report", meta={
+            "page_name": project.get("page_name"), "view_name": last["view_name"],
+            "chart_type": last["visual_type"], "suggestions": self._suggestions(last)})
+        session.remember(user_text, f'Switched the report to a {label.lower()} on page '
+                                    f'"{project.get("page_name") or title}".')
+        self._schedule_reload(session, project)
+        return {"status": "ok", "message": text, "request_id": request_id,
+                "view_name": last["view_name"], "powerbi_project": project}, 200
+
+    # ------------------------------------------------------------------ message building
+    def _report_message(self, outcome, project, report, chart_change=False) -> str:
+        page = project.get("page_name")
+        state = project.get("status")
+        if state == "disabled":
+            head = ("**Your data is ready**, but Power BI page generation is turned off in the "
+                    "configuration, so no page was created.")
+        elif state == "error" or not page:
+            head = ("**I prepared the data but couldn't create the Power BI page.** "
+                    f"{project.get('message') or 'The backend did not confirm the page.'}")
+        else:
+            head = f"**Report generated** on the page “{page}”."
+            if project.get("model_table"):
+                head += f" Table: `{project['model_table']}`."
+            head += " Click **Refresh** to view the charts."
+        parts = [head]
+        if chart_change:
+            parts.append(f"Same data, shown as a {visual_label(outcome.chart_type).lower()}.")
+            requested, shown = outcome.chart_type, project.get("visual_type")
+            if shown and requested not in ("auto", shown):
+                parts.append(f"(This result has no numeric measure to plot, so I used a {visual_label(shown).lower()}.)")
+        else:
+            if outcome.reply:
+                parts.append(outcome.reply)
+            parts.append(quick_take(report))
+            requested, shown = outcome.chart_type, project.get("visual_type")
+            if shown and requested not in ("auto", shown):
+                parts.append(f"(This result can't be drawn as a {visual_label(requested).lower()}, "
+                             f"so I used a {visual_label(shown).lower()}.)")
+            if report.get("assumptions"):
+                parts.append("Assumptions: " + "; ".join(report["assumptions"]))
+        return "\n\n".join(p for p in parts if p)
+
+    def _suggestions(self, report) -> list:
+        chips = [{"label": "Explain this report", "message": "Explain this report"}]
+        if report["rows"]:
+            current = report.get("visual_type")
+            for visual_type, label in CHART_CHIPS:
+                if visual_type != current:
+                    chips.append({"label": label, "action": "change_chart", "visual_type": visual_type,
+                                  "message": f"Show it as a {label.lower().replace(' only', '')} chart"
+                                             if visual_type != "tableEx" else "Show it as a table"})
+        return chips
+
+    # ------------------------------------------------------------------ Power BI reload (background)
+    def _schedule_reload(self, session, project):
+        if project.get("status") != "generated_pending_reload_and_refresh":
+            return
+        if not self.powerbi.automation_enabled:
+            return
+        session.busy = True
+        page = project.get("page_name")
+
+        def job():
+            time.sleep(self.powerbi.reload_delay)     # let the chat reply reach the visual first
+            try:
+                self.powerbi.reload_refresh(project)
+                text = (f"Power BI has reloaded and refreshed “{page}”. "
+                        "The charts should be visible now.")
+                kind = "status"
+            
+            except Exception as exc:
+                log.exception("Power BI reload/refresh failed")
+                text = None
+
+            with session.lock:
+                if text:
+                    session.add_message("assistant", text, kind=kind)
+                session.busy = False
+
+
+        self._background(job)
+
+    # ================================================================== other endpoints
+    def transcript(self, session_id, after=0):
+        session = self.sessions.get(session_id)
+        if session is None:
+            return {"error": "session not found"}, 404
+        with session.lock:
+            return json_safe({"session_id": session_id, "busy": session.busy,
+                              "last_id": session.last_id,
+                              "messages": session.messages_after(after)}), 200
+
+    def progress(self, session_id):
+        """Lock-free on purpose: the visual polls this WHILE /chat is still running."""
+        session = self.sessions.get(session_id)
+        if session is None:
+            return {"error": "session not found"}, 404
+        return {"progress": session.progress, "busy": session.busy}, 200
+
+    # ------------------------------------------------------------------ audit
+    def audit_sessions(self, limit=50):
+        return {"sessions": self.recorder.list_sessions(limit)}, 200
+
+    def audit_session(self, session_id):
+        rows = self.recorder.read_session(session_id)
+        return ({"session_id": session_id, "messages": rows}, 200) if rows \
+            else ({"error": "no recorded conversation for this session"}, 404)
+
+    def audit_request(self, request_id):
+        try:
+            meta = self.store.fetch_status_row(request_id)
+        except Exception:
+            meta = None
+        rows = self.recorder.read_request(request_id)
+        if meta is None and not rows:
+            return {"error": "request not found"}, 404
+        return json_safe({"request_id": request_id, "metadata": meta, "conversation": rows}), 200
+
+    def latest(self):
+        if not self.resume_latest:
+            return {"error": "disabled"}, 404
+        session = self.sessions.latest(self.resume_window_s)
+        if session is None:
+            return {"error": "no recent session"}, 404
+        return {"session_id": session.session_id}, 200
+
+    def reset(self, session_id):
+        return {"ok": True, "deleted": self.sessions.delete(session_id)}, 200
+
+    def history(self, session_id):
+        session = self.sessions.get(session_id)
+        if not session:
+            return {"error": "not found"}, 404
+        return {"session_id": session_id, "messages": session.history}, 200
+
+    def revise_report(self, body):
+        """Chart-only change without going through the language model."""
+        session_id, visual_type = body.get("session_id"), body.get("visual_type", "auto")
+        if not isinstance(session_id, str) or not session_id.strip():
+            return {"status": "failed", "message": "session_id is required"}, 400
+        if visual_type not in ALLOWED_VISUAL_TYPES or visual_type == "auto":
+            return {"status": "failed", "message": "Unsupported visual_type"}, 400
+        session = self.sessions.get(session_id.strip())
+        if not session or not session.last_report:
+            return {"status": "failed",
+                    "message": "The previous report is not available in this session."}, 409
+        return self.handle_chat({"session_id": session.session_id, "action": "change_chart",
+                                 "visual_type": visual_type,
+                                 "message": f"Show it as a {visual_label(visual_type).lower()}"})
+
+    # ------------------------------------------------------------------ manual-SQL test hooks
+    def _mock_sql_turn(self, session, message, sql, first_new_id):
+        session.start_thread(message)
+        request_id = self._ensure_row(session)
+        payload, status = self.complete_manual_report(request_id, sql, resolved_request=message)
+        text = payload.get("message") or payload.get("error") or "Done."
+        session.add_message("assistant", text, kind="report" if status == 200 else "error")
+        session.remember(message, text)
+        session.end_thread()
+        entries = session.messages_after(first_new_id)
+        self.recorder.record(session, entries, request_id=request_id, intent="manual_sql")
+        payload.update(session_id=session.session_id, reply=text, busy=False,
+                       messages=json_safe(entries))
+        return json_safe(payload), status
+
+    def complete_manual_report(self, request_id, generated_sql, resolved_request=None, assumptions=None):
+        """Manual/mock SQL fallback; no LLM call. Runs the Desktop reload synchronously."""
+        started = time.perf_counter()
+        sql_ms = view_ms = view_name = row_count = None
+        record = self.store.fetch_metadata(request_id)
+        if record is None:
+            return {"status": "failed", "error": "Unknown request_id"}, 404
+        if record["request_status"] not in ("received", "awaiting_manual_sql", "clarifying",
+                                            "sql_generated", "failed", "error"):
+            return {"status": "failed",
+                    "error": f"Request is already in status '{record['request_status']}'"}, 409
+        assumptions = assumptions or []
+        if not isinstance(assumptions, list) or not all(isinstance(x, str) for x in assumptions):
+            return {"status": "failed", "error": "assumptions must be a list of strings"}, 400
+        if not isinstance(generated_sql, str) or not generated_sql.strip():
+            return {"status": "failed", "error": "generated_sql is required"}, 400
+        resolved_request = (resolved_request or record["user_request"]).strip()
+        try:
+            self.store.update_metadata(request_id, resolved_request=resolved_request,
+                                       sql_source="manual_mock", generated_sql=generated_sql,
+                                       assumptions=" | ".join(assumptions) or None,
+                                       request_status="sql_generated", error_message=None)
+            validated = validate_sql(generated_sql, self.dialect, self.allowed_tables, self.max_rows)
+            q_started = time.perf_counter()
+            query_result = self.pipeline.db.execute_readonly(validated.sql, self.max_rows)
+            sql_ms = round((time.perf_counter() - q_started) * 1000)
+            row_count = len(query_result.rows)
+            from app.report_store import new_view_name
+            view_name = new_view_name(resolved_request)
+            v_started = time.perf_counter()
+            self.store.create_view(validated.sql, view_name)
+            view_ms = round((time.perf_counter() - v_started) * 1000)
+            self.store.log_view(record["session_id"] or "", resolved_request, validated.sql,
+                                view_name, assumptions)
+            total_ms = round((time.perf_counter() - started) * 1000)
+            self.store.update_metadata(request_id, generated_sql=validated.sql, view_name=view_name,
+                                       request_status="view_created",
+                                       assumptions=" | ".join(assumptions) or None,
+                                       result_row_count=row_count, sql_runtime_ms=sql_ms,
+                                       view_creation_runtime_ms=view_ms, total_runtime_ms=total_ms,
+                                       error_message=None)
+            project = self._build_page(view_name, resolved_request, None)
+            if project.get("status") == "generated_pending_reload_and_refresh" and self.powerbi.automation_enabled:
+                try:
+                    project["desktop_automation"] = self.powerbi.reload_refresh(project)
+                    project["status"] = "generated_reloaded_refreshed"
+                except Exception as exc:
+                    project["desktop_automation"] = {"success": False, "message": str(exc)[:2500]}
+            page = project.get("page_name")
+            message = (f"Report generated on the page “{page}”. Click Refresh to view the charts."
+                       if page else "Report view created (manual SQL); no Power BI page was created.")
+            columns = list(query_result.columns)
+            return {"request_id": request_id, "session_id": record["session_id"], "status": "ok",
+                    "message": message, "view_name": view_name, "sql": validated.sql,
+                    "assumptions": assumptions, "result_row_count": row_count,
+                    "truncated": query_result.truncated, "sql_runtime_ms": sql_ms,
+                    "view_creation_runtime_ms": view_ms, "total_runtime_ms": total_ms,
+                    "preview_columns": columns,
+                    "preview_rows": [dict(zip(columns, map(json_safe, r))) for r in query_result.rows[:10]],
+                    "powerbi_project": project}, 200
+        except GuardrailError as exc:
+            self._safe_update(request_id, request_status="failed", sql_runtime_ms=sql_ms,
+                              view_creation_runtime_ms=view_ms, error_message=str(exc))
+            return {"request_id": request_id, "status": "failed", "message": str(exc)}, 400
+        except Exception as exc:
+            log.exception("Manual report processing failed for request_id=%s", request_id)
+            self._safe_update(request_id, request_status="error", view_name=view_name,
+                              result_row_count=row_count, error_message=str(exc)[:4000])
+            return {"request_id": request_id, "status": "error", "message": str(exc)}, 500
+
+
+def report_title_from_request(request_text, fallback="Billing Report") -> str:
+    """Readable page title from a request, used when the model gave no title."""
+    import re
+    title = re.sub(r"\s+", " ", str(request_text or "")).strip()
+    title = re.sub(r"^(?:please\s+)?(?:(?:can|could|would) you\s+)?", "", title, flags=re.I)
+    title = re.sub(r"^(?:show me|show|display|create|generate|make|build|give me|provide|list|find)\s+",
+                   "", title, flags=re.I)
+    title = re.sub(r"\s*,?\s*(?:sorted|sort|ordered|order)\s+(?:by|from|in)\b.*$", "", title, flags=re.I)
+    title = title.strip(" .?!,:;-_")
+    if not title:
+        return fallback
+    small = {"a", "an", "the", "and", "or", "but", "for", "nor", "on", "at", "to", "from", "by",
+             "of", "in", "with", "per", "as"}
+    words = title.title().split()
+    words = [w.lower() if i and w.lower() in small else w for i, w in enumerate(words)]
+    title = " ".join(words)
+    for acronym in ("Usd", "Id", "Api", "Sql", "Ai"):
+        title = re.sub(rf"\b{acronym}\b", acronym.upper(), title)
+    if len(title) > 54:
+        title = title[:54].rsplit(" ", 1)[0].strip() or title[:54]
+    return title or fallback
+
+
+# ====================================================================== Flask wiring
+def create_app(cfg_path=None, *, cfg=None, llm=None, db=None, store=None, powerbi=None,
+               background=None) -> Flask:
+    """Build the app. Every dependency can be injected, which is how the tests run offline."""
+    from app.db import build_db
+    from app.llm import build_llm
+    from app.pipeline import Pipeline
+    from app.powerbi_service import PowerBIService
+    from app.report_store import ReportStore
+
+    if cfg is None:
+        path = Path(cfg_path or os.getenv("CHATBOT_CONFIG") or DEFAULT_CONFIG)
+        cfg = yaml.safe_load(path.read_text(encoding="utf-8"))
+    store = store or ReportStore()
+    pipeline = Pipeline(llm or build_llm(cfg["llm"]), db or build_db(cfg["db"]), cfg, base_dir=BASE)
+    powerbi = powerbi or PowerBIService(cfg, BASE, store)
+    log_file = (cfg.get("pipeline", {}) or {}).get("conversation_log_file")
+    recorder = ConversationRecorder(store, BASE / log_file if log_file else None)
+    service = ChatService(cfg, pipeline, store, powerbi, background=background, recorder=recorder)
+
+    app = Flask(__name__)
+    app.config["SERVICE"] = service
+
+    @app.after_request
+    def cors(response):
+        # The visual runs in a sandboxed iframe, so any origin must be allowed (local POC only).
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        if request.headers.get("Access-Control-Request-Private-Network"):
+            response.headers["Access-Control-Allow-Private-Network"] = "true"
+        return response
+
+    def reply(result):
+        payload, status = result
+        return jsonify(payload), status
+
+    @app.post("/chat")
+    def chat():
+        return reply(service.handle_chat(request.get_json(silent=True) or {}))
+
+    @app.get("/session/latest")
+    def session_latest():
+        return reply(service.latest())
+
+    @app.get("/session/<session_id>/transcript")
+    def session_transcript(session_id):
+        try:
+            after = int(request.args.get("after", 0))
+        except ValueError:
+            after = 0
+        return reply(service.transcript(session_id, after))
+
+    @app.get("/session/<session_id>/progress")
+    def session_progress(session_id):
+        return reply(service.progress(session_id))
+
+    @app.get("/audit/sessions")
+    def audit_sessions():
+        try:
+            limit = max(1, min(500, int(request.args.get("limit", 50))))
+        except ValueError:
+            limit = 50
+        return reply(service.audit_sessions(limit))
+
+    @app.get("/audit/sessions/<session_id>")
+    def audit_session(session_id):
+        payload, status = service.audit_session(session_id)
+        if request.args.get("format") == "text":
+            text = format_conversation_text(session_id, payload.get("messages", []))
+            return Response(text, status=status, mimetype="text/plain; charset=utf-8")
+        return jsonify(payload), status
+
+    @app.get("/audit/requests/<request_id>")
+    def audit_request(request_id):
+        return reply(service.audit_request(request_id))
+
+    @app.post("/session/<session_id>/reset")
+    def session_reset(session_id):
+        return reply(service.reset(session_id))
+
+    @app.get("/session/<session_id>")
+    def session_history(session_id):
+        return reply(service.history(session_id))
+
+    @app.post("/revise-report")
+    def revise_report():
+        return reply(service.revise_report(request.get_json(silent=True) or {}))
+
+    @app.post("/complete-report")
+    def complete_report():
+        body = request.get_json(silent=True) or {}
+        request_id = body.get("request_id")
+        if not isinstance(request_id, str) or not request_id.strip():
+            return jsonify(error="request_id is required"), 400
+        return reply(service.complete_manual_report(
+            request_id.strip(), body.get("generated_sql"),
+            resolved_request=body.get("resolved_request"), assumptions=body.get("assumptions") or []))
+
+    @app.get("/requests/<request_id>")
+    def request_status(request_id):
+        try:
+            row = service.store.fetch_status_row(request_id)
+        except Exception as exc:
+            app.logger.exception("Could not read request metadata")
+            return jsonify(error=str(exc)), 500
+        if row is None:
+            return jsonify(error="request not found"), 404
+        return jsonify(json_safe(row))
+
+    @app.get("/health")
+    def health():
+        llm_ = service.pipeline.llm
+        return jsonify(ok=True, mode="conversational", provider=llm_.name, model=llm_.model,
+                       dialect=service.dialect)
+
+    return app
+
+
+def main():
+    app = create_app()
+    app.run(host=os.getenv("CHATBOT_HOST", "127.0.0.1"), port=int(os.getenv("CHATBOT_PORT", "5056")),
+            debug=os.getenv("FLASK_DEBUG") == "1", use_reloader=False, threaded=True)
+
+
+if __name__ == "__main__":
+    main()

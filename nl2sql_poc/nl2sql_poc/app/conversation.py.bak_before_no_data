@@ -1,0 +1,351 @@
+"""Conversation engine: turns one user message into an Outcome using memory + the pipeline.
+
+It decides WHAT should happen (chat reply, explanation, clarification, new/modified report, chart
+change). It does not touch MySQL or Power BI - the API layer performs those side effects.
+"""
+from __future__ import annotations
+
+import re
+import time
+from dataclasses import dataclass, field
+
+from .pipeline import (REPORT_INTENTS, Pipeline, PlannerError, Plan, Result, Usage,
+                       normalize_chart_type)
+from .util import fmt_number, humanize, is_number, json_safe
+
+_SUM_UNFRIENDLY = ("rate", "pct", "percent", "avg", "average", "ratio", "share")
+
+CHART_QUESTION = "What type of visual would you like: Auto, column, bar, line, pie, donut, or table?"
+_AUTO_WORDS = ("auto", "automatic", "you choose", "your choice", "you pick", "any", "anything",
+               "whatever", "no preference", "dont care", "don't care", "doesnt matter",
+               "doesn't matter", "best", "default", "surprise")
+
+
+def detect_chart_choice(text: str):
+    """Chart type named in a SHORT reply to the chart question, else None.
+
+    Long messages are treated as new requests, so "show refunds as a pie chart for 2025 instead"
+    is planned normally rather than being read as an answer."""
+    cleaned = re.sub(r"[^a-z' ]", " ", (text or "").lower())
+    words = cleaned.split()
+    if not words or len(words) > 8:
+        return None
+    padded = f" {' '.join(words)} "
+    if re.search(r"\b(donut|doughnut)\b", padded):
+        return "donutChart"
+    if re.search(r"\bpie\b", padded):
+        return "pieChart"
+    if re.search(r"\b(column|columns|vertical)\b", padded):
+        return "clusteredColumnChart"
+    if re.search(r"\b(bar|bars|horizontal)\b", padded):
+        return "barChart"
+    if re.search(r"\b(line|trend)\b", padded):
+        return "lineChart"
+    if re.search(r"\b(table|grid)\b", padded):
+        return "tableEx"
+    if any(f" {word} " in padded for word in _AUTO_WORDS):
+        return "auto"
+    return None
+
+
+@dataclass
+class Outcome:
+    kind: str                       # reply | clarify | report | chart_change | failed | error
+    reply: str = ""
+    intent: str = ""
+    request: str = ""
+    title: str = ""
+    chart_type: str = "auto"
+    assumptions: list = field(default_factory=list)
+    result: Result | None = None
+    previous_report: dict | None = None
+    confidence: int = 0
+    error: str = ""
+    elapsed_ms: int = 0
+
+
+# --------------------------------------------------------------------------- data summaries
+def _label_for(row, columns, numeric_idx):
+    for i, value in enumerate(row):
+        if i not in numeric_idx and value is not None:
+            return str(json_safe(value))
+    return None
+
+
+def column_stats(columns, rows):
+    """{column: {sum?, min, max, min_label, max_label}} for numeric columns, over ALL rows."""
+    stats = {}
+    numeric_idx = {i for i in range(len(columns))
+                   if any(is_number(r[i]) for r in rows)}
+    for i in sorted(numeric_idx):
+        values = [(float(r[i]), r) for r in rows if is_number(r[i])]
+        if not values:
+            continue
+        low, high = min(values, key=lambda v: v[0]), max(values, key=lambda v: v[0])
+        entry = {"min": low[0], "max": high[0],
+                 "min_label": _label_for(low[1], columns, numeric_idx),
+                 "max_label": _label_for(high[1], columns, numeric_idx)}
+        if not any(h in columns[i].lower() for h in _SUM_UNFRIENDLY):
+            entry["sum"] = sum(v[0] for v in values)
+        stats[columns[i]] = entry
+    return stats
+
+
+def _csv_cell(value):
+    value = json_safe(value)
+    if value is None:
+        return ""
+    if isinstance(value, float):
+        value = round(value, 2)
+    text = str(value)
+    return f'"{text}"' if "," in text else text
+
+
+def report_prompt_block(report: dict, max_rows: int = 20) -> str:
+    """Compact description of the last report for the planner (it explains from this)."""
+    columns, rows = report["columns"], report["rows"]
+    lines = [
+        f'LAST REPORT: page "{report.get("page_name") or report.get("title")}", '
+        f'chart: {report.get("visual_type", "auto")}',
+        f'- Request: {report.get("request", "")}',
+    ]
+    if report.get("assumptions"):
+        lines.append("- Assumptions: " + "; ".join(report["assumptions"]))
+    if report.get("sql"):
+        lines.append("- SQL used: " + " ".join(report["sql"].split())[:1200])
+    lines.append("- Columns: " + ", ".join(columns))
+    if not rows:
+        lines.append("- Rows: 0 (the query returned no data for these filters)")
+        return "\n".join(lines)
+    note = " (TRUNCATED at the row cap, so totals are partial)" if report.get("truncated") else ""
+    lines.append(f"- Rows: {len(rows)}{note}")
+    for column, stat in column_stats(columns, rows).items():
+        parts = []
+        if "sum" in stat:
+            parts.append(f"sum {fmt_number(stat['sum'], column)}")
+        parts.append(f"min {fmt_number(stat['min'], column)}"
+                     + (f" ({stat['min_label']})" if stat["min_label"] else ""))
+        parts.append(f"max {fmt_number(stat['max'], column)}"
+                     + (f" ({stat['max_label']})" if stat["max_label"] else ""))
+        lines.append(f"- {column}: " + " | ".join(parts) + "  [over all rows]")
+    shown = rows[:max_rows]
+    lines.append(f"DATA (first {len(shown)} of {len(rows)} rows, CSV):")
+    lines.append(",".join(columns))
+    lines.extend(",".join(_csv_cell(v) for v in row) for row in shown)
+    return "\n".join(lines)
+
+
+def quick_take(report: dict) -> str:
+    """One deterministic sentence about the data (no LLM, so the numbers are always exact)."""
+    columns, rows = report["columns"], report["rows"]
+    if not rows:
+        return ("The query ran but returned no rows, so the charts will be empty. "
+                "Try a wider period or fewer filters.")
+    numeric = [i for i in range(len(columns)) if any(is_number(r[i]) for r in rows)]
+    if not numeric:
+        return f"It returned {len(rows):,} row{'s' if len(rows) != 1 else ''}."
+    if len(rows) == 1:
+        parts = [f"{humanize(columns[i])}: {fmt_number(rows[0][i], columns[i])}"
+                 for i in numeric if is_number(rows[0][i])]
+        return "Result — " + ", ".join(parts[:4]) + "."
+    measure = report.get("measure_field")
+    mi = columns.index(measure) if measure in columns else numeric[0]
+    stats = column_stats(columns, rows).get(columns[mi])
+    if not stats:
+        return f"It returned {len(rows):,} rows."
+    text = f"{len(rows):,} rows. Highest {humanize(columns[mi])}: " \
+           f"{fmt_number(stats['max'], columns[mi])}"
+    if stats["max_label"]:
+        text += f" ({stats['max_label']})"
+    text += f"; lowest: {fmt_number(stats['min'], columns[mi])}"
+    if stats["min_label"]:
+        text += f" ({stats['min_label']})"
+    return text + "."
+
+
+# --------------------------------------------------------------------------- engine
+class ConversationEngine:
+    def __init__(self, pipeline: Pipeline, cfg: dict):
+        self.pipeline = pipeline
+        pcfg = cfg.get("pipeline", {})
+        # 0 = no limit. The cap only stops endless question loops; a request that scores below
+        # the threshold (e.g. "generate a report") is always asked about, whatever the cap.
+        self.max_clarifications = int(pcfg.get("max_clarifications", 4))
+        self.threshold = int(pcfg.get("prompt_eval_threshold", 40))
+        # Ask for the chart type as the LAST question, once the request is fully clarified.
+        self.ask_chart = bool((cfg.get("chat", {}) or {}).get("ask_chart_type", True))
+        self.history_chars = int(pcfg.get("history_chars", 3500))
+        self.data_rows = int(pcfg.get("data_rows_in_prompt", 20))
+
+    # ------------------------------------------------------------------ state for the planner
+    def state_block(self, session) -> str:
+        lines = []
+        if session.awaiting_clarification:
+            lines.append("You just asked the user a clarifying question. Their latest message most "
+                         "likely answers it: merge it into the earlier request.")
+        if self.max_clarifications > 0:
+            left = max(0, self.max_clarifications - session.clarify_count)
+            lines.append(f"Clarification budget left for this request: {left}.")
+        else:
+            lines.append("Clarification budget: unlimited (still ask only what is needed).")
+        if session.pending_chart:
+            lines.append("The system is waiting for the user's chart choice for the report: "
+                         f'"{session.pending_chart["request"]}".')
+        if session.last_report:
+            lines.append(report_prompt_block(session.last_report, self.data_rows))
+        else:
+            lines.append("LAST REPORT: none yet. There is nothing to explain, modify or re-chart.")
+        if len(session.reports) > 1:
+            earlier = "; ".join(f'"{r["page_name"] or r["title"]}"' for r in session.reports[:-1][-5:])
+            lines.append(f"Earlier reports in this conversation: {earlier}.")
+        return "\n".join(lines)
+
+    def _fallback_request(self, session, plan: Plan, user_text: str) -> str:
+        if plan.request:
+            return plan.request
+        messages = session.thread_messages or [user_text]
+        if len(messages) == 1:
+            return messages[0]
+        return "Original request: " + messages[0] + "\nClarifications: " + " | ".join(messages[1:])
+
+    # ------------------------------------------------------------------ main entry
+    def handle(self, session, user_text: str, preferred_chart: str | None = None,
+               chart_choice: str | None = None) -> Outcome:
+        """chart_choice: a chip click on the chart question (may be "auto")."""
+        started = time.perf_counter()
+        elapsed = lambda: round((time.perf_counter() - started) * 1000)
+
+        # 0. Are we waiting for the chart choice? ----------------------------------------------
+        pending = session.pending_chart
+        if chart_choice is not None and not pending:
+            if session.last_report and normalize_chart_type(chart_choice) not in (None, "auto"):
+                return Outcome(kind="chart_change", intent="change_chart",
+                               chart_type=normalize_chart_type(chart_choice), elapsed_ms=elapsed())
+            return Outcome(kind="reply", intent="chat", elapsed_ms=elapsed(),
+                           reply="I'm not waiting on a chart choice right now. What would you like to see?")
+        if pending:
+            choice = normalize_chart_type(chart_choice) if chart_choice is not None \
+                else detect_chart_choice(user_text)
+            if choice:
+                return self._generate(session, pending["intent"], pending["request"], pending["title"],
+                                      choice, pending["assumptions"], pending["previous"],
+                                      pending["confidence"], pending["reply"], Usage(), started)
+
+        history = session.llm_history(self.history_chars) + [{"role": "user", "content": user_text}]
+        try:
+            plan, usage = self.pipeline.plan(history, self.state_block(session))
+        except PlannerError as exc:
+            return Outcome(kind="error", intent="error", error=str(exc), elapsed_ms=elapsed(),
+                           reply="Sorry, I couldn't reach my AI service just now, so I didn't get "
+                                 "your request. Please try again in a moment.")
+        intent = plan.intent
+        has_report = session.last_report is not None
+        explicit_chart = normalize_chart_type(preferred_chart) if preferred_chart else None
+
+        # Guard rails around the model's choice ------------------------------------------------
+        if intent == "modify_report" and not has_report:
+            intent = "new_report"
+        if intent in ("explain", "change_chart") and not has_report:
+            return self._reply(plan, "I don't have a report to work with yet. What would you like "
+                                     "to see? For example: \"monthly revenue for the last 12 months\".",
+                               elapsed())
+
+        # Readiness check (same rule as the original evaluator): a report request is only built
+        # when the model says it is sufficient AND its score reaches the threshold.
+        below_floor = intent in REPORT_INTENTS and plan.scored and plan.confidence < self.threshold
+        not_ready = intent in REPORT_INTENTS and (not plan.sufficient or below_floor)
+        if intent == "clarify" or not_ready:
+            budget_left = (self.max_clarifications <= 0
+                           or session.clarify_count < self.max_clarifications)
+            if budget_left or below_floor or (intent == "clarify" and plan.scored
+                                              and plan.confidence < self.threshold):
+                session.pending_chart = None
+                if not session.awaiting_clarification:
+                    session.start_thread(user_text)
+                else:
+                    session.thread_messages.append(user_text)
+                session.clarify_count += 1
+                session.awaiting_clarification = True
+                question = (plan.clarification or plan.reply
+                            or "Could you tell me more about what the report should show?")
+                return Outcome(kind="clarify", intent="clarify", confidence=plan.confidence,
+                               reply=question, elapsed_ms=elapsed())
+            if intent == "clarify":          # budget used up and enough to go on: proceed
+                intent = "new_report"
+
+        if intent in ("chat", "explain", "decline"):
+            text = plan.reply or "I'm here to help with your billing reports."
+            if session.pending_chart:      # still waiting: answer, then remind
+                text += f"\n\nTo build your report: {CHART_QUESTION}"
+            return self._reply(plan, text, elapsed(), intent)
+
+        if intent == "change_chart":
+            chart = explicit_chart if explicit_chart not in (None, "auto") else plan.chart_type
+            if chart in (None, "auto"):
+                return self._reply(plan, plan.reply or "Which chart would you like: column, bar, line, "
+                                                       "pie, donut or table?", elapsed(), "chat")
+            return Outcome(kind="chart_change", intent="change_chart", chart_type=chart,
+                           confidence=plan.confidence, reply=plan.reply, elapsed_ms=elapsed())
+
+        # Report intents -----------------------------------------------------------------------
+        if not session.awaiting_clarification:
+            session.start_thread(user_text)
+        else:
+            session.thread_messages.append(user_text)
+        request = self._fallback_request(session, plan, user_text)
+        previous = session.last_report if intent == "modify_report" else None
+        chart = explicit_chart if explicit_chart not in (None, "auto") else plan.chart_type
+        chart_given = chart not in (None, "auto")
+        if intent == "modify_report" and not chart_given:
+            # A revision keeps the chart type of the report being revised; no need to ask again.
+            chart, chart_given = (session.last_report or {}).get("visual_type") or "auto", True
+
+        if self.ask_chart and not chart_given:
+            # Everything is clarified: the chart type is the LAST question. Hold the request and
+            # run the SQL only after the answer, so the query is executed exactly once.
+            session.pending_chart = {
+                "intent": intent, "request": request, "title": plan.title,
+                "assumptions": plan.assumptions, "previous": previous,
+                "confidence": plan.confidence, "reply": plan.reply}
+            session.awaiting_clarification = False
+            question = f"{plan.reply}\n\n{CHART_QUESTION}" if plan.reply else CHART_QUESTION
+            return Outcome(kind="choose_chart", intent="choose_chart", request=request,
+                           title=plan.title, assumptions=plan.assumptions,
+                           confidence=plan.confidence, reply=question, elapsed_ms=elapsed())
+        return self._generate(session, intent, request, plan.title, chart or "auto",
+                              plan.assumptions, previous, plan.confidence, plan.reply, usage, started)
+
+    # ------------------------------------------------------------------ SQL + outcome
+    def _generate(self, session, intent, request, title, chart, assumptions, previous,
+                  confidence, reply, usage, started) -> Outcome:
+        elapsed = lambda: round((time.perf_counter() - started) * 1000)
+        session.pending_chart = None
+        session.progress = "Report generation in progress: writing and running the query…"
+        result = self.pipeline.generate_sql(request, previous=previous, assumptions=assumptions)
+        result.intent, result.prompt_score = intent, confidence
+        result.input_tokens += usage.input_tokens
+        result.output_tokens += usage.output_tokens
+        result.cache_read_tokens += usage.cache_read_tokens
+
+        common = dict(intent=intent, request=request, title=title, chart_type=chart or "auto",
+                      assumptions=assumptions, result=result, previous_report=previous,
+                      confidence=confidence, elapsed_ms=elapsed())
+        if result.status == "ok":
+            return Outcome(kind="report", reply=reply, **common)
+        if result.status == "clarify":
+            session.clarify_count += 1
+            session.awaiting_clarification = True
+            return Outcome(kind="clarify", intent="clarify", confidence=confidence,
+                           reply=result.clarification, elapsed_ms=elapsed())
+        detail = (result.error or "unknown error")[:300]
+        if result.status == "error":
+            return Outcome(kind="error", error=detail, reply=(
+                f"I ran into a technical problem while building that report ({detail}). "
+                "Please try again in a moment."), **common)
+        return Outcome(kind="failed", error=detail, reply=(
+            "I couldn't turn that into a working query after a few tries "
+            f"(last error: {detail}). Could you rephrase it or give me a bit more detail?"), **common)
+
+    def _reply(self, plan, text, elapsed_ms, intent=None) -> Outcome:
+        return Outcome(kind="reply", intent=intent or plan.intent, reply=text,
+                       confidence=plan.confidence, elapsed_ms=elapsed_ms)

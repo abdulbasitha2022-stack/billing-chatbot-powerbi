@@ -1,0 +1,8 @@
+flask>=3.0             # chatbot API
+pymysql                # view creation + request metadata (MySQL)
+openai>=1.40           # Groq provider (OpenAI-compatible API)
+anthropic>=0.40        # Claude provider (only needed if llm.provider: claude)
+sqlalchemy>=2.0        # database layer
+sqlglot                # SQL parsing for the guardrails
+pyyaml                 # config files
+pytest                 # tests

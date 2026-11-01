@@ -1,0 +1,49 @@
+# One file per client engagement. Switching AI agent or database = editing this file.
+# Run with a different client:  python run.py --config clients/other_client.yaml "question"
+
+llm:
+  provider: claude                  # claude | openai
+  claude:
+    model: claude-sonnet-5          # any Claude model id; cheaper option: claude-haiku-4-5-20251001
+    max_tokens: 1500
+    prompt_caching: true            # the schema + dictionary prefix is identical on every call
+    # temperature: 0                # optional. Leave commented out unless your model accepts it
+  openai:
+    model: gpt-4o                   # pip install openai, set OPENAI_API_KEY (provider is untested)
+
+db:
+  type: postgres                    # postgres | sqlalchemy (any other SQLAlchemy URL)
+  url_env: DATABASE_URL             # preferred: put the URL in this environment variable
+  # Fallback for local dev. Connects as the READ-ONLY role created by schema.sql.
+  url: postgresql+psycopg2://poc_readonly:poc_readonly@localhost:5432/membership
+  allowed_tables:                   # the ONLY tables a generated query may read
+    - membership_sample
+    - ref_member_type_2
+    - ref_payment_categories
+    - ref_batch_payment_types
+    - ref_member_branches
+  max_rows: 1000                    # hard cap, enforced on every query
+  statement_timeout_ms: 15000
+
+context:
+  files:                            # client-specific knowledge: the data dictionary
+    - context/membership_dictionary.md
+  extra_rules: |                    # client/environment-specific rules (the "10%")
+    - All 81 dictionary columns are exposed as ONE flat table, membership_sample. The source
+      aliases in the dictionary (b, c, ab, cc, pd, bpay, ec, br) and the discovery.* source
+      tables are NOT queryable here. Use only membership_sample and the ref_* tables.
+    - Card approval outcomes (cc_batch_detail) do not exist in this environment. For questions
+      about declines, use this proxy at household level (master_associate = '0'):
+      batch_payment_type IN (9, 5) AND process_status IN ('C', 'F') AND payment_ts IS NULL.
+      Always state the proxy in an ASSUMPTION line.
+    - Decode tables you may join: ref_member_type_2 (member_type_code, member_type_desc) on
+      member_type; ref_payment_categories (payment_category_code, payment_category_desc) on
+      membership_payment_category; ref_batch_payment_types (batch_payment_type,
+      batch_payment_type_desc) on batch_payment_type. Branch names are already in
+      membership_sample.member_branch_name, so do not join for those.
+    - There is no single tier column. If a question needs tier, use Premier > Plus > Classic
+      and state that precedence in an ASSUMPTION line.
+
+pipeline:
+  max_retries: 2                    # self-correction attempts after a rejected/failed query
+  log_file: logs/requests.jsonl     # who asked what, the SQL, tokens, latency

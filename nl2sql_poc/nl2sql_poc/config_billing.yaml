@@ -1,0 +1,85 @@
+# Billing-domain config for the chatbot. Separate from config.yaml (membership domain) -
+# same pipeline code, different database and different business-rule context.
+
+llm:
+  provider: groq
+  groq:
+    model: openai/gpt-oss-120b
+    max_tokens: 1500
+    reasoning_effort: low           # gpt-oss spends tokens on hidden reasoning; "low" leaves room for the answer
+    max_retries: 4                  # automatic back-off on HTTP 429 rate limits
+    base_url: https://api.groq.com/openai/v1
+  claude:
+    model: claude-sonnet-5-5
+    max_tokens: 1500
+    prompt_caching: true
+
+db:
+  type: sqlalchemy                  # MySQL via SQLAlchemy; dialect auto-detected as "mysql"
+  url_env: DATABASE_URL
+  url: mysql+pymysql://billing_readonly:billing_readonly@localhost:3306/billing
+  allowed_tables:
+    - products
+    - plans
+    - customers
+    - payment_methods
+    - subscriptions
+    - invoices
+    - charges
+    - refunds
+  max_rows: 1000
+
+# Everyday wording for a table or "table.column", so a request is refused before any AI call.
+# Vocabulary only - it grants or denies nothing: a term applies only when role_permissions
+# denies that resource to the user's role. Table and column names are matched automatically.
+
+
+context:
+  files:
+    - context/billing_runtime_context.md
+  extra_rules: |
+    Dialect is MySQL. Use backticks only if an identifier clashes with a reserved word -
+    none of these table/column names do, so plain identifiers are fine.
+
+pipeline:
+  max_retries: 2
+  log_file: logs/requests_billing.jsonl
+  conversation_log_file: logs/conversations_billing.jsonl   # every question and answer, one JSON line each
+  conversation_log_file: logs/conversations_billing.jsonl   # every question + answer, one JSON object per line
+  prompt_eval_threshold: 40         # a report request scoring below this is always clarified, never built
+  max_clarifications: 4             # safety cap on questions per request (0 = unlimited); below-threshold requests ignore it
+  history_chars: 3500               # how much recent conversation the assistant re-reads each turn
+  data_rows_in_prompt: 20           # rows of the last report the assistant can see when explaining it
+
+chat:
+  resume_latest_session: true       # visual falls back to the newest session if it has no local storage
+  resume_window_minutes: 480        # ...but only if it was active within this window (turn off for multi-user use)
+  end_wait_seconds: 2               # End session waits this long for a running request before finishing it afterwards
+  ask_chart_type: true              # ask for the chart type as the LAST question, after all clarifications
+  skip_empty_reports: true          # a request that matches no rows gets a message, not a blank page
+  allow_mock_sql: true              # lets /chat accept mock_sql for tests; set false in production
+
+powerbi:
+  enabled: true
+  report_dir: "C:/Users/basit/Documents/billing_POC.Report"
+  model_dir: "C:/Users/basit/Documents/billing_POC.SemanticModel"
+  include_detail_table: true
+  desktop_automation:
+    enabled: true
+    timeout_seconds: 180
+    reload_delay_seconds: 2         # wait after replying before Desktop reloads (the chatbot reloads too)
+
+# ---- Application settings -------------------------------------------------------------------
+app:
+  timezone: Asia/Kolkata            # day_id and the date inside view names use this zone (set to the client's)
+  platform: Power BI                # stored in report_request_metadata.platform
+  demo_mode: true                   # explicit local demo mode: enables CEO/Developer/Analyst role selection
+
+# ---- Who is asking? (see docs/SESSIONS_FEEDBACK_METADATA.md) ---------------------------------
+identity:
+  provider: none                    # none = no user is recorded (NULL) | trusted_proxy = trust a gateway's headers
+  trusted_proxy:                    # only used when provider is trusted_proxy
+    secret_env: CHATBOT_GATEWAY_SECRET   # environment variable holding the shared secret the gateway sends
+    secret_header: X-Gateway-Secret
+    user_header: X-Authenticated-User
+    role_header: X-Authenticated-Role

@@ -1,0 +1,26 @@
+# One question per line. Lines starting with # are ignored.
+# Each one is chosen to exercise a specific rule from the data dictionary.
+
+# AutoBill enrolment needs THREE conditions (flag + do_not_bill + card), not just the flag
+How many households are enrolled in AutoBill?
+
+# Household-level columns repeat per member: must dedupe to master_associate = '0'
+What is the total scheduled charge amount across all households this cycle?
+
+# Decline proxy + AAA vs non-AAA batch types (9 vs 5)
+What is the decline rate for non-AAA credit card AutoBill versus AAA credit card AutoBill?
+
+# DSABREJS2 = involuntary disenrolment after repeated declines
+How many households were dropped from AutoBill automatically after repeated declines?
+
+# Latest cycle: an unpaid cycle has payment_ts NULL but billed_date populated
+Which 10 households have the largest outstanding balance on their latest billing cycle?
+
+# Card year only; compare against the current year
+What percentage of AutoBill households have a card that has already expired?
+
+# Win-back signal = category S
+How many reinstatements happened in the last 6 months?
+
+# Ambiguous on purpose: no single tier column, precedence is a business decision
+How many members do we have in each membership tier?
