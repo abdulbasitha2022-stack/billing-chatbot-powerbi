@@ -34,7 +34,8 @@ import time
 from pathlib import Path
 
 from .powerbi_project_generator import (PowerBIProjectError, ensure_latest_report_button,
-                                        generate_native_report_page)
+                                        export_report_page, generate_native_report_page,
+                                        restore_report_page)
 
 # Module logger; the handlers set up in logging_setup.py send it to logs/backend_billing.log.
 log = logging.getLogger(__name__)
@@ -226,6 +227,39 @@ class PowerBIService:
                 include_detail_table=bool(self.cfg.get("include_detail_table", True)),
                 requested_visual_type=requested_visual_type,
                 reuse_existing_table=reuse_existing_table, request_id=request_id, session_id=session_id)
+
+    # ------------------------------------------------------------------ saved reports
+    # export_page / restore_page: called by app/saved_reports.py. Both first save pending Desktop
+    # edits ("prepare", like build_page) so the files on disk match what the user sees.
+    def _project_dirs(self):
+        report_dir, model_dir = self.cfg.get("report_dir"), self.cfg.get("model_dir")
+        if not report_dir or not model_dir:
+            raise PowerBIProjectError(
+                "powerbi.enabled is true but report_dir/model_dir are missing from config_billing.yaml.")
+        return report_dir, model_dir
+
+    def export_page(self, request_id, view_name):
+        """Copy of the page generated for request_id (see export_report_page), or None if not found."""
+        report_dir, model_dir = self._project_dirs()
+        with self.lock:
+            if self.automation_enabled:
+                # A failed save only means unsaved Desktop edits are not in the copy; the page
+                # on disk is still the one that was generated, so carry on.
+                try:
+                    self.run_desktop_automation("prepare")
+                except PowerBIProjectError as exc:
+                    log.warning("Saving Desktop before exporting the page failed; using the files on disk: %s", exc)
+            return export_report_page(report_dir=report_dir, model_dir=model_dir,
+                                      request_id=request_id, view_name=view_name)
+
+    def restore_page(self, saved: dict) -> dict:
+        """Write a saved page back into the project (see restore_report_page). Does NOT reload Desktop."""
+        report_dir, model_dir = self._project_dirs()
+        with self.lock:
+            if self.automation_enabled:
+                # Must succeed: the reload that follows would otherwise discard unsaved edits.
+                self.run_desktop_automation("prepare")
+            return restore_report_page(report_dir=report_dir, model_dir=model_dir, saved=saved)
 
     # reload_refresh: step 2. Called by chatbot_api.py on a background thread after the reply was sent
     # (and directly in one synchronous path). `generated` is build_page()'s result; its "model_table"

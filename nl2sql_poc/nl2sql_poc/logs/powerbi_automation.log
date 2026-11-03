@@ -617,3 +617,609 @@ at <ScriptBlock>, C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_
 at Refresh-LocalModelTable, C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_desktop_automation.ps1: line 402
 at <ScriptBlock>, C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_desktop_automation.ps1: line 573
 2026-11-03 07:49:02.416 [ERROR] [reload_refresh] [run 45576-68ac4894] Finish: FAILURE in 7799 ms
+2026-11-03 11:39:25.416 [INFO] [prepare] [run 10188-3b6dd2a7] Start: action='prepare' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='' timeoutSeconds=180 pid=10188 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 11:39:25.439 [INFO] [prepare] [run 10188-3b6dd2a7] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 11:39:25.462 [INFO] [prepare] [run 10188-3b6dd2a7] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 11:39:25.485 [INFO] [prepare] [run 10188-3b6dd2a7] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:39:25.811 [INFO] [prepare] [run 10188-3b6dd2a7] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 323 ms
+2026-11-03 11:39:25.821 [INFO] [prepare] [run 10188-3b6dd2a7] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 11:39:25.825 [INFO] [prepare] [run 10188-3b6dd2a7] Find-TargetDesktop: 1 matching window(s) after 372 ms
+2026-11-03 11:39:25.829 [INFO] [prepare] [run 10188-3b6dd2a7] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=True
+2026-11-03 11:39:25.830 [INFO] [prepare] [run 10188-3b6dd2a7] Step: save Desktop if dirty
+2026-11-03 11:39:25.844 [INFO] [prepare] [run 10188-3b6dd2a7] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:39:25.847 [INFO] [prepare] [run 10188-3b6dd2a7] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 3 ms
+2026-11-03 11:39:25.850 [INFO] [prepare] [run 10188-3b6dd2a7] Save-DesktopIfDirty: Desktop has unsaved changes (file 'C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 11:39:26.003 [INFO] [prepare] [run 10188-3b6dd2a7] Find-SaveButton: UI Automation found 1 top-level window(s) for PID 44400
+2026-11-03 11:39:26.301 [INFO] [prepare] [run 10188-3b6dd2a7] Find-SaveButton: found enabled on-screen Save button in window 'billing_POC'
+2026-11-03 11:39:26.306 [INFO] [prepare] [run 10188-3b6dd2a7] Save-DesktopIfDirty: invoking Save button via UI Automation InvokePattern
+2026-11-03 11:39:26.330 [INFO] [prepare] [run 10188-3b6dd2a7] Save-DesktopIfDirty: polling application state every 400 ms for up to 180 s until hasUnsavedChanges is false
+2026-11-03 11:39:26.751 [INFO] [prepare] [run 10188-3b6dd2a7] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:39:26.775 [WARNING] [prepare] [run 10188-3b6dd2a7] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 20 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 11:39:26.778 [WARNING] [prepare] [run 10188-3b6dd2a7] Save-DesktopIfDirty: poll 1 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 11:39:27.194 [INFO] [prepare] [run 10188-3b6dd2a7] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:39:27.198 [WARNING] [prepare] [run 10188-3b6dd2a7] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 3 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 11:39:27.199 [WARNING] [prepare] [run 10188-3b6dd2a7] Save-DesktopIfDirty: poll 2 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 11:39:27.603 [INFO] [prepare] [run 10188-3b6dd2a7] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:39:27.627 [WARNING] [prepare] [run 10188-3b6dd2a7] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 23 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 11:39:27.629 [WARNING] [prepare] [run 10188-3b6dd2a7] Save-DesktopIfDirty: poll 3 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 11:39:28.043 [INFO] [prepare] [run 10188-3b6dd2a7] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:39:28.133 [INFO] [prepare] [run 10188-3b6dd2a7] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 90 ms
+2026-11-03 11:39:28.134 [INFO] [prepare] [run 10188-3b6dd2a7] Save-DesktopIfDirty: save confirmed after 4 poll(s), 1805 ms
+2026-11-03 11:39:28.137 [INFO] [prepare] [run 10188-3b6dd2a7] Step: save result attempted=True saved=True: Saved pending Desktop changes before modifying project files.
+2026-11-03 11:39:28.137 [INFO] [prepare] [run 10188-3b6dd2a7] Finish: SUCCESS in 2791 ms
+2026-11-03 11:39:30.696 [INFO] [reload_refresh] [run 31532-bbfddab0] Start: action='reload_refresh' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='billing vw_payments_by_status_2025_20261103_7ffffb77a8c9' timeoutSeconds=180 pid=31532 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 11:39:30.706 [INFO] [reload_refresh] [run 31532-bbfddab0] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 11:39:30.726 [INFO] [reload_refresh] [run 31532-bbfddab0] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 11:39:30.744 [INFO] [reload_refresh] [run 31532-bbfddab0] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:39:30.872 [INFO] [reload_refresh] [run 31532-bbfddab0] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 126 ms
+2026-11-03 11:39:30.879 [INFO] [reload_refresh] [run 31532-bbfddab0] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 11:39:30.883 [INFO] [reload_refresh] [run 31532-bbfddab0] Find-TargetDesktop: 1 matching window(s) after 165 ms
+2026-11-03 11:39:30.887 [INFO] [reload_refresh] [run 31532-bbfddab0] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=False
+2026-11-03 11:39:30.888 [INFO] [reload_refresh] [run 31532-bbfddab0] Step: re-checking Desktop state before reload
+2026-11-03 11:39:30.889 [INFO] [reload_refresh] [run 31532-bbfddab0] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:39:30.949 [INFO] [reload_refresh] [run 31532-bbfddab0] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 59 ms
+2026-11-03 11:39:30.950 [INFO] [reload_refresh] [run 31532-bbfddab0] Step: fresh state hasUnsavedChanges=False
+2026-11-03 11:39:30.951 [INFO] [reload_refresh] [run 31532-bbfddab0] Step: reloading project via Bridge file.reload/v1 (reloadModelDefinition=true)
+2026-11-03 11:39:30.957 [INFO] [reload_refresh] [run 31532-bbfddab0] Invoke-Bridge: calling 'file.reload/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [reloadModelDefinition])
+2026-11-03 11:39:34.701 [INFO] [reload_refresh] [run 31532-bbfddab0] Invoke-Bridge: 'file.reload/v1' on PID 44400 succeeded in 3743 ms
+2026-11-03 11:39:34.706 [INFO] [reload_refresh] [run 31532-bbfddab0] Step: reload returned in 3755 ms; waiting 2 s before table refresh
+2026-11-03 11:39:36.711 [INFO] [reload_refresh] [run 31532-bbfddab0] Step: refreshing table 'billing vw_payments_by_status_2025_20261103_7ffffb77a8c9' through local Analysis Services
+2026-11-03 11:39:36.747 [INFO] [reload_refresh] [run 31532-bbfddab0] Refresh-LocalModelTable: Desktop executable 'C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin\pbidesktop.exe'
+2026-11-03 11:39:36.754 [WARNING] [reload_refresh] [run 31532-bbfddab0] Refresh-LocalModelTable: Tabular DLL not next to executable; trying Program Files fallbacks
+2026-11-03 11:39:36.764 [WARNING] [reload_refresh] [run 31532-bbfddab0] Refresh-LocalModelTable: Tabular DLL not in Program Files; searching package folder recursively
+2026-11-03 11:39:37.281 [ERROR] [reload_refresh] [run 31532-bbfddab0] Failure: Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder.
+at Refresh-LocalModelTable, C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_desktop_automation.ps1: line 402
+at <ScriptBlock>, C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_desktop_automation.ps1: line 573
+2026-11-03 11:39:37.283 [ERROR] [reload_refresh] [run 31532-bbfddab0] Finish: FAILURE in 6639 ms
+2026-11-03 11:39:51.580 [INFO] [prepare] [run 45832-9021490f] Start: action='prepare' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='' timeoutSeconds=180 pid=45832 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 11:39:51.591 [INFO] [prepare] [run 45832-9021490f] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 11:39:51.608 [INFO] [prepare] [run 45832-9021490f] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 11:39:51.624 [INFO] [prepare] [run 45832-9021490f] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:39:51.704 [INFO] [prepare] [run 45832-9021490f] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 76 ms
+2026-11-03 11:39:51.710 [INFO] [prepare] [run 45832-9021490f] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 11:39:51.712 [INFO] [prepare] [run 45832-9021490f] Find-TargetDesktop: 1 matching window(s) after 113 ms
+2026-11-03 11:39:51.717 [INFO] [prepare] [run 45832-9021490f] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=True
+2026-11-03 11:39:51.718 [INFO] [prepare] [run 45832-9021490f] Step: save Desktop if dirty
+2026-11-03 11:39:51.726 [INFO] [prepare] [run 45832-9021490f] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:39:51.729 [INFO] [prepare] [run 45832-9021490f] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 2 ms
+2026-11-03 11:39:51.732 [INFO] [prepare] [run 45832-9021490f] Save-DesktopIfDirty: Desktop has unsaved changes (file 'C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 11:39:51.863 [INFO] [prepare] [run 45832-9021490f] Find-SaveButton: UI Automation found 1 top-level window(s) for PID 44400
+2026-11-03 11:39:52.017 [INFO] [prepare] [run 45832-9021490f] Find-SaveButton: found enabled on-screen Save button in window 'billing_POC'
+2026-11-03 11:39:52.021 [INFO] [prepare] [run 45832-9021490f] Save-DesktopIfDirty: invoking Save button via UI Automation InvokePattern
+2026-11-03 11:39:52.046 [INFO] [prepare] [run 45832-9021490f] Save-DesktopIfDirty: polling application state every 400 ms for up to 180 s until hasUnsavedChanges is false
+2026-11-03 11:39:52.468 [INFO] [prepare] [run 45832-9021490f] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:39:52.479 [WARNING] [prepare] [run 45832-9021490f] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 7 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 11:39:52.481 [WARNING] [prepare] [run 45832-9021490f] Save-DesktopIfDirty: poll 1 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 11:39:52.892 [INFO] [prepare] [run 45832-9021490f] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:39:52.896 [WARNING] [prepare] [run 45832-9021490f] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 3 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 11:39:52.897 [WARNING] [prepare] [run 45832-9021490f] Save-DesktopIfDirty: poll 2 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 11:39:53.302 [INFO] [prepare] [run 45832-9021490f] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:39:53.325 [WARNING] [prepare] [run 45832-9021490f] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 21 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 11:39:53.326 [WARNING] [prepare] [run 45832-9021490f] Save-DesktopIfDirty: poll 3 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 11:39:53.734 [INFO] [prepare] [run 45832-9021490f] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:39:53.806 [INFO] [prepare] [run 45832-9021490f] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 71 ms
+2026-11-03 11:39:53.807 [INFO] [prepare] [run 45832-9021490f] Save-DesktopIfDirty: save confirmed after 4 poll(s), 1762 ms
+2026-11-03 11:39:53.809 [INFO] [prepare] [run 45832-9021490f] Step: save result attempted=True saved=True: Saved pending Desktop changes before modifying project files.
+2026-11-03 11:39:53.810 [INFO] [prepare] [run 45832-9021490f] Finish: SUCCESS in 2280 ms
+2026-11-03 11:41:49.075 [INFO] [prepare] [run 30448-c8a10609] Start: action='prepare' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='' timeoutSeconds=180 pid=30448 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 11:41:49.085 [INFO] [prepare] [run 30448-c8a10609] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 11:41:49.102 [INFO] [prepare] [run 30448-c8a10609] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 11:41:49.118 [INFO] [prepare] [run 30448-c8a10609] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:41:49.246 [INFO] [prepare] [run 30448-c8a10609] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 125 ms
+2026-11-03 11:41:49.253 [INFO] [prepare] [run 30448-c8a10609] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 11:41:49.258 [INFO] [prepare] [run 30448-c8a10609] Find-TargetDesktop: 1 matching window(s) after 164 ms
+2026-11-03 11:41:49.261 [INFO] [prepare] [run 30448-c8a10609] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=True
+2026-11-03 11:41:49.262 [INFO] [prepare] [run 30448-c8a10609] Step: save Desktop if dirty
+2026-11-03 11:41:49.269 [INFO] [prepare] [run 30448-c8a10609] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:41:49.381 [INFO] [prepare] [run 30448-c8a10609] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 58 ms
+2026-11-03 11:41:49.385 [INFO] [prepare] [run 30448-c8a10609] Save-DesktopIfDirty: Desktop has unsaved changes (file 'C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 11:41:49.469 [INFO] [prepare] [run 30448-c8a10609] Find-SaveButton: UI Automation found 1 top-level window(s) for PID 44400
+2026-11-03 11:41:49.624 [INFO] [prepare] [run 30448-c8a10609] Find-SaveButton: found enabled on-screen Save button in window 'billing_POC'
+2026-11-03 11:41:49.628 [INFO] [prepare] [run 30448-c8a10609] Save-DesktopIfDirty: invoking Save button via UI Automation InvokePattern
+2026-11-03 11:41:49.644 [INFO] [prepare] [run 30448-c8a10609] Save-DesktopIfDirty: polling application state every 400 ms for up to 180 s until hasUnsavedChanges is false
+2026-11-03 11:41:50.057 [INFO] [prepare] [run 30448-c8a10609] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:41:50.116 [INFO] [prepare] [run 30448-c8a10609] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 57 ms
+2026-11-03 11:41:50.116 [INFO] [prepare] [run 30448-c8a10609] Save-DesktopIfDirty: save confirmed after 1 poll(s), 472 ms
+2026-11-03 11:41:50.119 [INFO] [prepare] [run 30448-c8a10609] Step: save result attempted=True saved=True: Saved pending Desktop changes before modifying project files.
+2026-11-03 11:41:50.119 [INFO] [prepare] [run 30448-c8a10609] Finish: SUCCESS in 1095 ms
+2026-11-03 11:42:28.910 [INFO] [prepare] [run 32036-8d7d4111] Start: action='prepare' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='' timeoutSeconds=180 pid=32036 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 11:42:28.919 [INFO] [prepare] [run 32036-8d7d4111] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 11:42:28.938 [INFO] [prepare] [run 32036-8d7d4111] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 11:42:28.954 [INFO] [prepare] [run 32036-8d7d4111] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:42:29.084 [INFO] [prepare] [run 32036-8d7d4111] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 126 ms
+2026-11-03 11:42:29.090 [INFO] [prepare] [run 32036-8d7d4111] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 11:42:29.093 [INFO] [prepare] [run 32036-8d7d4111] Find-TargetDesktop: 1 matching window(s) after 164 ms
+2026-11-03 11:42:29.098 [INFO] [prepare] [run 32036-8d7d4111] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=True
+2026-11-03 11:42:29.099 [INFO] [prepare] [run 32036-8d7d4111] Step: save Desktop if dirty
+2026-11-03 11:42:29.106 [INFO] [prepare] [run 32036-8d7d4111] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:42:29.166 [INFO] [prepare] [run 32036-8d7d4111] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 59 ms
+2026-11-03 11:42:29.169 [INFO] [prepare] [run 32036-8d7d4111] Save-DesktopIfDirty: Desktop has unsaved changes (file 'C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 11:42:29.246 [INFO] [prepare] [run 32036-8d7d4111] Find-SaveButton: UI Automation found 1 top-level window(s) for PID 44400
+2026-11-03 11:42:29.394 [INFO] [prepare] [run 32036-8d7d4111] Find-SaveButton: found enabled on-screen Save button in window 'billing_POC'
+2026-11-03 11:42:29.398 [INFO] [prepare] [run 32036-8d7d4111] Save-DesktopIfDirty: invoking Save button via UI Automation InvokePattern
+2026-11-03 11:42:29.422 [INFO] [prepare] [run 32036-8d7d4111] Save-DesktopIfDirty: polling application state every 400 ms for up to 180 s until hasUnsavedChanges is false
+2026-11-03 11:42:29.839 [INFO] [prepare] [run 32036-8d7d4111] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:42:29.853 [WARNING] [prepare] [run 32036-8d7d4111] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 12 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 11:42:29.856 [WARNING] [prepare] [run 32036-8d7d4111] Save-DesktopIfDirty: poll 1 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 11:42:30.271 [INFO] [prepare] [run 32036-8d7d4111] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:42:30.330 [INFO] [prepare] [run 32036-8d7d4111] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 59 ms
+2026-11-03 11:42:30.332 [INFO] [prepare] [run 32036-8d7d4111] Save-DesktopIfDirty: save confirmed after 2 poll(s), 910 ms
+2026-11-03 11:42:30.334 [INFO] [prepare] [run 32036-8d7d4111] Step: save result attempted=True saved=True: Saved pending Desktop changes before modifying project files.
+2026-11-03 11:42:30.335 [INFO] [prepare] [run 32036-8d7d4111] Finish: SUCCESS in 1476 ms
+2026-11-03 11:42:32.697 [INFO] [reload_refresh] [run 36596-ead0af09] Start: action='reload_refresh' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='billing vw_payments_by_status_2025_20261103_7ffffb77a8c9' timeoutSeconds=180 pid=36596 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 11:42:32.707 [INFO] [reload_refresh] [run 36596-ead0af09] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 11:42:32.724 [INFO] [reload_refresh] [run 36596-ead0af09] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 11:42:32.742 [INFO] [reload_refresh] [run 36596-ead0af09] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:42:32.869 [INFO] [reload_refresh] [run 36596-ead0af09] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 125 ms
+2026-11-03 11:42:32.876 [INFO] [reload_refresh] [run 36596-ead0af09] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 11:42:32.879 [INFO] [reload_refresh] [run 36596-ead0af09] Find-TargetDesktop: 1 matching window(s) after 162 ms
+2026-11-03 11:42:32.883 [INFO] [reload_refresh] [run 36596-ead0af09] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=False
+2026-11-03 11:42:32.884 [INFO] [reload_refresh] [run 36596-ead0af09] Step: re-checking Desktop state before reload
+2026-11-03 11:42:32.885 [INFO] [reload_refresh] [run 36596-ead0af09] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 11:42:32.947 [INFO] [reload_refresh] [run 36596-ead0af09] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 61 ms
+2026-11-03 11:42:32.948 [INFO] [reload_refresh] [run 36596-ead0af09] Step: fresh state hasUnsavedChanges=False
+2026-11-03 11:42:32.948 [INFO] [reload_refresh] [run 36596-ead0af09] Step: reloading project via Bridge file.reload/v1 (reloadModelDefinition=true)
+2026-11-03 11:42:32.951 [INFO] [reload_refresh] [run 36596-ead0af09] Invoke-Bridge: calling 'file.reload/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [reloadModelDefinition])
+2026-11-03 11:42:34.866 [INFO] [reload_refresh] [run 36596-ead0af09] Invoke-Bridge: 'file.reload/v1' on PID 44400 succeeded in 1915 ms
+2026-11-03 11:42:34.872 [INFO] [reload_refresh] [run 36596-ead0af09] Step: reload returned in 1923 ms; waiting 2 s before table refresh
+2026-11-03 11:42:36.886 [INFO] [reload_refresh] [run 36596-ead0af09] Step: refreshing table 'billing vw_payments_by_status_2025_20261103_7ffffb77a8c9' through local Analysis Services
+2026-11-03 11:42:36.915 [INFO] [reload_refresh] [run 36596-ead0af09] Refresh-LocalModelTable: Desktop executable 'C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin\pbidesktop.exe'
+2026-11-03 11:42:36.918 [WARNING] [reload_refresh] [run 36596-ead0af09] Refresh-LocalModelTable: Tabular DLL not next to executable; trying Program Files fallbacks
+2026-11-03 11:42:36.925 [WARNING] [reload_refresh] [run 36596-ead0af09] Refresh-LocalModelTable: Tabular DLL not in Program Files; searching package folder recursively
+2026-11-03 11:42:37.264 [ERROR] [reload_refresh] [run 36596-ead0af09] Failure: Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder.
+at Refresh-LocalModelTable, C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_desktop_automation.ps1: line 402
+at <ScriptBlock>, C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_desktop_automation.ps1: line 573
+2026-11-03 11:42:37.265 [ERROR] [reload_refresh] [run 36596-ead0af09] Finish: FAILURE in 4621 ms
+2026-11-03 12:16:06.696 [INFO] [prepare] [run 3984-e0698fe6] Start: action='prepare' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='' timeoutSeconds=180 pid=3984 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 12:16:06.709 [INFO] [prepare] [run 3984-e0698fe6] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 12:16:06.732 [INFO] [prepare] [run 3984-e0698fe6] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 12:16:06.752 [INFO] [prepare] [run 3984-e0698fe6] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:16:06.900 [INFO] [prepare] [run 3984-e0698fe6] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 145 ms
+2026-11-03 12:16:06.908 [INFO] [prepare] [run 3984-e0698fe6] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 12:16:06.911 [INFO] [prepare] [run 3984-e0698fe6] Find-TargetDesktop: 1 matching window(s) after 191 ms
+2026-11-03 12:16:06.917 [INFO] [prepare] [run 3984-e0698fe6] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=True
+2026-11-03 12:16:06.919 [INFO] [prepare] [run 3984-e0698fe6] Step: save Desktop if dirty
+2026-11-03 12:16:06.928 [INFO] [prepare] [run 3984-e0698fe6] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:16:06.990 [INFO] [prepare] [run 3984-e0698fe6] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 61 ms
+2026-11-03 12:16:06.993 [INFO] [prepare] [run 3984-e0698fe6] Save-DesktopIfDirty: Desktop has unsaved changes (file 'C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 12:16:07.114 [INFO] [prepare] [run 3984-e0698fe6] Find-SaveButton: UI Automation found 1 top-level window(s) for PID 44400
+2026-11-03 12:16:07.295 [INFO] [prepare] [run 3984-e0698fe6] Find-SaveButton: found enabled on-screen Save button in window 'billing_POC'
+2026-11-03 12:16:07.301 [INFO] [prepare] [run 3984-e0698fe6] Save-DesktopIfDirty: invoking Save button via UI Automation InvokePattern
+2026-11-03 12:16:07.317 [INFO] [prepare] [run 3984-e0698fe6] Save-DesktopIfDirty: polling application state every 400 ms for up to 180 s until hasUnsavedChanges is false
+2026-11-03 12:16:07.731 [INFO] [prepare] [run 3984-e0698fe6] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:16:07.743 [WARNING] [prepare] [run 3984-e0698fe6] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 9 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 12:16:07.745 [WARNING] [prepare] [run 3984-e0698fe6] Save-DesktopIfDirty: poll 1 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 12:16:08.156 [INFO] [prepare] [run 3984-e0698fe6] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:16:08.224 [INFO] [prepare] [run 3984-e0698fe6] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 66 ms
+2026-11-03 12:16:08.224 [INFO] [prepare] [run 3984-e0698fe6] Save-DesktopIfDirty: save confirmed after 2 poll(s), 909 ms
+2026-11-03 12:16:08.226 [INFO] [prepare] [run 3984-e0698fe6] Step: save result attempted=True saved=True: Saved pending Desktop changes before modifying project files.
+2026-11-03 12:16:08.227 [INFO] [prepare] [run 3984-e0698fe6] Finish: SUCCESS in 1599 ms
+2026-11-03 12:16:10.933 [INFO] [reload_refresh] [run 3980-5eb2bea7] Start: action='reload_refresh' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='billing vw_daily_transactions_20261103_e16dd38647b9' timeoutSeconds=180 pid=3980 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 12:16:10.943 [INFO] [reload_refresh] [run 3980-5eb2bea7] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 12:16:10.962 [INFO] [reload_refresh] [run 3980-5eb2bea7] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 12:16:10.980 [INFO] [reload_refresh] [run 3980-5eb2bea7] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:16:11.120 [INFO] [reload_refresh] [run 3980-5eb2bea7] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 137 ms
+2026-11-03 12:16:11.128 [INFO] [reload_refresh] [run 3980-5eb2bea7] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 12:16:11.131 [INFO] [reload_refresh] [run 3980-5eb2bea7] Find-TargetDesktop: 1 matching window(s) after 179 ms
+2026-11-03 12:16:11.135 [INFO] [reload_refresh] [run 3980-5eb2bea7] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=False
+2026-11-03 12:16:11.136 [INFO] [reload_refresh] [run 3980-5eb2bea7] Step: re-checking Desktop state before reload
+2026-11-03 12:16:11.137 [INFO] [reload_refresh] [run 3980-5eb2bea7] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:16:11.202 [INFO] [reload_refresh] [run 3980-5eb2bea7] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 64 ms
+2026-11-03 12:16:11.202 [INFO] [reload_refresh] [run 3980-5eb2bea7] Step: fresh state hasUnsavedChanges=False
+2026-11-03 12:16:11.203 [INFO] [reload_refresh] [run 3980-5eb2bea7] Step: reloading project via Bridge file.reload/v1 (reloadModelDefinition=true)
+2026-11-03 12:16:11.206 [INFO] [reload_refresh] [run 3980-5eb2bea7] Invoke-Bridge: calling 'file.reload/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [reloadModelDefinition])
+2026-11-03 12:16:13.721 [INFO] [reload_refresh] [run 3980-5eb2bea7] Invoke-Bridge: 'file.reload/v1' on PID 44400 succeeded in 2514 ms
+2026-11-03 12:16:13.731 [INFO] [reload_refresh] [run 3980-5eb2bea7] Step: reload returned in 2528 ms; waiting 2 s before table refresh
+2026-11-03 12:16:15.804 [INFO] [reload_refresh] [run 3980-5eb2bea7] Step: refreshing table 'billing vw_daily_transactions_20261103_e16dd38647b9' through local Analysis Services
+2026-11-03 12:16:15.953 [INFO] [reload_refresh] [run 3980-5eb2bea7] Refresh-LocalModelTable: Desktop executable 'C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin\pbidesktop.exe'
+2026-11-03 12:16:15.967 [WARNING] [reload_refresh] [run 3980-5eb2bea7] Refresh-LocalModelTable: Tabular DLL not next to executable; trying Program Files fallbacks
+2026-11-03 12:16:15.989 [WARNING] [reload_refresh] [run 3980-5eb2bea7] Refresh-LocalModelTable: Tabular DLL not in Program Files; searching package folder recursively
+2026-11-03 12:16:16.419 [ERROR] [reload_refresh] [run 3980-5eb2bea7] Failure: Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder.
+at Refresh-LocalModelTable, C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_desktop_automation.ps1: line 402
+at <ScriptBlock>, C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_desktop_automation.ps1: line 573
+2026-11-03 12:16:16.419 [ERROR] [reload_refresh] [run 3980-5eb2bea7] Finish: FAILURE in 5540 ms
+2026-11-03 12:41:30.760 [INFO] [prepare] [run 31928-42beca5b] Start: action='prepare' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='' timeoutSeconds=180 pid=31928 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 12:41:30.770 [INFO] [prepare] [run 31928-42beca5b] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 12:41:30.792 [INFO] [prepare] [run 31928-42beca5b] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 12:41:30.810 [INFO] [prepare] [run 31928-42beca5b] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:41:30.896 [INFO] [prepare] [run 31928-42beca5b] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 83 ms
+2026-11-03 12:41:30.905 [INFO] [prepare] [run 31928-42beca5b] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 12:41:30.910 [INFO] [prepare] [run 31928-42beca5b] Find-TargetDesktop: 1 matching window(s) after 129 ms
+2026-11-03 12:41:30.915 [INFO] [prepare] [run 31928-42beca5b] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=True
+2026-11-03 12:41:30.918 [INFO] [prepare] [run 31928-42beca5b] Step: save Desktop if dirty
+2026-11-03 12:41:30.926 [INFO] [prepare] [run 31928-42beca5b] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:41:30.929 [INFO] [prepare] [run 31928-42beca5b] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 3 ms
+2026-11-03 12:41:30.931 [INFO] [prepare] [run 31928-42beca5b] Save-DesktopIfDirty: Desktop has unsaved changes (file 'C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 12:41:31.026 [INFO] [prepare] [run 31928-42beca5b] Find-SaveButton: UI Automation found 1 top-level window(s) for PID 44400
+2026-11-03 12:41:31.187 [INFO] [prepare] [run 31928-42beca5b] Find-SaveButton: found enabled on-screen Save button in window 'billing_POC'
+2026-11-03 12:41:31.193 [INFO] [prepare] [run 31928-42beca5b] Save-DesktopIfDirty: invoking Save button via UI Automation InvokePattern
+2026-11-03 12:41:31.212 [INFO] [prepare] [run 31928-42beca5b] Save-DesktopIfDirty: polling application state every 400 ms for up to 180 s until hasUnsavedChanges is false
+2026-11-03 12:41:31.625 [INFO] [prepare] [run 31928-42beca5b] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:41:31.636 [WARNING] [prepare] [run 31928-42beca5b] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 8 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 12:41:31.638 [WARNING] [prepare] [run 31928-42beca5b] Save-DesktopIfDirty: poll 1 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 12:41:32.039 [INFO] [prepare] [run 31928-42beca5b] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:41:32.046 [WARNING] [prepare] [run 31928-42beca5b] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 5 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 12:41:32.047 [WARNING] [prepare] [run 31928-42beca5b] Save-DesktopIfDirty: poll 2 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 12:41:32.450 [INFO] [prepare] [run 31928-42beca5b] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:41:32.521 [INFO] [prepare] [run 31928-42beca5b] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 70 ms
+2026-11-03 12:41:32.522 [INFO] [prepare] [run 31928-42beca5b] Save-DesktopIfDirty: save confirmed after 3 poll(s), 1309 ms
+2026-11-03 12:41:32.525 [INFO] [prepare] [run 31928-42beca5b] Step: save result attempted=True saved=True: Saved pending Desktop changes before modifying project files.
+2026-11-03 12:41:32.525 [INFO] [prepare] [run 31928-42beca5b] Finish: SUCCESS in 1824 ms
+2026-11-03 12:41:35.386 [INFO] [reload_refresh] [run 9072-3c6a2ae1] Start: action='reload_refresh' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='billing vw_overall_decline_rate_20261103_9b9d4c399247' timeoutSeconds=180 pid=9072 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 12:41:35.399 [INFO] [reload_refresh] [run 9072-3c6a2ae1] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 12:41:35.419 [INFO] [reload_refresh] [run 9072-3c6a2ae1] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 12:41:35.438 [INFO] [reload_refresh] [run 9072-3c6a2ae1] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:41:35.611 [INFO] [reload_refresh] [run 9072-3c6a2ae1] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 169 ms
+2026-11-03 12:41:35.619 [INFO] [reload_refresh] [run 9072-3c6a2ae1] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 12:41:35.622 [INFO] [reload_refresh] [run 9072-3c6a2ae1] Find-TargetDesktop: 1 matching window(s) after 213 ms
+2026-11-03 12:41:35.627 [INFO] [reload_refresh] [run 9072-3c6a2ae1] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=False
+2026-11-03 12:41:35.628 [INFO] [reload_refresh] [run 9072-3c6a2ae1] Step: re-checking Desktop state before reload
+2026-11-03 12:41:35.629 [INFO] [reload_refresh] [run 9072-3c6a2ae1] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:41:35.703 [INFO] [reload_refresh] [run 9072-3c6a2ae1] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 73 ms
+2026-11-03 12:41:35.703 [INFO] [reload_refresh] [run 9072-3c6a2ae1] Step: fresh state hasUnsavedChanges=False
+2026-11-03 12:41:35.704 [INFO] [reload_refresh] [run 9072-3c6a2ae1] Step: reloading project via Bridge file.reload/v1 (reloadModelDefinition=true)
+2026-11-03 12:41:35.707 [INFO] [reload_refresh] [run 9072-3c6a2ae1] Invoke-Bridge: calling 'file.reload/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [reloadModelDefinition])
+2026-11-03 12:41:38.337 [INFO] [reload_refresh] [run 9072-3c6a2ae1] Invoke-Bridge: 'file.reload/v1' on PID 44400 succeeded in 2630 ms
+2026-11-03 12:41:38.353 [INFO] [reload_refresh] [run 9072-3c6a2ae1] Step: reload returned in 2649 ms; waiting 2 s before table refresh
+2026-11-03 12:41:40.361 [INFO] [reload_refresh] [run 9072-3c6a2ae1] Step: refreshing table 'billing vw_overall_decline_rate_20261103_9b9d4c399247' through local Analysis Services
+2026-11-03 12:41:40.393 [INFO] [reload_refresh] [run 9072-3c6a2ae1] Refresh-LocalModelTable: Desktop executable 'C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin\pbidesktop.exe'
+2026-11-03 12:41:40.401 [WARNING] [reload_refresh] [run 9072-3c6a2ae1] Refresh-LocalModelTable: Tabular DLL not next to executable; trying Program Files fallbacks
+2026-11-03 12:41:40.433 [WARNING] [reload_refresh] [run 9072-3c6a2ae1] Refresh-LocalModelTable: Tabular DLL not in Program Files; searching package folder recursively
+2026-11-03 12:41:40.947 [ERROR] [reload_refresh] [run 9072-3c6a2ae1] Failure: Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder.
+at Refresh-LocalModelTable, C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_desktop_automation.ps1: line 402
+at <ScriptBlock>, C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_desktop_automation.ps1: line 573
+2026-11-03 12:41:40.950 [ERROR] [reload_refresh] [run 9072-3c6a2ae1] Finish: FAILURE in 5622 ms
+2026-11-03 12:42:38.822 [INFO] [prepare] [run 3112-68b0d0a8] Start: action='prepare' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='' timeoutSeconds=180 pid=3112 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 12:42:38.835 [INFO] [prepare] [run 3112-68b0d0a8] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 12:42:38.854 [INFO] [prepare] [run 3112-68b0d0a8] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 12:42:38.872 [INFO] [prepare] [run 3112-68b0d0a8] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:42:38.956 [INFO] [prepare] [run 3112-68b0d0a8] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 79 ms
+2026-11-03 12:42:38.963 [INFO] [prepare] [run 3112-68b0d0a8] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 12:42:38.967 [INFO] [prepare] [run 3112-68b0d0a8] Find-TargetDesktop: 1 matching window(s) after 122 ms
+2026-11-03 12:42:38.970 [INFO] [prepare] [run 3112-68b0d0a8] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=True
+2026-11-03 12:42:38.971 [INFO] [prepare] [run 3112-68b0d0a8] Step: save Desktop if dirty
+2026-11-03 12:42:38.980 [INFO] [prepare] [run 3112-68b0d0a8] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:42:38.985 [INFO] [prepare] [run 3112-68b0d0a8] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 3 ms
+2026-11-03 12:42:38.987 [INFO] [prepare] [run 3112-68b0d0a8] Save-DesktopIfDirty: Desktop has unsaved changes (file 'C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 12:42:39.074 [INFO] [prepare] [run 3112-68b0d0a8] Find-SaveButton: UI Automation found 1 top-level window(s) for PID 44400
+2026-11-03 12:42:39.238 [INFO] [prepare] [run 3112-68b0d0a8] Find-SaveButton: found enabled on-screen Save button in window 'billing_POC'
+2026-11-03 12:42:39.244 [INFO] [prepare] [run 3112-68b0d0a8] Save-DesktopIfDirty: invoking Save button via UI Automation InvokePattern
+2026-11-03 12:42:39.263 [INFO] [prepare] [run 3112-68b0d0a8] Save-DesktopIfDirty: polling application state every 400 ms for up to 180 s until hasUnsavedChanges is false
+2026-11-03 12:42:39.683 [INFO] [prepare] [run 3112-68b0d0a8] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:42:39.693 [WARNING] [prepare] [run 3112-68b0d0a8] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 8 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 12:42:39.695 [WARNING] [prepare] [run 3112-68b0d0a8] Save-DesktopIfDirty: poll 1 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 12:42:40.103 [INFO] [prepare] [run 3112-68b0d0a8] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:42:40.108 [WARNING] [prepare] [run 3112-68b0d0a8] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 4 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 12:42:40.109 [WARNING] [prepare] [run 3112-68b0d0a8] Save-DesktopIfDirty: poll 2 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 12:42:40.512 [INFO] [prepare] [run 3112-68b0d0a8] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:42:40.537 [INFO] [prepare] [run 3112-68b0d0a8] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 24 ms
+2026-11-03 12:42:40.538 [INFO] [prepare] [run 3112-68b0d0a8] Save-DesktopIfDirty: save confirmed after 3 poll(s), 1276 ms
+2026-11-03 12:42:40.542 [INFO] [prepare] [run 3112-68b0d0a8] Step: save result attempted=True saved=True: Saved pending Desktop changes before modifying project files.
+2026-11-03 12:42:40.542 [INFO] [prepare] [run 3112-68b0d0a8] Finish: SUCCESS in 1805 ms
+2026-11-03 12:42:43.077 [INFO] [reload_refresh] [run 16972-fb36a278] Start: action='reload_refresh' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='billing vw_declined_transactions_by_reason_20261103_2fe10ce0aad7' timeoutSeconds=180 pid=16972 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 12:42:43.089 [INFO] [reload_refresh] [run 16972-fb36a278] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 12:42:43.109 [INFO] [reload_refresh] [run 16972-fb36a278] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 12:42:43.127 [INFO] [reload_refresh] [run 16972-fb36a278] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:42:43.271 [INFO] [reload_refresh] [run 16972-fb36a278] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 142 ms
+2026-11-03 12:42:43.279 [INFO] [reload_refresh] [run 16972-fb36a278] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 12:42:43.282 [INFO] [reload_refresh] [run 16972-fb36a278] Find-TargetDesktop: 1 matching window(s) after 183 ms
+2026-11-03 12:42:43.286 [INFO] [reload_refresh] [run 16972-fb36a278] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=False
+2026-11-03 12:42:43.287 [INFO] [reload_refresh] [run 16972-fb36a278] Step: re-checking Desktop state before reload
+2026-11-03 12:42:43.288 [INFO] [reload_refresh] [run 16972-fb36a278] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:42:43.359 [INFO] [reload_refresh] [run 16972-fb36a278] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 70 ms
+2026-11-03 12:42:43.360 [INFO] [reload_refresh] [run 16972-fb36a278] Step: fresh state hasUnsavedChanges=False
+2026-11-03 12:42:43.360 [INFO] [reload_refresh] [run 16972-fb36a278] Step: reloading project via Bridge file.reload/v1 (reloadModelDefinition=true)
+2026-11-03 12:42:43.363 [INFO] [reload_refresh] [run 16972-fb36a278] Invoke-Bridge: calling 'file.reload/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [reloadModelDefinition])
+2026-11-03 12:42:45.652 [INFO] [reload_refresh] [run 16972-fb36a278] Invoke-Bridge: 'file.reload/v1' on PID 44400 succeeded in 2289 ms
+2026-11-03 12:42:45.658 [INFO] [reload_refresh] [run 16972-fb36a278] Step: reload returned in 2298 ms; waiting 2 s before table refresh
+2026-11-03 12:42:47.668 [INFO] [reload_refresh] [run 16972-fb36a278] Step: refreshing table 'billing vw_declined_transactions_by_reason_20261103_2fe10ce0aad7' through local Analysis Services
+2026-11-03 12:42:47.760 [INFO] [reload_refresh] [run 16972-fb36a278] Refresh-LocalModelTable: Desktop executable 'C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin\pbidesktop.exe'
+2026-11-03 12:42:47.783 [WARNING] [reload_refresh] [run 16972-fb36a278] Refresh-LocalModelTable: Tabular DLL not next to executable; trying Program Files fallbacks
+2026-11-03 12:42:47.803 [WARNING] [reload_refresh] [run 16972-fb36a278] Refresh-LocalModelTable: Tabular DLL not in Program Files; searching package folder recursively
+2026-11-03 12:42:48.466 [ERROR] [reload_refresh] [run 16972-fb36a278] Failure: Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder.
+at Refresh-LocalModelTable, C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_desktop_automation.ps1: line 402
+at <ScriptBlock>, C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_desktop_automation.ps1: line 573
+2026-11-03 12:42:48.469 [ERROR] [reload_refresh] [run 16972-fb36a278] Finish: FAILURE in 5444 ms
+2026-11-03 12:43:00.240 [INFO] [prepare] [run 47196-abe6501c] Start: action='prepare' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='' timeoutSeconds=180 pid=47196 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 12:43:00.252 [INFO] [prepare] [run 47196-abe6501c] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 12:43:00.270 [INFO] [prepare] [run 47196-abe6501c] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 12:43:00.286 [INFO] [prepare] [run 47196-abe6501c] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:43:00.366 [INFO] [prepare] [run 47196-abe6501c] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 76 ms
+2026-11-03 12:43:00.373 [INFO] [prepare] [run 47196-abe6501c] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 12:43:00.377 [INFO] [prepare] [run 47196-abe6501c] Find-TargetDesktop: 1 matching window(s) after 115 ms
+2026-11-03 12:43:00.381 [INFO] [prepare] [run 47196-abe6501c] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=True
+2026-11-03 12:43:00.383 [INFO] [prepare] [run 47196-abe6501c] Step: save Desktop if dirty
+2026-11-03 12:43:00.390 [INFO] [prepare] [run 47196-abe6501c] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:43:00.394 [INFO] [prepare] [run 47196-abe6501c] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 3 ms
+2026-11-03 12:43:00.396 [INFO] [prepare] [run 47196-abe6501c] Save-DesktopIfDirty: Desktop has unsaved changes (file 'C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 12:43:00.479 [INFO] [prepare] [run 47196-abe6501c] Find-SaveButton: UI Automation found 1 top-level window(s) for PID 44400
+2026-11-03 12:43:00.641 [INFO] [prepare] [run 47196-abe6501c] Find-SaveButton: found enabled on-screen Save button in window 'billing_POC'
+2026-11-03 12:43:00.645 [INFO] [prepare] [run 47196-abe6501c] Save-DesktopIfDirty: invoking Save button via UI Automation InvokePattern
+2026-11-03 12:43:00.667 [INFO] [prepare] [run 47196-abe6501c] Save-DesktopIfDirty: polling application state every 400 ms for up to 180 s until hasUnsavedChanges is false
+2026-11-03 12:43:01.093 [INFO] [prepare] [run 47196-abe6501c] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:43:01.103 [WARNING] [prepare] [run 47196-abe6501c] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 8 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 12:43:01.107 [WARNING] [prepare] [run 47196-abe6501c] Save-DesktopIfDirty: poll 1 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 12:43:01.512 [INFO] [prepare] [run 47196-abe6501c] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:43:01.518 [WARNING] [prepare] [run 47196-abe6501c] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 5 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 12:43:01.519 [WARNING] [prepare] [run 47196-abe6501c] Save-DesktopIfDirty: poll 2 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 12:43:01.927 [INFO] [prepare] [run 47196-abe6501c] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:43:02.021 [INFO] [prepare] [run 47196-abe6501c] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 93 ms
+2026-11-03 12:43:02.022 [INFO] [prepare] [run 47196-abe6501c] Save-DesktopIfDirty: save confirmed after 3 poll(s), 1354 ms
+2026-11-03 12:43:02.024 [INFO] [prepare] [run 47196-abe6501c] Step: save result attempted=True saved=True: Saved pending Desktop changes before modifying project files.
+2026-11-03 12:43:02.025 [INFO] [prepare] [run 47196-abe6501c] Finish: SUCCESS in 1835 ms
+2026-11-03 12:43:23.706 [INFO] [prepare] [run 44852-91b549fe] Start: action='prepare' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='' timeoutSeconds=180 pid=44852 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 12:43:23.716 [INFO] [prepare] [run 44852-91b549fe] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 12:43:23.733 [INFO] [prepare] [run 44852-91b549fe] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 12:43:23.752 [INFO] [prepare] [run 44852-91b549fe] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:43:23.915 [INFO] [prepare] [run 44852-91b549fe] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 159 ms
+2026-11-03 12:43:23.923 [INFO] [prepare] [run 44852-91b549fe] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 12:43:23.925 [INFO] [prepare] [run 44852-91b549fe] Find-TargetDesktop: 1 matching window(s) after 201 ms
+2026-11-03 12:43:23.932 [INFO] [prepare] [run 44852-91b549fe] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=False
+2026-11-03 12:43:23.933 [INFO] [prepare] [run 44852-91b549fe] Step: save Desktop if dirty
+2026-11-03 12:43:23.941 [INFO] [prepare] [run 44852-91b549fe] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:43:23.998 [INFO] [prepare] [run 44852-91b549fe] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 56 ms
+2026-11-03 12:43:24.001 [INFO] [prepare] [run 44852-91b549fe] Save-DesktopIfDirty: no unsaved changes; save not needed
+2026-11-03 12:43:24.003 [INFO] [prepare] [run 44852-91b549fe] Step: save result attempted=False saved=True: No unsaved Desktop changes.
+2026-11-03 12:43:24.004 [INFO] [prepare] [run 44852-91b549fe] Finish: SUCCESS in 350 ms
+2026-11-03 12:44:07.818 [INFO] [prepare] [run 34660-e020b9cf] Start: action='prepare' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='' timeoutSeconds=180 pid=34660 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 12:44:07.828 [INFO] [prepare] [run 34660-e020b9cf] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 12:44:07.847 [INFO] [prepare] [run 34660-e020b9cf] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 12:44:07.864 [INFO] [prepare] [run 34660-e020b9cf] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:44:07.984 [INFO] [prepare] [run 34660-e020b9cf] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 116 ms
+2026-11-03 12:44:07.990 [INFO] [prepare] [run 34660-e020b9cf] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 12:44:07.993 [INFO] [prepare] [run 34660-e020b9cf] Find-TargetDesktop: 1 matching window(s) after 156 ms
+2026-11-03 12:44:07.999 [INFO] [prepare] [run 34660-e020b9cf] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=True
+2026-11-03 12:44:08.000 [INFO] [prepare] [run 34660-e020b9cf] Step: save Desktop if dirty
+2026-11-03 12:44:08.007 [INFO] [prepare] [run 34660-e020b9cf] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:44:08.062 [INFO] [prepare] [run 34660-e020b9cf] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 54 ms
+2026-11-03 12:44:08.065 [INFO] [prepare] [run 34660-e020b9cf] Save-DesktopIfDirty: Desktop has unsaved changes (file 'C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 12:44:08.161 [INFO] [prepare] [run 34660-e020b9cf] Find-SaveButton: UI Automation found 1 top-level window(s) for PID 44400
+2026-11-03 12:44:08.344 [INFO] [prepare] [run 34660-e020b9cf] Find-SaveButton: found enabled on-screen Save button in window 'billing_POC'
+2026-11-03 12:44:08.349 [INFO] [prepare] [run 34660-e020b9cf] Save-DesktopIfDirty: invoking Save button via UI Automation InvokePattern
+2026-11-03 12:44:08.364 [INFO] [prepare] [run 34660-e020b9cf] Save-DesktopIfDirty: polling application state every 400 ms for up to 180 s until hasUnsavedChanges is false
+2026-11-03 12:44:08.775 [INFO] [prepare] [run 34660-e020b9cf] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:44:08.805 [WARNING] [prepare] [run 34660-e020b9cf] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 25 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 12:44:08.808 [WARNING] [prepare] [run 34660-e020b9cf] Save-DesktopIfDirty: poll 1 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 12:44:09.211 [INFO] [prepare] [run 34660-e020b9cf] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:44:09.272 [INFO] [prepare] [run 34660-e020b9cf] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 59 ms
+2026-11-03 12:44:09.272 [INFO] [prepare] [run 34660-e020b9cf] Save-DesktopIfDirty: save confirmed after 2 poll(s), 909 ms
+2026-11-03 12:44:09.275 [INFO] [prepare] [run 34660-e020b9cf] Step: save result attempted=True saved=True: Saved pending Desktop changes before modifying project files.
+2026-11-03 12:44:09.275 [INFO] [prepare] [run 34660-e020b9cf] Finish: SUCCESS in 1507 ms
+2026-11-03 12:44:11.668 [INFO] [reload_refresh] [run 41524-0b3c89f3] Start: action='reload_refresh' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='billing vw_declined_transactions_by_reason_20261103_2fe10ce0aad7' timeoutSeconds=180 pid=41524 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 12:44:11.680 [INFO] [reload_refresh] [run 41524-0b3c89f3] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 12:44:11.699 [INFO] [reload_refresh] [run 41524-0b3c89f3] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 12:44:11.717 [INFO] [reload_refresh] [run 41524-0b3c89f3] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:44:11.847 [INFO] [reload_refresh] [run 41524-0b3c89f3] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 127 ms
+2026-11-03 12:44:11.858 [INFO] [reload_refresh] [run 41524-0b3c89f3] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 12:44:11.861 [INFO] [reload_refresh] [run 41524-0b3c89f3] Find-TargetDesktop: 1 matching window(s) after 170 ms
+2026-11-03 12:44:11.866 [INFO] [reload_refresh] [run 41524-0b3c89f3] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=False
+2026-11-03 12:44:11.867 [INFO] [reload_refresh] [run 41524-0b3c89f3] Step: re-checking Desktop state before reload
+2026-11-03 12:44:11.868 [INFO] [reload_refresh] [run 41524-0b3c89f3] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:44:11.924 [INFO] [reload_refresh] [run 41524-0b3c89f3] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 56 ms
+2026-11-03 12:44:11.925 [INFO] [reload_refresh] [run 41524-0b3c89f3] Step: fresh state hasUnsavedChanges=False
+2026-11-03 12:44:11.926 [INFO] [reload_refresh] [run 41524-0b3c89f3] Step: reloading project via Bridge file.reload/v1 (reloadModelDefinition=true)
+2026-11-03 12:44:11.931 [INFO] [reload_refresh] [run 41524-0b3c89f3] Invoke-Bridge: calling 'file.reload/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [reloadModelDefinition])
+2026-11-03 12:44:14.026 [INFO] [reload_refresh] [run 41524-0b3c89f3] Invoke-Bridge: 'file.reload/v1' on PID 44400 succeeded in 2095 ms
+2026-11-03 12:44:14.032 [INFO] [reload_refresh] [run 41524-0b3c89f3] Step: reload returned in 2106 ms; waiting 2 s before table refresh
+2026-11-03 12:44:16.036 [INFO] [reload_refresh] [run 41524-0b3c89f3] Step: refreshing table 'billing vw_declined_transactions_by_reason_20261103_2fe10ce0aad7' through local Analysis Services
+2026-11-03 12:44:16.071 [INFO] [reload_refresh] [run 41524-0b3c89f3] Refresh-LocalModelTable: Desktop executable 'C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin\pbidesktop.exe'
+2026-11-03 12:44:16.087 [WARNING] [reload_refresh] [run 41524-0b3c89f3] Refresh-LocalModelTable: Tabular DLL not next to executable; trying Program Files fallbacks
+2026-11-03 12:44:16.107 [WARNING] [reload_refresh] [run 41524-0b3c89f3] Refresh-LocalModelTable: Tabular DLL not in Program Files; searching package folder recursively
+2026-11-03 12:44:16.410 [ERROR] [reload_refresh] [run 41524-0b3c89f3] Failure: Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder.
+at Refresh-LocalModelTable, C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_desktop_automation.ps1: line 402
+at <ScriptBlock>, C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_desktop_automation.ps1: line 573
+2026-11-03 12:44:16.410 [ERROR] [reload_refresh] [run 41524-0b3c89f3] Finish: FAILURE in 4795 ms
+2026-11-03 12:44:49.292 [INFO] [prepare] [run 37344-e72f7987] Start: action='prepare' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='' timeoutSeconds=180 pid=37344 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 12:44:49.304 [INFO] [prepare] [run 37344-e72f7987] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 12:44:49.324 [INFO] [prepare] [run 37344-e72f7987] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 12:44:49.341 [INFO] [prepare] [run 37344-e72f7987] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:44:49.474 [INFO] [prepare] [run 37344-e72f7987] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 130 ms
+2026-11-03 12:44:49.482 [INFO] [prepare] [run 37344-e72f7987] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 12:44:49.484 [INFO] [prepare] [run 37344-e72f7987] Find-TargetDesktop: 1 matching window(s) after 170 ms
+2026-11-03 12:44:49.489 [INFO] [prepare] [run 37344-e72f7987] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=True
+2026-11-03 12:44:49.490 [INFO] [prepare] [run 37344-e72f7987] Step: save Desktop if dirty
+2026-11-03 12:44:49.498 [INFO] [prepare] [run 37344-e72f7987] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:44:49.561 [INFO] [prepare] [run 37344-e72f7987] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 63 ms
+2026-11-03 12:44:49.565 [INFO] [prepare] [run 37344-e72f7987] Save-DesktopIfDirty: Desktop has unsaved changes (file 'C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 12:44:49.649 [INFO] [prepare] [run 37344-e72f7987] Find-SaveButton: UI Automation found 1 top-level window(s) for PID 44400
+2026-11-03 12:44:49.834 [INFO] [prepare] [run 37344-e72f7987] Find-SaveButton: found enabled on-screen Save button in window 'billing_POC'
+2026-11-03 12:44:49.840 [INFO] [prepare] [run 37344-e72f7987] Save-DesktopIfDirty: invoking Save button via UI Automation InvokePattern
+2026-11-03 12:44:49.860 [INFO] [prepare] [run 37344-e72f7987] Save-DesktopIfDirty: polling application state every 400 ms for up to 180 s until hasUnsavedChanges is false
+2026-11-03 12:44:50.280 [INFO] [prepare] [run 37344-e72f7987] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:44:50.359 [INFO] [prepare] [run 37344-e72f7987] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 77 ms
+2026-11-03 12:44:50.360 [INFO] [prepare] [run 37344-e72f7987] Save-DesktopIfDirty: save confirmed after 1 poll(s), 500 ms
+2026-11-03 12:44:50.363 [INFO] [prepare] [run 37344-e72f7987] Step: save result attempted=True saved=True: Saved pending Desktop changes before modifying project files.
+2026-11-03 12:44:50.364 [INFO] [prepare] [run 37344-e72f7987] Finish: SUCCESS in 1129 ms
+2026-11-03 12:45:07.728 [INFO] [prepare] [run 11012-d5627d2f] Start: action='prepare' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='' timeoutSeconds=180 pid=11012 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 12:45:07.739 [INFO] [prepare] [run 11012-d5627d2f] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 12:45:07.758 [INFO] [prepare] [run 11012-d5627d2f] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 12:45:07.776 [INFO] [prepare] [run 11012-d5627d2f] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:45:07.931 [INFO] [prepare] [run 11012-d5627d2f] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 153 ms
+2026-11-03 12:45:07.940 [INFO] [prepare] [run 11012-d5627d2f] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 12:45:07.943 [INFO] [prepare] [run 11012-d5627d2f] Find-TargetDesktop: 1 matching window(s) after 194 ms
+2026-11-03 12:45:07.949 [INFO] [prepare] [run 11012-d5627d2f] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=True
+2026-11-03 12:45:07.950 [INFO] [prepare] [run 11012-d5627d2f] Step: save Desktop if dirty
+2026-11-03 12:45:07.958 [INFO] [prepare] [run 11012-d5627d2f] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:45:08.022 [INFO] [prepare] [run 11012-d5627d2f] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 64 ms
+2026-11-03 12:45:08.024 [INFO] [prepare] [run 11012-d5627d2f] Save-DesktopIfDirty: Desktop has unsaved changes (file 'C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 12:45:08.099 [INFO] [prepare] [run 11012-d5627d2f] Find-SaveButton: UI Automation found 1 top-level window(s) for PID 44400
+2026-11-03 12:45:08.254 [INFO] [prepare] [run 11012-d5627d2f] Find-SaveButton: found enabled on-screen Save button in window 'billing_POC'
+2026-11-03 12:45:08.257 [INFO] [prepare] [run 11012-d5627d2f] Save-DesktopIfDirty: invoking Save button via UI Automation InvokePattern
+2026-11-03 12:45:08.280 [INFO] [prepare] [run 11012-d5627d2f] Save-DesktopIfDirty: polling application state every 400 ms for up to 180 s until hasUnsavedChanges is false
+2026-11-03 12:45:08.700 [INFO] [prepare] [run 11012-d5627d2f] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:45:08.757 [INFO] [prepare] [run 11012-d5627d2f] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 57 ms
+2026-11-03 12:45:08.758 [INFO] [prepare] [run 11012-d5627d2f] Save-DesktopIfDirty: save confirmed after 1 poll(s), 482 ms
+2026-11-03 12:45:08.761 [INFO] [prepare] [run 11012-d5627d2f] Step: save result attempted=True saved=True: Saved pending Desktop changes before modifying project files.
+2026-11-03 12:45:08.762 [INFO] [prepare] [run 11012-d5627d2f] Finish: SUCCESS in 1088 ms
+2026-11-03 12:45:11.139 [INFO] [reload_refresh] [run 32568-302af31c] Start: action='reload_refresh' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='billing vw_payments_by_status_2025_20261103_7ffffb77a8c9' timeoutSeconds=180 pid=32568 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 12:45:11.150 [INFO] [reload_refresh] [run 32568-302af31c] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 12:45:11.169 [INFO] [reload_refresh] [run 32568-302af31c] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 12:45:11.188 [INFO] [reload_refresh] [run 32568-302af31c] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:45:11.321 [INFO] [reload_refresh] [run 32568-302af31c] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 129 ms
+2026-11-03 12:45:11.330 [INFO] [reload_refresh] [run 32568-302af31c] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 12:45:11.333 [INFO] [reload_refresh] [run 32568-302af31c] Find-TargetDesktop: 1 matching window(s) after 173 ms
+2026-11-03 12:45:11.338 [INFO] [reload_refresh] [run 32568-302af31c] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=False
+2026-11-03 12:45:11.340 [INFO] [reload_refresh] [run 32568-302af31c] Step: re-checking Desktop state before reload
+2026-11-03 12:45:11.340 [INFO] [reload_refresh] [run 32568-302af31c] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 12:45:11.399 [INFO] [reload_refresh] [run 32568-302af31c] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 58 ms
+2026-11-03 12:45:11.400 [INFO] [reload_refresh] [run 32568-302af31c] Step: fresh state hasUnsavedChanges=False
+2026-11-03 12:45:11.400 [INFO] [reload_refresh] [run 32568-302af31c] Step: reloading project via Bridge file.reload/v1 (reloadModelDefinition=true)
+2026-11-03 12:45:11.403 [INFO] [reload_refresh] [run 32568-302af31c] Invoke-Bridge: calling 'file.reload/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [reloadModelDefinition])
+2026-11-03 12:45:13.480 [INFO] [reload_refresh] [run 32568-302af31c] Invoke-Bridge: 'file.reload/v1' on PID 44400 succeeded in 2075 ms
+2026-11-03 12:45:13.484 [INFO] [reload_refresh] [run 32568-302af31c] Step: reload returned in 2084 ms; waiting 2 s before table refresh
+2026-11-03 12:45:15.496 [INFO] [reload_refresh] [run 32568-302af31c] Step: refreshing table 'billing vw_payments_by_status_2025_20261103_7ffffb77a8c9' through local Analysis Services
+2026-11-03 12:45:15.680 [INFO] [reload_refresh] [run 32568-302af31c] Refresh-LocalModelTable: Desktop executable 'C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin\pbidesktop.exe'
+2026-11-03 12:45:15.705 [WARNING] [reload_refresh] [run 32568-302af31c] Refresh-LocalModelTable: Tabular DLL not next to executable; trying Program Files fallbacks
+2026-11-03 12:45:15.750 [WARNING] [reload_refresh] [run 32568-302af31c] Refresh-LocalModelTable: Tabular DLL not in Program Files; searching package folder recursively
+2026-11-03 12:45:16.158 [ERROR] [reload_refresh] [run 32568-302af31c] Failure: Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder.
+at Refresh-LocalModelTable, C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_desktop_automation.ps1: line 402
+at <ScriptBlock>, C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_desktop_automation.ps1: line 573
+2026-11-03 12:45:16.159 [ERROR] [reload_refresh] [run 32568-302af31c] Finish: FAILURE in 5075 ms
+2026-11-03 14:34:03.033 [INFO] [prepare] [run 44604-bb08bce6] Start: action='prepare' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='' timeoutSeconds=180 pid=44604 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 14:34:03.048 [INFO] [prepare] [run 44604-bb08bce6] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 14:34:03.076 [INFO] [prepare] [run 44604-bb08bce6] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 14:34:03.101 [INFO] [prepare] [run 44604-bb08bce6] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:34:03.359 [INFO] [prepare] [run 44604-bb08bce6] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 251 ms
+2026-11-03 14:34:03.369 [INFO] [prepare] [run 44604-bb08bce6] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 14:34:03.375 [INFO] [prepare] [run 44604-bb08bce6] Find-TargetDesktop: 1 matching window(s) after 312 ms
+2026-11-03 14:34:03.382 [INFO] [prepare] [run 44604-bb08bce6] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=True
+2026-11-03 14:34:03.383 [INFO] [prepare] [run 44604-bb08bce6] Step: save Desktop if dirty
+2026-11-03 14:34:03.394 [INFO] [prepare] [run 44604-bb08bce6] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:34:03.499 [INFO] [prepare] [run 44604-bb08bce6] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 104 ms
+2026-11-03 14:34:03.503 [INFO] [prepare] [run 44604-bb08bce6] Save-DesktopIfDirty: Desktop has unsaved changes (file 'C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 14:34:03.660 [INFO] [prepare] [run 44604-bb08bce6] Find-SaveButton: UI Automation found 1 top-level window(s) for PID 44400
+2026-11-03 14:34:03.959 [INFO] [prepare] [run 44604-bb08bce6] Find-SaveButton: found enabled on-screen Save button in window 'billing_POC'
+2026-11-03 14:34:03.967 [INFO] [prepare] [run 44604-bb08bce6] Save-DesktopIfDirty: invoking Save button via UI Automation InvokePattern
+2026-11-03 14:34:03.991 [INFO] [prepare] [run 44604-bb08bce6] Save-DesktopIfDirty: polling application state every 400 ms for up to 180 s until hasUnsavedChanges is false
+2026-11-03 14:34:04.417 [INFO] [prepare] [run 44604-bb08bce6] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:34:04.474 [WARNING] [prepare] [run 44604-bb08bce6] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 49 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 14:34:04.483 [WARNING] [prepare] [run 44604-bb08bce6] Save-DesktopIfDirty: poll 1 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 14:34:04.904 [INFO] [prepare] [run 44604-bb08bce6] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:34:04.927 [WARNING] [prepare] [run 44604-bb08bce6] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 18 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 14:34:04.930 [WARNING] [prepare] [run 44604-bb08bce6] Save-DesktopIfDirty: poll 2 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 14:34:05.355 [INFO] [prepare] [run 44604-bb08bce6] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:34:05.505 [INFO] [prepare] [run 44604-bb08bce6] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 118 ms
+2026-11-03 14:34:05.508 [INFO] [prepare] [run 44604-bb08bce6] Save-DesktopIfDirty: save confirmed after 3 poll(s), 1517 ms
+2026-11-03 14:34:05.518 [INFO] [prepare] [run 44604-bb08bce6] Step: save result attempted=True saved=True: Saved pending Desktop changes before modifying project files.
+2026-11-03 14:34:05.520 [INFO] [prepare] [run 44604-bb08bce6] Finish: SUCCESS in 2618 ms
+2026-11-03 14:34:09.049 [INFO] [reload_refresh] [run 36728-7de40798] Start: action='reload_refresh' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='billing vw_customers_payment_methods_20261103_8b9c5f0acd4b' timeoutSeconds=180 pid=36728 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 14:34:09.067 [INFO] [reload_refresh] [run 36728-7de40798] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 14:34:09.097 [INFO] [reload_refresh] [run 36728-7de40798] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 14:34:09.129 [INFO] [reload_refresh] [run 36728-7de40798] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:34:09.410 [INFO] [reload_refresh] [run 36728-7de40798] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 273 ms
+2026-11-03 14:34:09.422 [INFO] [reload_refresh] [run 36728-7de40798] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 14:34:09.429 [INFO] [reload_refresh] [run 36728-7de40798] Find-TargetDesktop: 1 matching window(s) after 347 ms
+2026-11-03 14:34:09.437 [INFO] [reload_refresh] [run 36728-7de40798] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=False
+2026-11-03 14:34:09.441 [INFO] [reload_refresh] [run 36728-7de40798] Step: re-checking Desktop state before reload
+2026-11-03 14:34:09.442 [INFO] [reload_refresh] [run 36728-7de40798] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:34:09.560 [INFO] [reload_refresh] [run 36728-7de40798] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 116 ms
+2026-11-03 14:34:09.561 [INFO] [reload_refresh] [run 36728-7de40798] Step: fresh state hasUnsavedChanges=False
+2026-11-03 14:34:09.561 [INFO] [reload_refresh] [run 36728-7de40798] Step: reloading project via Bridge file.reload/v1 (reloadModelDefinition=true)
+2026-11-03 14:34:09.567 [INFO] [reload_refresh] [run 36728-7de40798] Invoke-Bridge: calling 'file.reload/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [reloadModelDefinition])
+2026-11-03 14:34:15.484 [INFO] [reload_refresh] [run 36728-7de40798] Invoke-Bridge: 'file.reload/v1' on PID 44400 succeeded in 5916 ms
+2026-11-03 14:34:15.501 [INFO] [reload_refresh] [run 36728-7de40798] Step: reload returned in 5939 ms; waiting 2 s before table refresh
+2026-11-03 14:34:17.516 [INFO] [reload_refresh] [run 36728-7de40798] Step: refreshing table 'billing vw_customers_payment_methods_20261103_8b9c5f0acd4b' through local Analysis Services
+2026-11-03 14:34:17.632 [INFO] [reload_refresh] [run 36728-7de40798] Refresh-LocalModelTable: Desktop executable 'C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin\pbidesktop.exe'
+2026-11-03 14:34:17.652 [WARNING] [reload_refresh] [run 36728-7de40798] Refresh-LocalModelTable: Tabular DLL not next to executable; trying Program Files fallbacks
+2026-11-03 14:34:17.692 [WARNING] [reload_refresh] [run 36728-7de40798] Refresh-LocalModelTable: Tabular DLL not in Program Files; searching package folder recursively
+2026-11-03 14:34:19.169 [ERROR] [reload_refresh] [run 36728-7de40798] Failure: Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder.
+at Refresh-LocalModelTable, C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_desktop_automation.ps1: line 402
+at <ScriptBlock>, C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_desktop_automation.ps1: line 573
+2026-11-03 14:34:19.174 [ERROR] [reload_refresh] [run 36728-7de40798] Finish: FAILURE in 10210 ms
+2026-11-03 14:35:49.897 [INFO] [prepare] [run 20440-91dd0f3f] Start: action='prepare' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='' timeoutSeconds=180 pid=20440 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 14:35:49.923 [INFO] [prepare] [run 20440-91dd0f3f] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 14:35:49.969 [INFO] [prepare] [run 20440-91dd0f3f] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 14:35:49.998 [INFO] [prepare] [run 20440-91dd0f3f] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:35:50.169 [INFO] [prepare] [run 20440-91dd0f3f] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 165 ms
+2026-11-03 14:35:50.180 [INFO] [prepare] [run 20440-91dd0f3f] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 14:35:50.184 [INFO] [prepare] [run 20440-91dd0f3f] Find-TargetDesktop: 1 matching window(s) after 233 ms
+2026-11-03 14:35:50.191 [INFO] [prepare] [run 20440-91dd0f3f] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=True
+2026-11-03 14:35:50.193 [INFO] [prepare] [run 20440-91dd0f3f] Step: save Desktop if dirty
+2026-11-03 14:35:50.203 [INFO] [prepare] [run 20440-91dd0f3f] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:35:50.211 [INFO] [prepare] [run 20440-91dd0f3f] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 6 ms
+2026-11-03 14:35:50.218 [INFO] [prepare] [run 20440-91dd0f3f] Save-DesktopIfDirty: Desktop has unsaved changes (file 'C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 14:35:50.378 [INFO] [prepare] [run 20440-91dd0f3f] Find-SaveButton: UI Automation found 1 top-level window(s) for PID 44400
+2026-11-03 14:35:50.689 [INFO] [prepare] [run 20440-91dd0f3f] Find-SaveButton: found enabled on-screen Save button in window 'billing_POC'
+2026-11-03 14:35:50.697 [INFO] [prepare] [run 20440-91dd0f3f] Save-DesktopIfDirty: invoking Save button via UI Automation InvokePattern
+2026-11-03 14:35:50.726 [INFO] [prepare] [run 20440-91dd0f3f] Save-DesktopIfDirty: polling application state every 400 ms for up to 180 s until hasUnsavedChanges is false
+2026-11-03 14:35:51.158 [INFO] [prepare] [run 20440-91dd0f3f] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:35:51.173 [INFO] [prepare] [run 20440-91dd0f3f] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 12 ms
+2026-11-03 14:35:51.591 [INFO] [prepare] [run 20440-91dd0f3f] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:35:51.617 [WARNING] [prepare] [run 20440-91dd0f3f] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 23 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 14:35:51.623 [WARNING] [prepare] [run 20440-91dd0f3f] Save-DesktopIfDirty: poll 2 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 14:35:52.032 [INFO] [prepare] [run 20440-91dd0f3f] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:35:52.083 [WARNING] [prepare] [run 20440-91dd0f3f] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 10 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 14:35:52.086 [WARNING] [prepare] [run 20440-91dd0f3f] Save-DesktopIfDirty: poll 3 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 14:35:52.499 [INFO] [prepare] [run 20440-91dd0f3f] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:35:52.509 [WARNING] [prepare] [run 20440-91dd0f3f] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 8 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 14:35:52.514 [WARNING] [prepare] [run 20440-91dd0f3f] Save-DesktopIfDirty: poll 4 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 14:35:52.918 [INFO] [prepare] [run 20440-91dd0f3f] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:35:52.963 [INFO] [prepare] [run 20440-91dd0f3f] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 39 ms
+2026-11-03 14:35:52.966 [INFO] [prepare] [run 20440-91dd0f3f] Save-DesktopIfDirty: save confirmed after 5 poll(s), 2239 ms
+2026-11-03 14:35:52.974 [INFO] [prepare] [run 20440-91dd0f3f] Step: save result attempted=True saved=True: Saved pending Desktop changes before modifying project files.
+2026-11-03 14:35:52.976 [INFO] [prepare] [run 20440-91dd0f3f] Finish: SUCCESS in 3176 ms
+2026-11-03 14:36:31.093 [INFO] [prepare] [run 16928-62a828c5] Start: action='prepare' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='' timeoutSeconds=180 pid=16928 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 14:36:31.114 [INFO] [prepare] [run 16928-62a828c5] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 14:36:31.145 [INFO] [prepare] [run 16928-62a828c5] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 14:36:31.183 [INFO] [prepare] [run 16928-62a828c5] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:36:31.416 [INFO] [prepare] [run 16928-62a828c5] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 229 ms
+2026-11-03 14:36:31.430 [INFO] [prepare] [run 16928-62a828c5] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 14:36:31.434 [INFO] [prepare] [run 16928-62a828c5] Find-TargetDesktop: 1 matching window(s) after 303 ms
+2026-11-03 14:36:31.442 [INFO] [prepare] [run 16928-62a828c5] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=False
+2026-11-03 14:36:31.444 [INFO] [prepare] [run 16928-62a828c5] Step: save Desktop if dirty
+2026-11-03 14:36:31.459 [INFO] [prepare] [run 16928-62a828c5] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:36:31.598 [INFO] [prepare] [run 16928-62a828c5] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 138 ms
+2026-11-03 14:36:31.602 [INFO] [prepare] [run 16928-62a828c5] Save-DesktopIfDirty: no unsaved changes; save not needed
+2026-11-03 14:36:31.607 [INFO] [prepare] [run 16928-62a828c5] Step: save result attempted=False saved=True: No unsaved Desktop changes.
+2026-11-03 14:36:31.608 [INFO] [prepare] [run 16928-62a828c5] Finish: SUCCESS in 607 ms
+2026-11-03 14:36:49.277 [INFO] [prepare] [run 46044-198d1c4f] Start: action='prepare' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='' timeoutSeconds=180 pid=46044 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 14:36:49.301 [INFO] [prepare] [run 46044-198d1c4f] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 14:36:49.343 [INFO] [prepare] [run 46044-198d1c4f] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 14:36:49.398 [INFO] [prepare] [run 46044-198d1c4f] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:36:49.695 [INFO] [prepare] [run 46044-198d1c4f] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 291 ms
+2026-11-03 14:36:49.707 [INFO] [prepare] [run 46044-198d1c4f] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 14:36:49.712 [INFO] [prepare] [run 46044-198d1c4f] Find-TargetDesktop: 1 matching window(s) after 389 ms
+2026-11-03 14:36:49.721 [INFO] [prepare] [run 46044-198d1c4f] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=True
+2026-11-03 14:36:49.722 [INFO] [prepare] [run 46044-198d1c4f] Step: save Desktop if dirty
+2026-11-03 14:36:49.738 [INFO] [prepare] [run 46044-198d1c4f] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:36:49.866 [INFO] [prepare] [run 46044-198d1c4f] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 126 ms
+2026-11-03 14:36:49.871 [INFO] [prepare] [run 46044-198d1c4f] Save-DesktopIfDirty: Desktop has unsaved changes (file 'C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 14:36:50.048 [INFO] [prepare] [run 46044-198d1c4f] Find-SaveButton: UI Automation found 1 top-level window(s) for PID 44400
+2026-11-03 14:36:50.377 [INFO] [prepare] [run 46044-198d1c4f] Find-SaveButton: found enabled on-screen Save button in window 'billing_POC'
+2026-11-03 14:36:50.387 [INFO] [prepare] [run 46044-198d1c4f] Save-DesktopIfDirty: invoking Save button via UI Automation InvokePattern
+2026-11-03 14:36:50.424 [INFO] [prepare] [run 46044-198d1c4f] Save-DesktopIfDirty: polling application state every 400 ms for up to 180 s until hasUnsavedChanges is false
+2026-11-03 14:36:50.866 [INFO] [prepare] [run 46044-198d1c4f] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:36:50.883 [WARNING] [prepare] [run 46044-198d1c4f] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 13 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 14:36:50.887 [WARNING] [prepare] [run 46044-198d1c4f] Save-DesktopIfDirty: poll 1 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 14:36:51.301 [INFO] [prepare] [run 46044-198d1c4f] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:36:51.317 [WARNING] [prepare] [run 46044-198d1c4f] Invoke-Bridge: 'application.state.get/v1' on PID 44400 failed after 15 ms: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 14:36:51.322 [WARNING] [prepare] [run 46044-198d1c4f] Save-DesktopIfDirty: poll 2 failed (Bridge busy?); retrying: Desktop Bridge method 'application.state.get/v1' failed: Host is not ready to accept operations
+2026-11-03 14:36:51.735 [INFO] [prepare] [run 46044-198d1c4f] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:36:52.000 [INFO] [prepare] [run 46044-198d1c4f] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 264 ms
+2026-11-03 14:36:52.006 [INFO] [prepare] [run 46044-198d1c4f] Save-DesktopIfDirty: save confirmed after 3 poll(s), 1584 ms
+2026-11-03 14:36:52.016 [INFO] [prepare] [run 46044-198d1c4f] Step: save result attempted=True saved=True: Saved pending Desktop changes before modifying project files.
+2026-11-03 14:36:52.021 [INFO] [prepare] [run 46044-198d1c4f] Finish: SUCCESS in 2869 ms
+2026-11-03 14:36:54.787 [INFO] [reload_refresh] [run 15968-0e66f811] Start: action='reload_refresh' reportDir='C:/Users/basit/Documents/billing_POC.Report' table='billing vw_customers_payment_methods_20261103_8b9c5f0acd4b' timeoutSeconds=180 pid=15968 log='C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\powerbi_automation.log'
+2026-11-03 14:36:54.813 [INFO] [reload_refresh] [run 15968-0e66f811] Step: locating target Power BI Desktop process via Bridge
+2026-11-03 14:36:54.852 [INFO] [reload_refresh] [run 15968-0e66f811] Find-TargetDesktop: found 1 PBIDesktop process(es); looking for stem 'billing_POC' under 'C:\Users\basit\Documents'
+2026-11-03 14:36:54.882 [INFO] [reload_refresh] [run 15968-0e66f811] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:36:55.142 [INFO] [reload_refresh] [run 15968-0e66f811] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 255 ms
+2026-11-03 14:36:55.157 [INFO] [reload_refresh] [run 15968-0e66f811] Find-TargetDesktop: PID 44400 matches ('C:\Users\basit\Documents\billing_POC.pbip')
+2026-11-03 14:36:55.164 [INFO] [reload_refresh] [run 15968-0e66f811] Find-TargetDesktop: 1 matching window(s) after 326 ms
+2026-11-03 14:36:55.172 [INFO] [reload_refresh] [run 15968-0e66f811] Step: target Desktop PID 44400, file 'C:\Users\basit\Documents\billing_POC.pbip', hasUnsavedChanges=False
+2026-11-03 14:36:55.173 [INFO] [reload_refresh] [run 15968-0e66f811] Step: re-checking Desktop state before reload
+2026-11-03 14:36:55.174 [INFO] [reload_refresh] [run 15968-0e66f811] Invoke-Bridge: calling 'application.state.get/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [])
+2026-11-03 14:36:55.295 [INFO] [reload_refresh] [run 15968-0e66f811] Invoke-Bridge: 'application.state.get/v1' on PID 44400 succeeded in 118 ms
+2026-11-03 14:36:55.296 [INFO] [reload_refresh] [run 15968-0e66f811] Step: fresh state hasUnsavedChanges=False
+2026-11-03 14:36:55.298 [INFO] [reload_refresh] [run 15968-0e66f811] Step: reloading project via Bridge file.reload/v1 (reloadModelDefinition=true)
+2026-11-03 14:36:55.301 [INFO] [reload_refresh] [run 15968-0e66f811] Invoke-Bridge: calling 'file.reload/v1' on pipe 'pbi-desktop-bridge-44400' (param keys: [reloadModelDefinition])
+2026-11-03 14:36:59.116 [INFO] [reload_refresh] [run 15968-0e66f811] Invoke-Bridge: 'file.reload/v1' on PID 44400 succeeded in 3814 ms
+2026-11-03 14:36:59.134 [INFO] [reload_refresh] [run 15968-0e66f811] Step: reload returned in 3835 ms; waiting 2 s before table refresh
+2026-11-03 14:37:01.142 [INFO] [reload_refresh] [run 15968-0e66f811] Step: refreshing table 'billing vw_customers_payment_methods_20261103_8b9c5f0acd4b' through local Analysis Services
+2026-11-03 14:37:01.249 [INFO] [reload_refresh] [run 15968-0e66f811] Refresh-LocalModelTable: Desktop executable 'C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin\pbidesktop.exe'
+2026-11-03 14:37:01.264 [WARNING] [reload_refresh] [run 15968-0e66f811] Refresh-LocalModelTable: Tabular DLL not next to executable; trying Program Files fallbacks
+2026-11-03 14:37:01.301 [WARNING] [reload_refresh] [run 15968-0e66f811] Refresh-LocalModelTable: Tabular DLL not in Program Files; searching package folder recursively
+2026-11-03 14:37:02.335 [ERROR] [reload_refresh] [run 15968-0e66f811] Failure: Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder.
+at Refresh-LocalModelTable, C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_desktop_automation.ps1: line 402
+at <ScriptBlock>, C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_desktop_automation.ps1: line 573
+2026-11-03 14:37:02.339 [ERROR] [reload_refresh] [run 15968-0e66f811] Finish: FAILURE in 7647 ms

@@ -20,6 +20,9 @@
  *     POST /session/<id>/end               end the session for good
  *     POST /session/<id>/reset             old "New chat" endpoint (the server now ends the session)
  *     POST /feedback                       "Satisfied" / "Unsatisfied" for one generated report
+ *     POST /reports/save                   "Save report" on a generated page
+ *     GET  /reports/saved[/<request_id>]   the user's saved reports / is this one saved?
+ *     POST /reports/saved/<id>/open|delete open a saved report (restores a removed page) / forget it
  *
  * WHY THE VISUAL MUST "RESTORE" ITSELF
  *   When the backend reloads Power BI Desktop (or the user switches report pages), Power BI
@@ -27,12 +30,14 @@
  *   The conversation itself is kept on the server, so the visual only has to remember the
  *   session id (in Power BI's local storage) and ask the server for the transcript again.
  *
- * TWO MODES (the same visual code is used in two places)
- *   1. Chat mode: the normal chat window on the "AI Assistant" page.
+ * THREE MODES (the same visual code is used in three places)
+ *   1. Chat mode: the normal chat window on the "AI Assistant" page (with the "Saved reports" list).
  *   2. Feedback mode: on every generated report page the backend places another copy of this
  *      visual and sets its "feedback" properties (mode/requestId/sessionId, declared under
  *      "objects" in capabilities.json). That copy hides the chat and shows only a small
  *      "Was this report useful?" panel. See update() and renderReportFeedback().
+ *   3. Save mode: a third copy next to the "Back to AI Assistant" button that shows only a
+ *      "Save report" button (mode "save"). See renderSaveButton().
  *
  * THE SANDBOX
  *   Power BI runs custom visuals in a sandboxed <iframe>. That means: no alert()/confirm()
@@ -129,6 +134,21 @@ interface ChatEntry {
     meta?: { suggestions?: Suggestion[]; request_id?: string; view_name?: string; page_name?: string; chart_type?: string };
 }
 
+// One row of GET /reports/saved (saved_at / last_opened_at are UTC ISO strings without a zone).
+interface SavedReport {
+    request_id: string;
+    title: string;
+    visual_type?: string | null;
+    saved_at?: string | null;
+    last_opened_at?: string | null;
+}
+
+// Friendly names for the chart types in the "Saved reports" list (same labels as the backend).
+const VISUAL_LABELS: Record<string, string> = {
+    clusteredColumnChart: "Column chart", barChart: "Bar chart", lineChart: "Line chart",
+    pieChart: "Pie chart", donutChart: "Donut chart", tableEx: "Table"
+};
+
 // What api() returns: ok = HTTP status 200-299, status = the HTTP status code, data = the parsed
 // JSON body ({} if the body was empty or not JSON). `any` because each endpoint returns a different shape.
 interface ApiResult {
@@ -163,6 +183,12 @@ export class Visual implements IVisual {
     private demoRoleSelect: HTMLSelectElement;
     private statusText: HTMLDivElement;         // one line under the input for status / error messages
     private greetingEl: HTMLDivElement;         // the welcome bubble + example chips
+    // "Saved reports": header button + a panel shown in place of the chat area while open.
+    private savedReportsButton: HTMLButtonElement;
+    private savedPanel: HTMLDivElement;
+    private savedList: HTMLDivElement;
+    private savedStatus: HTMLDivElement;
+    private savedPanelOpen = false;
 
     // ---- Conversation state ----
     // The server-side conversation this visual belongs to; null until the first message is sent
@@ -252,6 +278,11 @@ export class Visual implements IVisual {
         this.endSessionButton.className = "end-session-button";
         this.endSessionButton.textContent = "End session";
         this.endSessionButton.addEventListener("click", () => void this.onEndSessionClick());
+        this.savedReportsButton = document.createElement("button");
+        this.savedReportsButton.type = "button";
+        this.savedReportsButton.className = "saved-reports-button";
+        this.savedReportsButton.textContent = "Saved reports";
+        this.savedReportsButton.addEventListener("click", () => void this.toggleSavedReports());
         // Demo role dropdown: created hidden; initializeDemoRoleSelector() shows it only if the
         // backend has demo mode turned on.
         const roleLabel = document.createElement("label");
@@ -280,6 +311,7 @@ export class Visual implements IVisual {
         const headerActions = document.createElement("div");
         headerActions.className = "header-actions";
         headerActions.appendChild(roleLabel);
+        headerActions.appendChild(this.savedReportsButton);
         headerActions.appendChild(this.endSessionButton);
         headerActions.appendChild(this.newChatButton);
         header.appendChild(headerActions);
@@ -319,7 +351,29 @@ export class Visual implements IVisual {
         this.statusText.className = "status-text";
         this.statusText.setAttribute("role", "status");
 
+        // "Saved reports" panel: hidden until the header button is clicked (see toggleSavedReports).
+        this.savedPanel = document.createElement("div");
+        this.savedPanel.className = "saved-reports-panel";
+        this.savedPanel.hidden = true;
+        const savedHeading = document.createElement("div");
+        savedHeading.className = "saved-reports-heading";
+        const savedTitle = document.createElement("span");
+        savedTitle.textContent = "Saved reports";
+        const savedClose = document.createElement("button");
+        savedClose.type = "button";
+        savedClose.className = "saved-reports-close";
+        savedClose.textContent = "Back to chat";
+        savedClose.addEventListener("click", () => void this.toggleSavedReports(false));
+        savedHeading.append(savedTitle, savedClose);
+        this.savedList = document.createElement("div");
+        this.savedList.className = "saved-reports-list";
+        this.savedStatus = document.createElement("div");
+        this.savedStatus.className = "saved-reports-status";
+        this.savedStatus.setAttribute("role", "status");
+        this.savedPanel.append(savedHeading, this.savedStatus, this.savedList);
+
         container.appendChild(header);
+        container.appendChild(this.savedPanel);
         container.appendChild(this.chatArea);
         container.appendChild(composer);
         container.appendChild(this.statusText);
@@ -340,6 +394,7 @@ export class Visual implements IVisual {
     // part of dataViews, i.e. the saved values of the "feedback" properties from capabilities.json.
     // Decision made here:
     //   feedback.mode === "feedback" -> show the report-page feedback panel (once) and stop.
+    //   feedback.mode === "save"     -> show only the "Save report" button (once) and stop.
     //   otherwise                    -> chat mode: restore the previous conversation (once).
     public update(options: VisualUpdateOptions): void {
         // Generated report pages host this same custom visual in feedback-only mode.
@@ -350,15 +405,16 @@ export class Visual implements IVisual {
         const feedbackObjs = options.dataViews?.[0]?.metadata?.objects as any;
         const feedback = feedbackObjs?.feedback;
         const mode = this.readObjectText(feedback?.mode);
-        if (mode === "feedback") {
+        if (mode === "feedback" || mode === "save") {
             const requestId = this.readObjectText(feedback?.requestId);
             const sessionId = this.readObjectText(feedback?.sessionId);
-            // Only once, and only if we know which report (requestId) the feedback is for.
+            // Only once, and only if we know which report (requestId) the panel is for.
             if (requestId && !this.feedbackRendered) {
                 this.feedbackRendered = true;
-                logDebug("info", "Rendering report feedback mode", { requestId, sessionId: sessionId || null });
+                logDebug("info", `Rendering report ${mode} mode`, { requestId, sessionId: sessionId || null });
                 this.chatContainer.style.display = "none";
-                this.renderReportFeedback(requestId, sessionId || "");
+                if (mode === "save") this.renderSaveButton(requestId, sessionId || "");
+                else this.renderReportFeedback(requestId, sessionId || "");
             }
             return;
         }
@@ -622,6 +678,231 @@ export class Visual implements IVisual {
             if (noBtn && noBtn.classList.contains("selected")) noBtn.disabled = true;
             status.textContent = error instanceof Error ? error.message : "Could not finish the session.";
         }
+    }
+
+    // ------------------------------------------------------------------ saved reports
+    // savedReportsRole: the demo role to send with the /reports/... calls (undefined when demo mode
+    // is off). In demo mode the role is what identifies the owner of a saved report, so the
+    // session's own stored role wins over "the last role used".
+    private async savedReportsRole(sessionId?: string | null): Promise<string | undefined> {
+        await this.demoRoleReady;
+        if (!this.demoRoleSelectionEnabled) return undefined;
+        if (sessionId) {
+            const sessionRole = await this.readStoredDemoRole(sessionId);
+            if (sessionRole) return sessionRole;
+        }
+        return this.demoRole;
+    }
+
+    // renderSaveButton: SAVE MODE ONLY (called once by update()). One button next to the native
+    // "Back to AI Assistant" button on a generated page. The visual is only 60 px tall, so the
+    // button's own label carries the state ("Saving…", "✓ Saved", "Retry save") and error details
+    // go into its tooltip.
+    //   On load:  GET  /reports/saved/<requestId>?demo_role=  -> { saved }  (show "✓ Saved" if so)
+    //   On click: POST /reports/save { request_id, session_id, demo_role } -> 201 saved | 200 already_saved
+    private renderSaveButton(requestId: string, sessionId: string): void {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "report-save-button";
+        button.textContent = "Save report";
+        button.title = "Keep this report so you can open it again later from 'Saved reports' on the assistant page";
+        const markSaved = () => {
+            button.textContent = "✓ Saved";
+            button.title = "Saved. Open it any time from 'Saved reports' on the assistant page.";
+            button.classList.add("saved");
+            button.disabled = true;
+        };
+
+        button.addEventListener("click", async () => {
+            if (button.disabled) return;
+            button.disabled = true;
+            button.textContent = "Saving…";
+            try {
+                const demoRole = await this.savedReportsRole(sessionId);
+                // Saving first asks Power BI Desktop to save its pending edits, which can be slow.
+                const result = await this.api("/reports/save", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ request_id: requestId, session_id: sessionId || undefined, demo_role: demoRole })
+                }, CHAT_TIMEOUT_MS);
+                if (!result.ok) throw new Error(result.data?.error || result.data?.message || "The report could not be saved.");
+                logDebug("info", "Report saved", { requestId, status: result.data?.status ?? null });
+                markSaved();
+            } catch (error) {
+                logDebug("error", "Saving the report failed", { requestId, error });
+                button.textContent = "Retry save";
+                button.title = error instanceof Error ? error.message : "The report could not be saved.";
+                button.disabled = false;
+            }
+        });
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "report-save-panel";
+        wrapper.appendChild(button);
+        this.rootElement.appendChild(wrapper);
+
+        // Already saved earlier (or this is a restored page)? Then show it straight away.
+        void (async () => {
+            try {
+                const demoRole = await this.savedReportsRole(sessionId);
+                const query = demoRole ? `?demo_role=${encodeURIComponent(demoRole)}` : "";
+                const result = await this.api(`/reports/saved/${encodeURIComponent(requestId)}${query}`);
+                if (!this.destroyed && result.ok && result.data?.saved) markSaved();
+            } catch (error) {
+                logDebug("debug", "Could not check whether the report is saved", { requestId, error });
+            }
+        })();
+    }
+
+    // toggleSavedReports: the header's "Saved reports" button. While the panel is open it takes
+    // the chat area's place (the composer stays usable); opening it always reloads the list.
+    private async toggleSavedReports(open = !this.savedPanelOpen): Promise<void> {
+        this.savedPanelOpen = open;
+        this.savedPanel.hidden = !open;
+        this.chatArea.hidden = open;
+        this.savedReportsButton.classList.toggle("selected", open);
+        if (open) await this.loadSavedReports();
+        else this.scrollToBottom();
+    }
+
+    // loadSavedReports: GET /reports/saved?demo_role= -> { reports: SavedReport[] } (newest first).
+    private async loadSavedReports(): Promise<void> {
+        this.savedList.textContent = "";
+        this.savedStatus.textContent = "Loading saved reports…";
+        try {
+            const demoRole = await this.savedReportsRole(this.sessionId);
+            const query = demoRole ? `?demo_role=${encodeURIComponent(demoRole)}` : "";
+            const result = await this.api(`/reports/saved${query}`);
+            if (this.destroyed) return;
+            if (!result.ok) throw new Error(result.data?.error || "Saved reports are unavailable right now.");
+            const reports = (result.data?.reports ?? []) as SavedReport[];
+            logDebug("info", "Saved reports loaded", { count: reports.length });
+            this.savedStatus.textContent = reports.length ? "" :
+                "No saved reports yet. Use the 'Save report' button on a generated report page.";
+            reports.forEach(report => this.savedList.appendChild(this.buildSavedReportRow(report)));
+        } catch (error) {
+            logDebug("error", "Loading saved reports failed", error);
+            this.savedStatus.textContent = error instanceof Error ? error.message : "Saved reports are unavailable right now.";
+        }
+    }
+
+    // One list row: title, "Line chart · Saved 3 Nov 2026, 14:02", and Open / Delete buttons.
+    // Delete uses the same two-click confirmation as "New chat" (dialogs are blocked in visuals).
+    private buildSavedReportRow(report: SavedReport): HTMLDivElement {
+        const row = document.createElement("div");
+        row.className = "saved-report-row";
+        const info = document.createElement("div");
+        info.className = "saved-report-info";
+        const title = document.createElement("div");
+        title.className = "saved-report-title";
+        title.textContent = report.title;
+        const details = document.createElement("div");
+        details.className = "saved-report-details";
+        const chart = report.visual_type ? VISUAL_LABELS[report.visual_type] || "Chart" : "";
+        details.textContent = [chart, report.saved_at ? `Saved ${this.formatUtc(report.saved_at)}` : ""]
+            .filter(Boolean).join(" · ");
+        info.append(title, details);
+
+        const actions = document.createElement("div");
+        actions.className = "saved-report-actions";
+        const open = document.createElement("button");
+        open.type = "button"; open.className = "saved-report-open"; open.textContent = "Open";
+        const remove = document.createElement("button");
+        remove.type = "button"; remove.className = "saved-report-delete"; remove.textContent = "Delete";
+        let deleteArmedUntil = 0;
+        open.addEventListener("click", () => void this.openSavedReport(report, open, remove));
+        remove.addEventListener("click", () => {
+            const now = Date.now();
+            if (now > deleteArmedUntil) {
+                deleteArmedUntil = now + 3500;
+                remove.textContent = "Confirm delete?";
+                remove.classList.add("confirming");
+                window.setTimeout(() => {
+                    if (Date.now() >= deleteArmedUntil) {
+                        remove.textContent = "Delete";
+                        remove.classList.remove("confirming");
+                    }
+                }, 3600);
+                return;
+            }
+            void this.deleteSavedReport(report, row, open, remove);
+        });
+        actions.append(open, remove);
+        row.append(info, actions);
+        return row;
+    }
+
+    // openSavedReport: POST /reports/saved/<id>/open { session_id?, demo_role? }
+    //   200 { status: "already_present" | "restored", message, page_name, busy?, messages? }
+    // When the page had been removed the backend writes it back and reloads Power BI Desktop;
+    // with our session id it also adds the message to this chat and marks the session busy, so
+    // the usual transcript polling shows "Power BI has reloaded" afterwards.
+    private async openSavedReport(report: SavedReport, open: HTMLButtonElement, remove: HTMLButtonElement): Promise<void> {
+        open.disabled = true;
+        remove.disabled = true;
+        open.textContent = "Opening…";
+        this.savedStatus.textContent = `Opening “${report.title}”…`;
+        try {
+            const demoRole = await this.savedReportsRole(this.sessionId);
+            const sessionId = this.sessionEnded ? undefined : this.sessionId || undefined;
+            const result = await this.api(`/reports/saved/${encodeURIComponent(report.request_id)}/open`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ session_id: sessionId, demo_role: demoRole })
+            }, CHAT_TIMEOUT_MS);
+            if (this.destroyed) return;
+            if (!result.ok) throw new Error(result.data?.error || "The saved report could not be opened.");
+            logDebug("info", "Saved report opened", { requestId: report.request_id, status: result.data?.status ?? null });
+            await this.toggleSavedReports(false);
+            const messages = (result.data?.messages ?? []) as ChatEntry[];
+            if (messages.length && result.data?.session_id === this.sessionId) this.applyEntries(messages);
+            else this.appendLocalNote(String(result.data?.message || "The saved report is ready."));
+            if (result.data?.busy) this.startPolling();
+        } catch (error) {
+            logDebug("error", "Opening the saved report failed", { requestId: report.request_id, error });
+            this.savedStatus.textContent = error instanceof Error ? error.message : "The saved report could not be opened.";
+        } finally {
+            open.disabled = false;
+            remove.disabled = false;
+            open.textContent = "Open";
+        }
+    }
+
+    // deleteSavedReport: POST /reports/saved/<id>/delete { demo_role? } -> 200 { status: "deleted" }.
+    // Only the saved copy is removed; a page that is still in the report stays.
+    private async deleteSavedReport(report: SavedReport, row: HTMLDivElement, open: HTMLButtonElement,
+                                    remove: HTMLButtonElement): Promise<void> {
+        open.disabled = true;
+        remove.disabled = true;
+        try {
+            const demoRole = await this.savedReportsRole(this.sessionId);
+            const result = await this.api(`/reports/saved/${encodeURIComponent(report.request_id)}/delete`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ demo_role: demoRole })
+            });
+            if (!result.ok) throw new Error(result.data?.error || "The saved report could not be deleted.");
+            logDebug("info", "Saved report deleted", { requestId: report.request_id });
+            row.remove();
+            if (!this.savedList.childElementCount) {
+                this.savedStatus.textContent = "No saved reports yet. Use the 'Save report' button on a generated report page.";
+            }
+        } catch (error) {
+            logDebug("error", "Deleting the saved report failed", { requestId: report.request_id, error });
+            this.savedStatus.textContent = error instanceof Error ? error.message : "The saved report could not be deleted.";
+            open.disabled = false;
+            remove.disabled = false;
+            remove.textContent = "Delete";
+            remove.classList.remove("confirming");
+        }
+    }
+
+    // formatUtc: "2026-11-03T08:32:00" (UTC from the backend) -> local "3 Nov 2026, 14:02".
+    private formatUtc(value: string): string {
+        const date = new Date(/[zZ]|[+-]\d\d:\d\d$/.test(value) ? value : value + "Z");
+        if (isNaN(date.getTime())) return value;
+        return date.toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric",
+                                                hour: "2-digit", minute: "2-digit" });
     }
 
     // destroy: Power BI calls this right before it throws the visual away (page switch, reload).

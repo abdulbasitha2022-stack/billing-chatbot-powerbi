@@ -31,9 +31,12 @@ new imported rows can be displayed. Always work on a saved, backed-up project.
 # What generate_native_report_page() does for each new report:
 #   1. writes tables/'billing vw_xxx'.tmdl (unless the table is being reused)
 #   2. adds "ref table 'billing vw_xxx'" to model.tmdl
-#   3. writes a new page folder with a chart, a detail table, a feedback chatbot visual and a
-#      "Back to ..." button, and appends the page id to pages.json
+#   3. writes a new page folder with a chart, a detail table, a feedback chatbot visual, a
+#      "Back to ..." button and a "Save report" chatbot visual next to it, and appends the page
+#      id to pages.json
 #   4. points the chatbot page's "Open latest report" button at the new page
+# export_report_page() / restore_report_page() copy a generated page out of the project and back
+# in again (the "Saved reports" feature, see app/saved_reports.py).
 # Power BI Desktop does not notice these files by itself: powerbi_service.py later runs the
 # PowerShell script to reload the project and import the view's rows.
 #
@@ -70,6 +73,14 @@ NAV_ANNOTATION = "billingChatbot.navigationButton"
 LATEST_BUTTON, BACK_BUTTON = "latestReport", "backToAssistant"
 # "Open latest report" always sits in the chatbot page's top-right corner, above every other visual.
 LATEST_BUTTON_WIDTH, LATEST_BUTTON_HEIGHT, LATEST_BUTTON_MARGIN = 140.0, 70, 10.0
+# "Back to ..." sits in the bottom-left corner of a generated page; "Save report" right of it.
+BACK_BUTTON_WIDTH, BACK_BUTTON_HEIGHT = 320, 60
+SAVE_VISUAL_WIDTH, SAVE_VISUAL_GAP = 220, 15
+# Saved page files are stored by their path inside the page folder ("page.json",
+# "visuals/<id>/visual.json"). Only plain names are accepted, so a stored path can never point
+# outside the page folder when it is written back.
+SAVED_FILE_RE = re.compile(r"^[A-Za-z0-9_\-]+(/[A-Za-z0-9_\-]+)*\.json$")
+PAGE_ID_RE = re.compile(r"^[A-Za-z0-9_\-]+$")
 
 
 # Custom exception type. Every expected problem in this module (missing file, bad JSON, bad
@@ -435,6 +446,38 @@ def _backup_files(paths: Iterable[Path], parent: Path) -> Path:
     return backup_dir
 
 
+# Undo a failed edit: copy the backed-up model.tmdl / pages.json (names end in "__model.tmdl" /
+# "__pages.json", see _backup_files) back over the possibly half-edited ones.
+def _restore_backups(backup_dir: Path, model_file: Path, pages_meta_file: Path) -> None:
+    for backup in backup_dir.iterdir():
+        if backup.name.endswith("__model.tmdl"):
+            shutil.copy2(backup, model_file)
+        elif backup.name.endswith("__pages.json"):
+            shutil.copy2(backup, pages_meta_file)
+
+
+# Display names of the pages listed in pageOrder (used to keep page tab names unique).
+def _page_names(pages_dir: Path, page_order: list) -> set:
+    names = set()
+    for page_id in page_order:
+        path = pages_dir / page_id / "page.json"
+        if path.exists():
+            names.add(_json_read(path).get("displayName", ""))
+    return names
+
+
+# Page tab names should be unique: if "Monthly Revenue" exists, use "Monthly Revenue (2)",
+# "(3)", ... (shortening the base so the whole name stays within 60 characters).
+def _unique_display_name(display_name: str, existing_names: set) -> str:
+    base_display = display_name
+    suffix = 2
+    while display_name in existing_names:
+        tail = f" ({suffix})"
+        display_name = base_display[: max(1, 60 - len(tail))] + tail
+        suffix += 1
+    return display_name
+
+
 # ---------------------------------------------------------------------- navigation buttons
 # Custom visuals (like the chatbot) cannot switch report pages by themselves, so this module
 # writes Power BI's own "actionButton" visuals: "Open latest report" on the chatbot page and
@@ -495,6 +538,28 @@ def _nav_button_json(name: str, role: str, text: str, target_page: str | None, t
         # Our own marker: lets _find_nav_button() recognise buttons this module created,
         # even if the user moved or renamed them in Desktop.
         "annotations": [{"name": NAV_ANNOTATION, "value": role}],
+    }
+
+
+def _chatbot_mode_visual_json(name: str, mode: str, request_id: str, session_id: str | None, *,
+                              x: float, y: float, z: int, width: float, height: float, tab_order: int) -> dict:
+    """A copy of the chatbot custom visual that runs in `mode` ("feedback" or "save") for one report."""
+    # No queryState/projections: the mode is driven entirely by the "feedback" object (declared
+    # in billingChatbot/capabilities.json), so Power BI shows no field-name header and the visual
+    # does not need a data field to be dragged in.
+    return {
+        "$schema": VISUAL_SCHEMA,
+        "name": name,
+        "position": {"x": x, "y": y, "z": z, "height": height, "width": width, "tabOrder": tab_order},
+        "visual": {
+            "visualType": CHATBOT_VISUAL_TYPE,
+            "objects": {"feedback": [{"properties": {
+                "mode": _text_literal(mode),
+                "requestId": _text_literal(request_id),
+                "sessionId": _text_literal(session_id or ""),
+            }}]},
+            "drillFilterOtherVisuals": True,
+        },
     }
 
 
@@ -716,20 +781,8 @@ def generate_native_report_page(
     if first_page is None:
         raise PowerBIProjectError("No existing report page definitions were found")
 
-    # Page tab names should be unique: if "Monthly Revenue" exists, use "Monthly Revenue (2)",
-    # "(3)", ... (shortening the base so the whole name stays within 60 characters).
-    display_name = _safe_display_name(title, f"Report {view_name}")
-    existing_names = set()
-    for page_id in page_order:
-        path = pages_dir / page_id / "page.json"
-        if path.exists():
-            existing_names.add(_json_read(path).get("displayName", ""))
-    base_display = display_name
-    suffix = 2
-    while display_name in existing_names:
-        tail = f" ({suffix})"
-        display_name = base_display[: max(1, 60 - len(tail))] + tail
-        suffix += 1
+    display_name = _unique_display_name(_safe_display_name(title, f"Report {view_name}"),
+                                        _page_names(pages_dir, page_order))
 
     # Random page id = the new page's folder name (retry in the very unlikely case it is taken).
     page_id = _uuid_hex(20)
@@ -796,31 +849,16 @@ def generate_native_report_page(
         fb_height = 180
         fb_x      = page_width - fb_width - 30
         fb_y      = page_height - fb_height - 30
-        feedback_json = {
-            "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
-            "name": feedback_id,
-            "position": {"x": fb_x, "y": fb_y, "z": 100,
-                         "height": fb_height, "width": fb_width, "tabOrder": 10},
-            "visual": {
-                "visualType": CHATBOT_VISUAL_TYPE,
-                # No queryState/projections — feedback mode is driven entirely by
-                # the objects below.  Removing the field binding means Power BI
-                # won't show a field-name header and the visual doesn't require
-                # a data field to be dragged in.
-                "objects": {"feedback": [{"properties": {
-                    "mode":      {"expr": {"Literal": {"Value": "'feedback'"}}},
-                    "requestId": {"expr": {"Literal": {"Value": "'" + request_id.replace("'", "''") + "'"}}},
-                    "sessionId": {"expr": {"Literal": {"Value": "'" + (session_id or "").replace("'", "''") + "'"}}}
-                }}]},
-                "drillFilterOtherVisuals": True
-            }
-        }
+        feedback_json = _chatbot_mode_visual_json(feedback_id, "feedback", request_id, session_id,
+                                                  x=fb_x, y=fb_y, z=100, width=fb_width,
+                                                  height=fb_height, tab_order=10)
         feedback_path = visuals_dir / feedback_id / "visual.json"
         _json_write(feedback_path, feedback_json)
         visual_files.append(str(feedback_path))
 
     # A native "Back to <chatbot page>" button (custom visuals cannot switch pages themselves).
     # Note: page_order does not contain the new page yet, so this finds the main chatbot page.
+    back_y = page_height - 90
     chatbot = _find_chatbot_page(pages_dir, page_order)
     if chatbot is not None:
         # chatbot = (page_id, page.json dict, visual dict); [1] is page.json, [0] is the page id.
@@ -828,10 +866,21 @@ def generate_native_report_page(
         back_name = "aiBackToAssistant"
         back_json = _nav_button_json(back_name, BACK_BUTTON, f"Back to {chatbot_name}"[:60], chatbot[0],
                                      f"Return to the {chatbot_name} page",
-                                     x=30, y=page_height - 90, width=320, height=60)
+                                     x=30, y=back_y, width=BACK_BUTTON_WIDTH, height=BACK_BUTTON_HEIGHT)
         back_path = visuals_dir / back_name / "visual.json"
         _json_write(back_path, back_json)
         visual_files.append(str(back_path))
+
+    # "Save report": another copy of the chatbot visual, in save mode, right of the Back button.
+    # A native button cannot call the backend, so the save itself is done by the custom visual.
+    if request_id:
+        save_id = "aiSaveReport"
+        save_json = _chatbot_mode_visual_json(save_id, "save", request_id, session_id,
+                                              x=30 + BACK_BUTTON_WIDTH + SAVE_VISUAL_GAP, y=back_y, z=200,
+                                              width=SAVE_VISUAL_WIDTH, height=BACK_BUTTON_HEIGHT, tab_order=21)
+        save_path = visuals_dir / save_id / "visual.json"
+        _json_write(save_path, save_json)
+        visual_files.append(str(save_path))
 
     # page.json for the new page. "FitToPage" scales the page to the window; size/schema are
     # copied from the first existing page so all pages look consistent.
@@ -868,18 +917,13 @@ def generate_native_report_page(
     except Exception:
         # Best-effort rollback of model metadata; generated page/table are removed to avoid partial output.
         log.exception("Writing the model/page metadata failed; rolling back from %s", backup_dir)
-        # Undo: delete the new page folder and new table file, then copy the backed-up
-        # model.tmdl / pages.json back over the possibly half-edited ones (backup names end in
-        # "__model.tmdl" / "__pages.json", see _backup_files).
+        # Undo: delete the new page folder and new table file, then put the backed-up
+        # model.tmdl / pages.json back.
         try:
             shutil.rmtree(page_folder, ignore_errors=True)
             if not reuse_existing_table:
                 table_file.unlink(missing_ok=True)
-            for backup in backup_dir.iterdir():
-                if backup.name.endswith("__model.tmdl"):
-                    shutil.copy2(backup, model_file)
-                elif backup.name.endswith("__pages.json"):
-                    shutil.copy2(backup, pages_meta_file)
+            _restore_backups(backup_dir, model_file, pages_meta_file)
         finally:
             # A bare `raise` re-raises the ORIGINAL error, so the caller still sees why it failed
             # (the `finally` makes this happen even if the rollback itself fails part-way).
@@ -915,6 +959,7 @@ def generate_native_report_page(
         "measure_field": measure,
         "visual_files": visual_files,
         "feedback_visual_added": bool(request_id),
+        "save_visual_added": bool(request_id),
         "back_button_added": chatbot is not None,
         "latest_button_updated": latest_button_updated,
         "table_definition": str(table_file),
@@ -922,4 +967,197 @@ def generate_native_report_page(
         "needs_powerbi_reload": True,
         "needs_model_refresh": not reuse_existing_table,
         "reused_table": reuse_existing_table,
+    }
+
+
+# ---------------------------------------------------------------------- saved reports
+# A saved report is a copy of one generated page's files (page.json + every visual.json) and of
+# its model table's .tmdl file, kept in MySQL by app/saved_reports.py. Restoring writes them back
+# unchanged, so the page looks exactly like it did when it was saved. The table still imports the
+# live MySQL view, so the numbers are current after the refresh.
+
+# The request id stored in a page's feedback/save chatbot visual, or None if the page has none.
+def _page_request_id(page_dir: Path) -> str | None:
+    for visual_file in sorted((page_dir / "visuals").glob("*/visual.json")):
+        try:
+            body = json.loads(visual_file.read_text(encoding="utf-8")).get("visual") or {}
+            if body.get("visualType") != CHATBOT_VISUAL_TYPE:
+                continue
+            for entry in (body.get("objects") or {}).get("feedback") or []:
+                value = entry["properties"]["requestId"]["expr"]["Literal"]["Value"]
+                if isinstance(value, str) and len(value) >= 2:
+                    return value[1:-1].replace("''", "'")     # undo _text_literal
+        except (OSError, json.JSONDecodeError, KeyError, TypeError, AttributeError):
+            continue
+    return None
+
+
+# The chart type shown on a page: its first chart visual, else "tableEx" for a table-only page.
+def _page_visual_type(page_dir: Path) -> str | None:
+    types = []
+    for visual_file in sorted((page_dir / "visuals").glob("*/visual.json")):
+        try:
+            types.append((json.loads(visual_file.read_text(encoding="utf-8")).get("visual") or {}).get("visualType"))
+        except (OSError, json.JSONDecodeError):
+            continue
+    charts = [t for t in types if t in SUPPORTED_VISUAL_TYPES - {"tableEx"}]
+    return charts[0] if charts else ("tableEx" if "tableEx" in types else None)
+
+
+def find_report_page(report_dir: str | Path, request_id: str) -> str | None:
+    """Id of the page (listed in pages.json) whose feedback/save visual belongs to request_id."""
+    pages_dir = Path(report_dir).expanduser().resolve() / "definition" / "pages"
+    pages_meta = _json_read(pages_dir / "pages.json")
+    for page_id in pages_meta.get("pageOrder", []):
+        page_dir = pages_dir / page_id
+        if (page_dir / "page.json").is_file() and _page_request_id(page_dir) == request_id:
+            return page_id
+    return None
+
+
+def export_report_page(*, report_dir: str | Path, model_dir: str | Path, request_id: str,
+                       view_name: str) -> dict | None:
+    """Copy of the generated page for request_id: its files as text plus the model table's TMDL.
+
+    Returns None when no page of the project belongs to that request."""
+    # Called by PowerBIService.export_page() (inside its lock) when the user clicks "Save report".
+    if not VIEW_RE.fullmatch(view_name or ""):
+        raise PowerBIProjectError("view_name must be a generated vw_ name containing only letters, digits and underscores")
+    report_dir = Path(report_dir).expanduser().resolve()
+    model_dir = Path(model_dir).expanduser().resolve()
+    page_id = find_report_page(report_dir, request_id)
+    if page_id is None:
+        return None
+    page_dir = report_dir / "definition" / "pages" / page_id
+    # {"page.json": "...", "visuals/<id>/visual.json": "..."}: the exact text of every file.
+    files = {}
+    for path in sorted(page_dir.rglob("*.json")):
+        relative = path.relative_to(page_dir).as_posix()
+        if SAVED_FILE_RE.fullmatch(relative):
+            files[relative] = path.read_text(encoding="utf-8")
+    table_entity = f"billing {view_name}"
+    table_file = model_dir / "definition" / "tables" / f"{table_entity}.tmdl"
+    page = _json_read(page_dir / "page.json")
+    log.info("Exported page %s (%d files) for request %s", page_id, len(files), request_id)
+    return {
+        "page_id": page_id,
+        "page_name": page.get("displayName") or page_id,
+        "visual_type": _page_visual_type(page_dir),
+        "view_name": view_name,
+        "model_table": table_entity,
+        "files": files,
+        "table_tmdl": table_file.read_text(encoding="utf-8") if table_file.is_file() else None,
+    }
+
+
+def restore_report_page(*, report_dir: str | Path, model_dir: str | Path, saved: dict) -> dict:
+    """Put a page saved by export_report_page() back into the project.
+
+    If the page is still in the report nothing is written (status "already_present"). Otherwise
+    the page files are written back unchanged (with a new page id / tab name only if the old one
+    is taken now), the model table is added again when it was removed, and the chatbot page's
+    "Open latest report" button is pointed at the page (status "generated_pending_reload_and_refresh").
+    """
+    # Called by PowerBIService.restore_page() (inside its lock) when the user opens a saved report.
+    report_dir = Path(report_dir).expanduser().resolve()
+    model_dir = Path(model_dir).expanduser().resolve()
+    view_name = saved.get("view_name") or ""
+    if not VIEW_RE.fullmatch(view_name):
+        raise PowerBIProjectError("The saved report has an invalid view name")
+    pages_dir = report_dir / "definition" / "pages"
+    pages_meta_file = pages_dir / "pages.json"
+    model_file = model_dir / "definition" / "model.tmdl"
+    tables_dir = model_dir / "definition" / "tables"
+    if not pages_dir.is_dir() or not tables_dir.is_dir() or not model_file.is_file():
+        raise PowerBIProjectError("Project folders are missing PBIR pages or TMDL model definitions")
+    table_entity = f"billing {view_name}"
+    pages_meta = _json_read(pages_meta_file)
+    page_order = list(pages_meta.get("pageOrder", []))
+
+    # Still there (under its saved id, or under any id if it was restored before): reuse it.
+    page_id = str(saved.get("page_id") or "")
+    if not (page_id in page_order and (pages_dir / page_id / "page.json").is_file()):
+        page_id = find_report_page(report_dir, saved["request_id"]) if saved.get("request_id") else None
+    if page_id:
+        name = _json_read(pages_dir / page_id / "page.json").get("displayName") or page_id
+        log.info("Saved report page %s (%r) is still in the report; nothing restored", page_id, name)
+        return {"status": "already_present", "page_id": page_id, "page_name": name,
+                "view_name": view_name, "model_table": table_entity}
+
+    # Check every stored file before writing anything: plain relative paths and valid JSON only.
+    files = saved.get("files") or {}
+    if "page.json" not in files:
+        raise PowerBIProjectError("The saved report has no page definition")
+    for relative, text in files.items():
+        if not isinstance(relative, str) or not SAVED_FILE_RE.fullmatch(relative) or not isinstance(text, str):
+            raise PowerBIProjectError(f"The saved report contains an invalid file entry: {relative!r}")
+        try:
+            json.loads(text)
+        except json.JSONDecodeError as exc:
+            raise PowerBIProjectError(f"The saved report file {relative} is not valid JSON: {exc}") from exc
+
+    table_file = tables_dir / f"{table_entity}.tmdl"
+    table_missing = not table_file.is_file()
+    ref_missing = f"ref table '{table_entity}'" not in model_file.read_text(encoding="utf-8")
+    table_tmdl = saved.get("table_tmdl")
+    if table_missing and not table_tmdl:
+        raise PowerBIProjectError(f"The model table for '{view_name}' is gone and was not saved")
+
+    # Same id as before when it is free; page.json "name" must match the folder name.
+    page_id = str(saved.get("page_id") or "")
+    if not PAGE_ID_RE.fullmatch(page_id) or (pages_dir / page_id).exists():
+        page_id = _uuid_hex(20)
+        while (pages_dir / page_id).exists():
+            page_id = _uuid_hex(20)
+    page = json.loads(files["page.json"])
+    page["name"] = page_id
+    page["displayName"] = _unique_display_name(
+        page.get("displayName") or saved.get("page_name") or f"Report {view_name}",
+        _page_names(pages_dir, page_order))
+    page_folder = pages_dir / page_id
+    for relative, text in files.items():
+        if relative == "page.json":
+            _json_write(page_folder / "page.json", page)
+        else:
+            target = page_folder / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(text, encoding="utf-8")
+
+    backup_dir = _backup_files([model_file, pages_meta_file], report_dir.parent)
+    try:
+        if table_missing:
+            table_file.write_text(table_tmdl, encoding="utf-8")
+        if table_missing or ref_missing:
+            _update_model_file(model_file, table_entity)
+        page_order.append(page_id)
+        pages_meta["pageOrder"] = page_order
+        _json_write(pages_meta_file, pages_meta)
+        log.info("Restored saved page %s (%r)%s", page_id, page["displayName"],
+                 " and its model table" if table_missing else "")
+    except Exception:
+        log.exception("Restoring the saved page failed; rolling back from %s", backup_dir)
+        try:
+            shutil.rmtree(page_folder, ignore_errors=True)
+            if table_missing:
+                table_file.unlink(missing_ok=True)
+            _restore_backups(backup_dir, model_file, pages_meta_file)
+        finally:
+            raise
+
+    latest_button_updated = False
+    chatbot = _find_chatbot_page(pages_dir, page_order)
+    if chatbot is not None:
+        try:
+            latest_button_updated = _write_latest_button(pages_dir, chatbot, page_id, page["displayName"], replace=True)
+        except (OSError, PowerBIProjectError, KeyError, TypeError, ValueError) as exc:
+            log.warning("Could not point 'Open latest report' at the restored page: %s: %s", type(exc).__name__, exc)
+    return {
+        "status": "generated_pending_reload_and_refresh",
+        "page_id": page_id,
+        "page_name": page["displayName"],
+        "view_name": view_name,
+        "model_table": table_entity,
+        "table_restored": table_missing,
+        "latest_button_updated": latest_button_updated,
+        "backup_dir": str(backup_dir),
     }

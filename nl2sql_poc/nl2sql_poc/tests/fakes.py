@@ -58,7 +58,7 @@ class FakeStore:
     def __init__(self, fail_log=False):
         from app.report_store import METADATA_FIELDS, REQUEST_STATUSES
         self._fields, self._statuses = METADATA_FIELDS, REQUEST_STATUSES
-        self.rows, self.views, self.logged = {}, [], []
+        self.rows, self.views, self.logged, self.saved = {}, [], [], {}
         self.inserts, self.updates = 0, []
         self.taken_names, self.race_names = set(), set()
         self.conversation, self.fail_log = [], fail_log
@@ -135,11 +135,45 @@ class FakeStore:
     def view_columns(self, view_name):
         return [{"name": "month_start", "type": "date"}, {"name": "revenue_usd", "type": "double"}]
 
+    def fetch_view_record(self, view_name):
+        # log_view(session_id, question, sql_text, view_name, assumptions)
+        for session_id, question, sql_text, name, assumptions in self.logged:
+            if name == view_name:
+                return {"view_name": name, "question": question, "sql_text": sql_text,
+                        "assumptions": " | ".join(assumptions) or None}
+        return None
+
+    def view_defined(self, view_name):
+        return any(v[0] == view_name for v in self.views)
+
+    # -- saved_reports (same owner rule as ReportStore._owner_clause)
+    def insert_saved_report(self, row):
+        if row["request_id"] in self.saved:
+            raise RuntimeError("Duplicate entry for key 'PRIMARY'")
+        self.saved[row["request_id"]] = dict(row, last_opened_at=None)
+
+    def fetch_saved_report(self, request_id):
+        row = self.saved.get(request_id)
+        return dict(row) if row else None
+
+    def list_saved_reports(self, user_id, user_role):
+        rows = [r for r in self.saved.values()
+                if (r["user_id"] == user_id if user_id else r["user_id"] is None and r["user_role"] == user_role)]
+        keys = ("request_id", "title", "visual_type", "view_name", "saved_at", "last_opened_at")
+        return [{k: r[k] for k in keys} for r in sorted(rows, key=lambda r: r["saved_at"], reverse=True)]
+
+    def touch_saved_report(self, request_id, opened_at):
+        self.saved[request_id]["last_opened_at"] = opened_at
+
+    def delete_saved_report(self, request_id):
+        return self.saved.pop(request_id, None) is not None
+
 
 class FakePowerBI:
     def __init__(self, automation=False, fail_reload=False, enabled=True):
         self.enabled, self.automation_enabled, self.reload_delay = enabled, automation, 0
         self.fail_reload, self.pages, self.reloads = fail_reload, [], []
+        self.in_report, self.restores = {}, []    # request_id -> page currently in the report
 
     def build_page(self, view_name, title, requested_visual_type=None, reuse_existing_table=False,
                    request_id=None, session_id=None, **kwargs):
@@ -148,9 +182,40 @@ class FakePowerBI:
         visual = requested_visual_type if requested_visual_type not in (None, "auto") else "lineChart"
         page = f"{title} ({len(self.pages) + 1})" if any(p["title"] == title for p in self.pages) else title
         self.pages.append({"title": title, "view": view_name, "visual": visual, "reuse": reuse_existing_table})
+        if request_id:
+            self.in_report[request_id] = {"page_name": page, "page_id": f"p{len(self.pages)}", "visual": visual}
         return {"status": "generated_pending_reload_and_refresh", "view_name": view_name,
                 "model_table": f"billing {view_name}", "page_name": page, "visual_type": visual,
                 "dimension_field": "month_start", "measure_field": "revenue_usd"}
+
+    # -- saved reports: pages are found by the request id stored in their feedback/save visual
+    def _page(self, request_id):
+        return self.in_report.get(request_id)
+
+    def remove_page(self, request_id):
+        """Simulates the user deleting the page in Power BI Desktop."""
+        del self.in_report[request_id]
+
+    def export_page(self, request_id, view_name):
+        page = self._page(request_id)
+        if page is None:
+            return None
+        files = {"page.json": json.dumps({"name": page["page_id"], "displayName": page["page_name"]}),
+                 "visuals/chart/visual.json": json.dumps({"visual": {"visualType": page["visual"]}})}
+        return {"page_id": page["page_id"], "page_name": page["page_name"], "visual_type": page["visual"],
+                "view_name": view_name, "model_table": f"billing {view_name}", "files": files,
+                "table_tmdl": "table 'billing %s'" % view_name}
+
+    def restore_page(self, saved):
+        self.restores.append(saved["request_id"])
+        page = self._page(saved["request_id"])
+        if page is not None:
+            return {"status": "already_present", "page_id": page["page_id"], "page_name": page["page_name"]}
+        name = json.loads(saved["files"]["page.json"])["displayName"]
+        self.in_report[saved["request_id"]] = {"page_name": name, "page_id": saved["page_id"],
+                                               "visual": saved["visual_type"]}
+        return {"status": "generated_pending_reload_and_refresh", "page_id": saved["page_id"],
+                "page_name": name, "view_name": saved["view_name"], "model_table": saved["model_table"]}
 
     def reload_refresh(self, generated):
         self.reloads.append(generated["page_name"])

@@ -14,6 +14,11 @@ export declare class Visual implements IVisual {
     private demoRoleSelect;
     private statusText;
     private greetingEl;
+    private savedReportsButton;
+    private savedPanel;
+    private savedList;
+    private savedStatus;
+    private savedPanelOpen;
     private sessionId;
     private entries;
     private rendered;
@@ -46,6 +51,14 @@ export declare class Visual implements IVisual {
     private readObjectText;
     private renderReportFeedback;
     private finishFeedbackSession;
+    private savedReportsRole;
+    private renderSaveButton;
+    private toggleSavedReports;
+    private loadSavedReports;
+    private buildSavedReportRow;
+    private openSavedReport;
+    private deleteSavedReport;
+    private formatUtc;
     destroy(): void;
     private readStoredSessionId;
     private initializeDemoRoleSelector;

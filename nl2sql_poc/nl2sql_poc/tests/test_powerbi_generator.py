@@ -66,10 +66,13 @@ def test_request_id_adds_feedback_visual_to_generated_report_page(tmp_path):
     out = generate(report, model, request_id="req-123", session_id="session-456")
     assert out["feedback_visual_added"] is True
     visuals = list((report / "definition" / "pages" / out["page_id"] / "visuals").glob("*/visual.json"))
-    feedback = [json.loads(path.read_text()) for path in visuals
+    chatbots = [json.loads(path.read_text()) for path in visuals
                 if json.loads(path.read_text()).get("visual", {}).get("visualType") ==
                 "billingChatbot79170476B0CA440F9F0C35FF45CF4C13"]
-    assert len(feedback) == 1
+    # Two copies of the chatbot visual: the feedback panel and the "Save report" button.
+    modes = lambda v: v["visual"]["objects"]["feedback"][0]["properties"]["mode"]["expr"]["Literal"]["Value"]
+    assert sorted(modes(v) for v in chatbots) == ["'feedback'", "'save'"]
+    feedback = [v for v in chatbots if modes(v) == "'feedback'"]
     feedback_visual = feedback[0]["visual"]
     props = feedback_visual["objects"]["feedback"][0]["properties"]
     # The feedback visual no longer uses a data-field projection; it is driven
@@ -246,3 +249,105 @@ def test_without_a_chatbot_page_no_buttons_are_added(tmp_path):
     result = generate(report, model, request_id="req1")
     assert result["back_button_added"] is False and result["latest_button_updated"] is False
     assert nav_buttons(report, result["page_id"], "backToAssistant") == []
+
+
+# ------------------------------------------------------------------ saved reports
+from app.powerbi_project_generator import (export_report_page, find_report_page,  # noqa: E402
+                                           restore_report_page)
+
+
+def page_files(report, page_id):
+    folder = report / "definition" / "pages" / page_id
+    return {p.relative_to(folder).as_posix(): p.read_text(encoding="utf-8") for p in folder.rglob("*.json")}
+
+
+def page_order(report):
+    return json.loads((report / "definition" / "pages" / "pages.json").read_text())["pageOrder"]
+
+
+def test_the_save_visual_sits_right_of_the_back_button(tmp_path):
+    report, model = skeleton(tmp_path)
+    with_chatbot(report)
+    result = generate(report, model, request_id="req1", session_id="s1")
+    assert result["save_visual_added"] is True
+    visuals = report / "definition" / "pages" / result["page_id"] / "visuals"
+    save = json.loads((visuals / "aiSaveReport" / "visual.json").read_text(encoding="utf-8"))
+    (back,) = nav_buttons(report, result["page_id"], "backToAssistant")
+    props = save["visual"]["objects"]["feedback"][0]["properties"]
+    assert save["visual"]["visualType"] == CHATBOT_VISUAL_TYPE
+    assert props["mode"]["expr"]["Literal"]["Value"] == "'save'"
+    assert props["requestId"]["expr"]["Literal"]["Value"] == "'req1'"
+    assert save["position"]["y"] == back["position"]["y"]
+    assert save["position"]["x"] == back["position"]["x"] + back["position"]["width"] + 15
+    assert set(save) <= CONTAINER_KEYS and set(save["visual"]) <= VISUAL_KEYS
+    # The save visual must not be mistaken for the main chatbot page.
+    assert gen._find_chatbot_page(report / "definition" / "pages", page_order(report))[0] == "p1"
+
+
+def test_a_saved_page_is_restored_exactly_after_it_was_deleted(tmp_path):
+    report, model = skeleton(tmp_path)
+    with_chatbot(report)
+    result = generate(report, model, request_id="req1", session_id="s1")
+    page_id = result["page_id"]
+    original = page_files(report, page_id)
+    saved = export_report_page(report_dir=report, model_dir=model, request_id="req1", view_name="vw_1_abc")
+    assert saved["files"] == original and saved["page_name"] == "Monthly Revenue"
+    assert saved["visual_type"] == "lineChart" and saved["table_tmdl"]
+    model_text = (model / "definition" / "model.tmdl").read_text()
+
+    # The user deletes the page and the table in Desktop, which then saves the project.
+    import shutil
+    shutil.rmtree(report / "definition" / "pages" / page_id)
+    pages_file = report / "definition" / "pages" / "pages.json"
+    pages_file.write_text(json.dumps({"pageOrder": ["p1"]}))
+    (model / "definition" / "tables" / "billing vw_1_abc.tmdl").unlink()
+    (model / "definition" / "model.tmdl").write_text(model_text.replace("ref table 'billing vw_1_abc'\n", ""))
+    assert find_report_page(report, "req1") is None
+
+    out = restore_report_page(report_dir=report, model_dir=model, saved=dict(saved, request_id="req1"))
+    assert out["status"] == "generated_pending_reload_and_refresh" and out["page_id"] == page_id
+    assert out["table_restored"] is True and out["model_table"] == "billing vw_1_abc"
+    assert page_files(report, page_id) == original                   # looks exactly the same
+    assert page_order(report) == ["p1", page_id]
+    assert "ref table 'billing vw_1_abc'" in (model / "definition" / "model.tmdl").read_text()
+    assert link_of(latest(report))["navigationSection"] == f"'{page_id}'"
+    assert find_report_page(report, "req1") == page_id
+
+
+def test_restore_reuses_a_page_that_is_still_there(tmp_path):
+    report, model = skeleton(tmp_path)
+    result = generate(report, model, request_id="req1")
+    saved = export_report_page(report_dir=report, model_dir=model, request_id="req1", view_name="vw_1_abc")
+    before = page_order(report)
+    out = restore_report_page(report_dir=report, model_dir=model, saved=dict(saved, request_id="req1"))
+    assert out["status"] == "already_present" and out["page_id"] == result["page_id"]
+    assert page_order(report) == before
+
+
+def test_restore_gets_a_new_tab_name_when_the_old_one_is_taken(tmp_path):
+    report, model = skeleton(tmp_path)
+    result = generate(report, model, request_id="req1")
+    saved = export_report_page(report_dir=report, model_dir=model, request_id="req1", view_name="vw_1_abc")
+    import shutil
+    shutil.rmtree(report / "definition" / "pages" / result["page_id"])
+    (report / "definition" / "pages" / "pages.json").write_text(json.dumps({"pageOrder": ["p1"]}))
+    generate(report, model, request_id="req2", reuse_existing_table=True)   # takes "Monthly Revenue"
+    out = restore_report_page(report_dir=report, model_dir=model, saved=dict(saved, request_id="req1"))
+    assert out["page_name"] == "Monthly Revenue (2)" and out["table_restored"] is False
+
+
+def test_restore_rejects_paths_outside_the_page_folder(tmp_path):
+    report, model = skeleton(tmp_path)
+    generate(report, model, request_id="req1")
+    saved = export_report_page(report_dir=report, model_dir=model, request_id="req1", view_name="vw_1_abc")
+    bad = dict(saved, request_id="other", page_id="gone",
+               files=dict(saved["files"], **{"../../evil.json": "{}"}))
+    with pytest.raises(PowerBIProjectError, match="invalid file entry"):
+        restore_report_page(report_dir=report, model_dir=model, saved=bad)
+    assert not (report / "definition" / "evil.json").exists()
+
+
+def test_export_of_an_unknown_request_returns_none(tmp_path):
+    report, model = skeleton(tmp_path)
+    generate(report, model, request_id="req1")
+    assert export_report_page(report_dir=report, model_dir=model, request_id="nope", view_name="vw_1_abc") is None

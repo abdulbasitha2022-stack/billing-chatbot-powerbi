@@ -266,6 +266,109 @@ class ReportStore:
         finally:
             conn.close()
 
+    # READ the registry row of one view (question, SQL, assumptions), or None. The SQL is what
+    # app/saved_reports.py re-checks for the role, and uses to recreate a missing view.
+    def fetch_view_record(self, view_name: str):
+        import pymysql
+        conn = self._connect()
+        try:
+            with conn.cursor(pymysql.cursors.DictCursor) as cur:
+                cur.execute("SELECT view_name, question, sql_text, assumptions FROM report_views "
+                            "WHERE view_name = %s", (view_name,))
+                return cur.fetchone()
+        finally:
+            conn.close()
+
+    # Does the view exist in MySQL right now? (view_exists() also counts names in the registry.)
+    def view_defined(self, view_name: str) -> bool:
+        validate_view_name(view_name)
+        conn = self._connect()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("SELECT 1 FROM information_schema.views "
+                            "WHERE table_schema = DATABASE() AND table_name = %s", (view_name,))
+                return cur.fetchone() is not None
+        finally:
+            conn.close()
+
+    # ------------------------------------------------------------------ saved reports
+    # saved_reports: ONE ROW PER SAVED REPORT, keyed by the request_id it was generated for (see
+    # migrations/003_saved_reports.sql). page_definition holds the page's files as JSON
+    # ({"page.json": "...", "visuals/<id>/visual.json": "..."}); app/saved_reports.py builds the rows.
+    # Owner rule (same everywhere): a verified user_id matches by user_id; without one (demo mode
+    # or no identity provider) rows WITHOUT a user_id match by role.
+    _SAVED_COLUMNS = ("request_id, session_id, user_id, user_role, title, page_id, visual_type, view_name, "
+                      "model_table, sql_text, request_text, page_definition, table_tmdl, saved_at, last_opened_at")
+    _SAVED_SUMMARY = "request_id, title, visual_type, view_name, saved_at, last_opened_at"
+
+    @staticmethod
+    def _owner_clause(user_id, user_role):
+        if user_id:
+            return "user_id = %s", (user_id,)
+        return "user_id IS NULL AND user_role <=> %s", (user_role,)
+
+    def insert_saved_report(self, row: dict):
+        import json
+        conn = self._connect()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    f"INSERT INTO saved_reports ({self._SAVED_COLUMNS}) "
+                    "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NULL)",
+                    (row["request_id"], row.get("session_id"), row.get("user_id"), row.get("user_role"),
+                     row["title"], row["page_id"], row.get("visual_type"), row["view_name"],
+                     row["model_table"], row.get("sql_text"), row.get("request_text"),
+                     json.dumps(row["files"], ensure_ascii=False), row.get("table_tmdl"), row["saved_at"]))
+        finally:
+            conn.close()
+
+    # The full row of one saved report (page_definition decoded into "files"), or None.
+    def fetch_saved_report(self, request_id):
+        import json
+        import pymysql
+        conn = self._connect()
+        try:
+            with conn.cursor(pymysql.cursors.DictCursor) as cur:
+                cur.execute(f"SELECT {self._SAVED_COLUMNS} FROM saved_reports WHERE request_id = %s",
+                            (request_id,))
+                row = cur.fetchone()
+        finally:
+            conn.close()
+        if row is not None:
+            row["files"] = json.loads(row.pop("page_definition") or "{}")
+        return row
+
+    # The owner's saved reports, newest first, without the (large) page files.
+    def list_saved_reports(self, user_id, user_role) -> list:
+        import pymysql
+        clause, params = self._owner_clause(user_id, user_role)
+        conn = self._connect()
+        try:
+            with conn.cursor(pymysql.cursors.DictCursor) as cur:
+                cur.execute(f"SELECT {self._SAVED_SUMMARY} FROM saved_reports WHERE {clause} "
+                            "ORDER BY saved_at DESC", params)
+                return list(cur.fetchall())
+        finally:
+            conn.close()
+
+    def touch_saved_report(self, request_id, opened_at):
+        conn = self._connect()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("UPDATE saved_reports SET last_opened_at = %s WHERE request_id = %s",
+                            (opened_at, request_id))
+        finally:
+            conn.close()
+
+    def delete_saved_report(self, request_id) -> bool:
+        conn = self._connect()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM saved_reports WHERE request_id = %s", (request_id,))
+                return cur.rowcount > 0
+        finally:
+            conn.close()
+
     # ------------------------------------------------------------------ conversation audit log
     def log_messages(self, rows: list):
         """Insert chat messages into chat_conversation_log (see chatbot_schema.sql)."""

@@ -24,6 +24,11 @@ Endpoints
   POST /revise-report                {session_id, visual_type}  -> chart change without chatting
   POST /complete-report              manual-SQL test hook
   GET  /requests/<request_id>        metadata row
+  POST /reports/save                 {request_id, demo_role?}  "Save report" button on a generated page
+  GET  /reports/saved                ?demo_role=  the caller's saved reports (newest first)
+  GET  /reports/saved/<request_id>   ?demo_role=  is this report saved? (the Save button's state)
+  POST /reports/saved/<request_id>/open    {session_id?, demo_role?}  put the page back if it was removed
+  POST /reports/saved/<request_id>/delete  {demo_role?}  forget the saved copy (page and view stay)
   GET  /health
 Run:  python chatbot_api.py   (127.0.0.1:5056; set CHATBOT_HOST / CHATBOT_PORT / FLASK_DEBUG=1)
 """
@@ -99,6 +104,7 @@ from app.naming import new_request_id, unique_view_name
 from app.pipeline import VISUAL_TYPES, normalize_chart_type
 from app.powerbi_project_generator import PowerBIProjectError
 from app.report_store import ViewExistsError
+from app.saved_reports import SavedReports
 from app.session import ChatSession, SessionStore
 from app.util import json_safe
 from app.access import AccessController
@@ -179,6 +185,13 @@ class ChatService:
         self.clock = clock or utc_now                # "now" function (replaceable in tests)
         self.identity = identity or IdentityResolver(cfg)   # works out user/role from trusted headers
         self._background = background or self._spawn   # how background jobs are started (thread by default)
+        # "Save report" / "Saved reports" (app/saved_reports.py). The lambdas read self.access and
+        # self.clock at call time, so replacing them later (tests) also affects saved reports.
+        self.saved = SavedReports(
+            store, powerbi,
+            check_sql=lambda sql, role: validate_sql(sql, self.dialect, self.allowed_tables, self.max_rows,
+                                                     role=role, access=self.access).sql,
+            clock=lambda: self.clock())
 
     # Default way to run a background job: a new daemon thread. "daemon" means the thread will
     # not keep the Python process alive when the server is shut down.
@@ -1108,6 +1121,148 @@ class ChatService:
                 "messages": [user_entry, assistant_entry],
                 "updated": [{"id": entry["id"], "meta": entry["meta"]}], "session_ended": False}), 200
 
+    # ================================================================== saved reports
+    # "Save report" on a generated page and the chat's "Saved reports" list. The work is done by
+    # app/saved_reports.py; these methods check the input and the caller, turn failures into
+    # replies, and (after a restore) reload Power BI Desktop like a new report does.
+    @staticmethod
+    def _bad_request_id(request_id):
+        if not isinstance(request_id, str) or not request_id.strip() or len(request_id) > 64:
+            return {"error": "request_id must be a non-empty string of 64 characters or fewer"}, 400
+        return None
+
+    # In demo mode the chosen role IS the owner, so a valid one is required. Returns
+    # (identity, None) or (identity, (payload, 403)).
+    def _saved_identity(self, identity):
+        identity = identity or Identity()
+        if self.identity.demo_role_selection and identity.user_role not in ("CEO", "Developer", "Analyst"):
+            return identity, ({"error": "Choose a valid demo role first."}, 403)
+        return identity, None
+
+    def save_report(self, body: dict, identity: Identity | None = None):
+        """POST /reports/save: the "Save report" button on a generated report page."""
+        request_id = body.get("request_id")
+        identity, denied = self._saved_identity(identity)
+        denied = self._bad_request_id(request_id) or denied
+        if denied:
+            return denied
+        request_id = request_id.strip()
+        bind_request(request_id)
+        log.info("Save report requested")
+        try:
+            return self.saved.save(request_id, identity)
+        except PowerBIProjectError as exc:
+            log.warning("Saving report %s failed: %s", request_id, exc)
+            return {"error": f"The report page could not be read: {exc}"}, 500
+        except Exception:
+            log.exception("Saving report %s failed", request_id)
+            return {"error": "The report could not be saved. Please try again."}, 500
+
+    def saved_report_status(self, request_id, identity: Identity | None = None):
+        """GET /reports/saved/<request_id>: tells the Save button whether it is already saved."""
+        identity, denied = self._saved_identity(identity)
+        denied = self._bad_request_id(request_id) or denied
+        if denied:
+            return denied
+        try:
+            return self.saved.is_saved(request_id.strip(), identity)
+        except Exception:
+            log.exception("Could not read saved report %s", request_id)
+            return {"error": "Saved reports are unavailable right now."}, 500
+
+    def list_saved_reports(self, identity: Identity | None = None):
+        """GET /reports/saved: the caller's saved reports, newest first."""
+        identity, denied = self._saved_identity(identity)
+        if denied:
+            return denied
+        try:
+            return self.saved.list(identity)
+        except Exception:
+            log.exception("Could not list saved reports")
+            return {"error": "Saved reports are unavailable right now."}, 500
+
+    def delete_saved_report(self, request_id, identity: Identity | None = None):
+        """POST /reports/saved/<request_id>/delete: forget the saved copy (page and view stay)."""
+        identity, denied = self._saved_identity(identity)
+        denied = self._bad_request_id(request_id) or denied
+        if denied:
+            return denied
+        bind_request(request_id.strip())
+        try:
+            return self.saved.delete(request_id.strip(), identity)
+        except Exception:
+            log.exception("Could not delete saved report %s", request_id)
+            return {"error": "The saved report could not be deleted. Please try again."}, 500
+
+    def open_saved_report(self, request_id, body: dict, identity: Identity | None = None):
+        """POST /reports/saved/<request_id>/open: put the saved page back if it was removed.
+
+        body.session_id (optional) = the chat page's session: the restore message and the Desktop
+        reload are then shown in that chat, exactly like a newly generated report."""
+        identity, denied = self._saved_identity(identity)
+        denied = self._bad_request_id(request_id) or denied
+        if denied:
+            return denied
+        request_id = request_id.strip()
+        bind_request(request_id)
+        log.info("Open saved report requested")
+        try:
+            payload, status, project = self.saved.open(request_id, identity)
+        except PowerBIProjectError as exc:
+            log.warning("Restoring saved report %s failed: %s", request_id, exc)
+            return {"error": f"The saved report could not be restored: {exc}"}, 500
+        except Exception:
+            log.exception("Restoring saved report %s failed", request_id)
+            return {"error": "The saved report could not be restored. Please try again."}, 500
+        if project is None:
+            return payload, status
+
+        project["request_id"] = request_id       # log context of the reload job
+        if self.powerbi.automation_enabled:
+            payload["message"] += (" Power BI is reloading the report; when it is done, click "
+                                   "**Open latest report** (top right) or the page tab to view it.")
+        else:
+            payload["message"] += " Reload the project in Power BI Desktop to see it."
+        session = self._session_for_restore(body.get("session_id"), identity)
+        if session is not None:
+            with session.lock:
+                first_new_id = session.last_id
+                session.add_message("assistant", payload["message"], kind="status")
+                self._schedule_reload(session, project)
+                payload.update(session_id=session.session_id, busy=session.busy,
+                               messages=session.messages_after(first_new_id))
+        else:
+            self._reload_without_session(project)
+            payload["busy"] = False
+        return json_safe(payload), status
+
+    # The caller's own, still-active chat session with this id, or None.
+    def _session_for_restore(self, session_id, identity: Identity):
+        if not isinstance(session_id, str) or not session_id.strip():
+            return None
+        session = self.sessions.get(session_id.strip())
+        if session is None or session.ended:
+            return None
+        if (session.user_id or None) != (identity.user_id or None) or session.user_role != identity.user_role:
+            return None
+        return session
+
+    # Desktop reload after a restore when no chat session can show its progress.
+    def _reload_without_session(self, project):
+        if not self.powerbi.automation_enabled:
+            return
+
+        def job():
+            bind_request(project.get("request_id"))
+            time.sleep(self.powerbi.reload_delay)
+            try:
+                self.powerbi.reload_refresh(project)
+                log.info("Power BI reload/refresh finished for restored page %r", project.get("page_name"))
+            except Exception:
+                log.exception("Power BI reload/refresh failed for restored page %r", project.get("page_name"))
+
+        self._background(job)
+
     # ================================================================== other endpoints
     # GET /session/<id>/transcript. The visual uses it to restore the chat after Power BI
     # reloads, and to poll for new messages (e.g. the background "reloaded" message).
@@ -1607,6 +1762,31 @@ def create_app(cfg_path=None, *, cfg=None, llm=None, db=None, store=None, powerb
 
         # Convert the database row into JSON-safe data before returning it.
         return jsonify(json_safe(row))
+
+    # SAVED REPORT ROUTES: "Save report" on a generated page, and the chat's "Saved reports" list.
+    # GET requests carry the demo role as ?demo_role= (like /session/latest).
+    @app.post("/reports/save")
+    def report_save():
+        body = request.get_json(silent=True) or {}
+        return reply(service.save_report(body, who(body)))
+
+    @app.get("/reports/saved")
+    def reports_saved():
+        return reply(service.list_saved_reports(who({"demo_role": request.args.get("demo_role")})))
+
+    @app.get("/reports/saved/<request_id>")
+    def report_saved_status(request_id):
+        return reply(service.saved_report_status(request_id, who({"demo_role": request.args.get("demo_role")})))
+
+    @app.post("/reports/saved/<request_id>/open")
+    def report_saved_open(request_id):
+        body = request.get_json(silent=True) or {}
+        return reply(service.open_saved_report(request_id, body, who(body)))
+
+    @app.post("/reports/saved/<request_id>/delete")
+    def report_saved_delete(request_id):
+        body = request.get_json(silent=True) or {}
+        return reply(service.delete_saved_report(request_id, who(body)))
 
     # HEALTH ROUTE: Checks whether the backend is running and reports its configuration.
     # Liveness check used by the visual: is the backend up, and which LLM/model/dialect is in use.

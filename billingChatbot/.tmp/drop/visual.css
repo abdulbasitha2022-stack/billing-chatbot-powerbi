@@ -275,7 +275,8 @@
   opacity: 0.65;
 }
 .chatbot-container .end-session-button,
-.chatbot-container .feedback-button {
+.chatbot-container .feedback-button,
+.chatbot-container .saved-reports-button {
   padding: 5px 10px;
   font-size: 13px;
   color: #6b7785;
@@ -286,17 +287,20 @@
   transition: all 0.15s ease;
 }
 .chatbot-container .end-session-button:hover:not(:disabled),
-.chatbot-container .feedback-button:hover:not(:disabled) {
+.chatbot-container .feedback-button:hover:not(:disabled),
+.chatbot-container .saved-reports-button:hover:not(:disabled) {
   color: #1f2933;
   border-color: #6b7785;
 }
 .chatbot-container .end-session-button:disabled,
-.chatbot-container .feedback-button:disabled {
+.chatbot-container .feedback-button:disabled,
+.chatbot-container .saved-reports-button:disabled {
   opacity: 0.55;
   cursor: default;
 }
 .chatbot-container .end-session-button.selected,
-.chatbot-container .feedback-button.selected {
+.chatbot-container .feedback-button.selected,
+.chatbot-container .saved-reports-button.selected {
   background: #e8f0fe;
   border-color: #2b5fd9;
   color: #1e3a8a;
@@ -448,5 +452,140 @@
 .report-feedback-panel .feedback-button:disabled {
   cursor: default;
   opacity: 0.55;
+}
+.chatbot-container .chat-area[hidden],
+.chatbot-container .saved-reports-panel[hidden] {
+  display: none;
+}
+.chatbot-container .saved-reports-panel {
+  flex: 1;
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  overflow-y: auto;
+}
+.chatbot-container .saved-reports-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  color: #1e3a8a;
+}
+.chatbot-container .saved-reports-close,
+.chatbot-container .saved-report-open,
+.chatbot-container .saved-report-delete {
+  padding: 5px 10px;
+  font-size: 13px;
+  color: #6b7785;
+  background: #fff;
+  border: 1px solid #e4e8ee;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.chatbot-container .saved-reports-close:hover:not(:disabled),
+.chatbot-container .saved-report-open:hover:not(:disabled),
+.chatbot-container .saved-report-delete:hover:not(:disabled) {
+  color: #1f2933;
+  border-color: #6b7785;
+}
+.chatbot-container .saved-reports-close:disabled,
+.chatbot-container .saved-report-open:disabled,
+.chatbot-container .saved-report-delete:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.chatbot-container .saved-report-open {
+  color: #fff;
+  background: #2b5fd9;
+  border-color: #2b5fd9;
+}
+.chatbot-container .saved-report-open:hover:not(:disabled) {
+  color: #fff;
+  border-color: #1e3a8a;
+  background: #1e3a8a;
+}
+.chatbot-container .saved-report-delete.confirming {
+  color: #b3261e;
+  background: #fdecea;
+  border-color: #b3261e;
+  font-weight: 600;
+}
+.chatbot-container .saved-reports-status {
+  color: #6b7785;
+  font-size: 14px;
+}
+.chatbot-container .saved-reports-status:empty {
+  display: none;
+}
+.chatbot-container .saved-reports-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.chatbot-container .saved-report-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #e4e8ee;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+.chatbot-container .saved-report-info {
+  min-width: 0;
+}
+.chatbot-container .saved-report-title {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.chatbot-container .saved-report-details {
+  color: #6b7785;
+  font-size: 13px;
+  margin-top: 2px;
+}
+.chatbot-container .saved-report-actions {
+  display: flex;
+  gap: 6px;
+  flex: none;
+}
+.report-save-panel {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+.report-save-button {
+  width: 100%;
+  height: 100%;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  background: #1e7f4f;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.report-save-button:hover:not(:disabled) {
+  background: #176640;
+}
+.report-save-button:focus-visible {
+  outline: 2px solid #2b5fd9;
+  outline-offset: 2px;
+}
+.report-save-button:disabled {
+  cursor: default;
+  opacity: 0.8;
+}
+.report-save-button.saved {
+  color: #1e7f4f;
+  background: #eaf6ef;
+  border: 1.5px solid #1e7f4f;
+  opacity: 1;
 }
 

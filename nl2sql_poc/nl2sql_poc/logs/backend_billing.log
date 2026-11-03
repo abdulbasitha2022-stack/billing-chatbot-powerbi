@@ -819,3 +819,606 @@ Traceback (most recent call last):
   File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\llm.py", line 134, in __init__
     raise RuntimeError("GROQ_API_KEY environment variable is not set.")
 RuntimeError: GROQ_API_KEY environment variable is not set.
+2026-11-03 07:47:27,457 INFO    chatbot [sid=- rid=-] Starting chatbot backend: config=C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\config_billing.yaml log_file=C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\backend_billing.log
+2026-11-03 07:47:27,459 INFO    app.report_store [sid=- rid=-] Report store: view_builder@localhost:3306/billing (password not logged)
+2026-11-03 07:47:28,682 INFO    app.llm [sid=- rid=-] LLM provider ready: groq, model openai/gpt-oss-120b
+2026-11-03 07:47:28,751 INFO    app.db [sid=- rid=-] Database engine ready: mysql+pymysql://billing_readonly:***@localhost:3306/billing (dialect mysql, from config)
+2026-11-03 07:47:28,846 INFO    app.powerbi_project_generator [sid=- rid=-] 'Open latest report' button already in place
+2026-11-03 07:47:28,849 INFO    app.access [sid=- rid=-] Loaded 27 role permission rule(s) for 3 role(s)
+2026-11-03 07:47:28,858 INFO    chatbot [sid=- rid=-] Backend ready on http://127.0.0.1:5056 (provider=groq model=openai/gpt-oss-120b dialect=mysql powerbi=True automation=True)
+2026-11-03 07:47:28,874 INFO    werkzeug [sid=- rid=-] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5056
+2026-11-03 07:47:28,874 INFO    werkzeug [sid=- rid=-] [33mPress CTRL+C to quit[0m
+2026-11-03 07:48:04,787 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 07:48:04] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 07:48:04,827 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 07:48:04] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 07:48:04,845 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 07:48:04] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 07:48:25,349 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 07:48:25] "OPTIONS /chat HTTP/1.1" 200 -
+2026-11-03 07:48:25,359 INFO    app.session [sid=82a8f6e172c8 rid=-] Session 82a8f6e172c8 created (id sent by the visual)
+2026-11-03 07:48:25,360 INFO    chatbot [sid=82a8f6e172c8 rid=-] Chat message received: action=- visual_type=auto role=Developer chars=15 new_session=True
+2026-11-03 07:48:25,378 INFO    app.pipeline [sid=82a8f6e172c8 rid=-] LLM planner call started (groq/openai/gpt-oss-120b, 1 messages)
+2026-11-03 07:48:29,894 INFO    app.pipeline [sid=82a8f6e172c8 rid=-] LLM planner call finished in 4513 ms (tokens in 3556, out 124)
+2026-11-03 07:48:29,897 INFO    app.pipeline [sid=82a8f6e172c8 rid=-] Plan: intent=clarify score=30 sufficient=False chart=auto
+2026-11-03 07:48:30,042 INFO    chatbot [sid=82a8f6e172c8 rid=b29c865ff0fa] Report request created (status initiated)
+2026-11-03 07:48:30,043 INFO    chatbot [sid=82a8f6e172c8 rid=b29c865ff0fa] Asking a clarifying question (#1, score 30)
+2026-11-03 07:48:30,252 INFO    chatbot [sid=82a8f6e172c8 rid=b29c865ff0fa] Chat turn finished: status=clarify http=200 intent=clarify in 4892 ms
+2026-11-03 07:48:30,253 INFO    werkzeug [sid=82a8f6e172c8 rid=b29c865ff0fa] 127.0.0.1 - - [03/Nov/2026 07:48:30] "POST /chat HTTP/1.1" 200 -
+2026-11-03 07:48:44,282 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 07:48:44] "OPTIONS /chat HTTP/1.1" 200 -
+2026-11-03 07:48:44,292 INFO    chatbot [sid=82a8f6e172c8 rid=b29c865ff0fa] Chat message received: action=- visual_type=auto role=Developer chars=18 new_session=False
+2026-11-03 07:48:44,294 INFO    app.pipeline [sid=82a8f6e172c8 rid=b29c865ff0fa] LLM planner call started (groq/openai/gpt-oss-120b, 3 messages)
+2026-11-03 07:48:45,317 INFO    app.pipeline [sid=82a8f6e172c8 rid=b29c865ff0fa] LLM planner call finished in 1018 ms (tokens in 3621, out 123)
+2026-11-03 07:48:45,318 INFO    app.pipeline [sid=82a8f6e172c8 rid=b29c865ff0fa] Plan: intent=new_report score=95 sufficient=True chart=auto
+2026-11-03 07:48:45,320 INFO    chatbot [sid=82a8f6e172c8 rid=b29c865ff0fa] Request clarified; asking for the chart type
+2026-11-03 07:48:45,541 INFO    chatbot [sid=82a8f6e172c8 rid=b29c865ff0fa] Chat turn finished: status=awaiting_chart_choice http=200 intent=choose_chart in 1248 ms
+2026-11-03 07:48:45,542 INFO    werkzeug [sid=82a8f6e172c8 rid=b29c865ff0fa] 127.0.0.1 - - [03/Nov/2026 07:48:45] "POST /chat HTTP/1.1" 200 -
+2026-11-03 07:48:48,392 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 07:48:48] "OPTIONS /chat HTTP/1.1" 200 -
+2026-11-03 07:48:48,411 INFO    chatbot [sid=82a8f6e172c8 rid=b29c865ff0fa] Chat message received: action=choose_chart visual_type=auto role=Developer chars=4 new_session=False
+2026-11-03 07:48:48,417 INFO    app.conversation [sid=82a8f6e172c8 rid=b29c865ff0fa] Chart choice auto received for the pending request; generating
+2026-11-03 07:48:48,644 INFO    app.conversation [sid=82a8f6e172c8 rid=b29c865ff0fa] Generating new_report: chart=auto title='Top Customers'
+2026-11-03 07:48:48,646 INFO    app.pipeline [sid=82a8f6e172c8 rid=b29c865ff0fa] SQL generation started (19e405b5, role Developer, revising=False)
+2026-11-03 07:48:48,647 INFO    app.pipeline [sid=82a8f6e172c8 rid=b29c865ff0fa] LLM sql#1 call started (groq/openai/gpt-oss-120b, 1 messages)
+2026-11-03 07:48:49,511 INFO    app.pipeline [sid=82a8f6e172c8 rid=b29c865ff0fa] LLM sql#1 call finished in 862 ms (tokens in 2442, out 266)
+2026-11-03 07:48:49,588 INFO    app.pipeline [sid=82a8f6e172c8 rid=b29c865ff0fa] SQL ran in 16 ms: 8 rows, 3 columns
+2026-11-03 07:48:49,589 INFO    app.pipeline [sid=82a8f6e172c8 rid=b29c865ff0fa] SQL generation finished: status=ok attempts=1 in 0.94 s
+2026-11-03 07:48:49,908 INFO    chatbot [sid=82a8f6e172c8 rid=b29c865ff0fa] Created view vw_top_customers_20261103_b29c865ff0fa in 127 ms
+2026-11-03 07:48:50,086 INFO    chatbot [sid=82a8f6e172c8 rid=b29c865ff0fa] Building Power BI page for view=vw_top_customers_20261103_b29c865ff0fa chart=auto reuse_table=False
+2026-11-03 07:48:50,088 INFO    app.powerbi_service [sid=82a8f6e172c8 rid=b29c865ff0fa] Desktop automation 'prepare' started (table -, timeout 180 s)
+2026-11-03 07:48:51,908 INFO    app.powerbi_service [sid=82a8f6e172c8 rid=b29c865ff0fa] Desktop automation 'prepare' finished in 1819 ms
+2026-11-03 07:48:52,014 INFO    app.powerbi_project_generator [sid=82a8f6e172c8 rid=b29c865ff0fa] Page 'Top Customers' for vw_top_customers_20261103_b29c865ff0fa: visual=clusteredColumnChart (requested auto) dimension=name measure=gross_revenue_usd, 3 columns
+2026-11-03 07:48:52,151 INFO    app.powerbi_project_generator [sid=82a8f6e172c8 rid=b29c865ff0fa] Wrote table file billing vw_top_customers_20261103_b29c865ff0fa.tmdl and page 5e2689bb3c9847239281 (4 visuals) to the project
+2026-11-03 07:48:52,160 INFO    app.powerbi_project_generator [sid=82a8f6e172c8 rid=b29c865ff0fa] 'Open latest report' button now targets 'Top Customers'
+2026-11-03 07:48:52,161 INFO    chatbot [sid=82a8f6e172c8 rid=b29c865ff0fa] Power BI page step finished: status=generated_pending_reload_and_refresh page='Top Customers' visual=clusteredColumnChart in 2075 ms
+2026-11-03 07:48:52,165 INFO    chatbot [sid=82a8f6e172c8 rid=b29c865ff0fa] Request b29c865ff0fa finished as completed after 9314 ms
+2026-11-03 07:48:52,241 INFO    chatbot [sid=82a8f6e172c8 rid=b29c865ff0fa] Power BI reload/refresh scheduled for page 'Top Customers' (table billing vw_top_customers_20261103_b29c865ff0fa) in 2.0 s
+2026-11-03 07:48:52,315 INFO    chatbot [sid=82a8f6e172c8 rid=b29c865ff0fa] Chat turn finished: status=ok http=200 intent=new_report in 3900 ms
+2026-11-03 07:48:52,316 INFO    werkzeug [sid=82a8f6e172c8 rid=b29c865ff0fa] 127.0.0.1 - - [03/Nov/2026 07:48:52] "POST /chat HTTP/1.1" 200 -
+2026-11-03 07:48:54,243 INFO    chatbot [sid=82a8f6e172c8 rid=b29c865ff0fa] Power BI reload/refresh started for page 'Top Customers'
+2026-11-03 07:48:54,246 INFO    app.powerbi_service [sid=82a8f6e172c8 rid=b29c865ff0fa] Desktop automation 'reload_refresh' started (table billing vw_top_customers_20261103_b29c865ff0fa, timeout 180 s)
+2026-11-03 07:49:00,575 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 07:49:00] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 07:49:00,612 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 07:49:00] "GET /session/latest?demo_role=Developer HTTP/1.1" 200 -
+2026-11-03 07:49:00,627 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 07:49:00] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 07:49:02,459 ERROR   app.powerbi_service [sid=82a8f6e172c8 rid=b29c865ff0fa] Desktop automation 'reload_refresh' failed after 8211 ms (exit code 1): Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder. (step details: logs/powerbi_automation.log)
+2026-11-03 07:49:02,459 ERROR   chatbot [sid=82a8f6e172c8 rid=b29c865ff0fa] Power BI reload/refresh failed for page 'Top Customers' after 8216 ms (step details: logs/powerbi_automation.log)
+Traceback (most recent call last):
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\chatbot_api.py", line 904, in job
+    self.powerbi.reload_refresh(project)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_service.py", line 236, in reload_refresh
+    return self.run_desktop_automation("reload_refresh", table_name=generated["model_table"])
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_service.py", line 187, in run_desktop_automation
+    raise PowerBIProjectError(f"Power BI Desktop automation '{action}' failed: {details}")
+app.powerbi_project_generator.PowerBIProjectError: Power BI Desktop automation 'reload_refresh' failed: Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder.
+2026-11-03 07:49:04,016 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 07:49:04] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 07:49:04,031 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 07:49:04] "GET /session/latest?demo_role=Developer HTTP/1.1" 200 -
+2026-11-03 07:49:04,050 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 07:49:04] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 11:34:50,862 INFO    chatbot [sid=- rid=-] Starting chatbot backend: config=C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\config_billing.yaml log_file=C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\backend_billing.log
+2026-11-03 11:34:50,865 INFO    app.report_store [sid=- rid=-] Report store: view_builder@localhost:3306/billing (password not logged)
+2026-11-03 11:34:51,862 ERROR   app.llm [sid=- rid=-] GROQ_API_KEY is not set; the Groq provider cannot start
+2026-11-03 11:34:51,862 ERROR   chatbot [sid=- rid=-] Backend failed to start
+Traceback (most recent call last):
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\chatbot_api.py", line 1818, in main
+    app = create_app(cfg=cfg)
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\chatbot_api.py", line 1545, in create_app
+    pipeline = Pipeline(llm or build_llm(cfg["llm"]), db or build_db(cfg["db"]), cfg, base_dir=BASE)
+                               ~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\llm.py", line 186, in build_llm
+    provider = PROVIDERS[name](llm_cfg[name])
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\llm.py", line 134, in __init__
+    raise RuntimeError("GROQ_API_KEY environment variable is not set.")
+RuntimeError: GROQ_API_KEY environment variable is not set.
+2026-11-03 11:35:18,547 INFO    chatbot [sid=- rid=-] Starting chatbot backend: config=C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\config_billing.yaml log_file=C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\logs\backend_billing.log
+2026-11-03 11:35:18,549 INFO    app.report_store [sid=- rid=-] Report store: view_builder@localhost:3306/billing (password not logged)
+2026-11-03 11:35:19,278 INFO    app.llm [sid=- rid=-] LLM provider ready: groq, model openai/gpt-oss-120b
+2026-11-03 11:35:19,328 INFO    app.db [sid=- rid=-] Database engine ready: mysql+pymysql://billing_readonly:***@localhost:3306/billing (dialect mysql, from config)
+2026-11-03 11:35:19,390 INFO    app.powerbi_project_generator [sid=- rid=-] 'Open latest report' button already in place
+2026-11-03 11:35:19,392 INFO    app.access [sid=- rid=-] Loaded 27 role permission rule(s) for 3 role(s)
+2026-11-03 11:35:19,400 INFO    chatbot [sid=- rid=-] Backend ready on http://127.0.0.1:5056 (provider=groq model=openai/gpt-oss-120b dialect=mysql powerbi=True automation=True)
+2026-11-03 11:35:19,419 INFO    werkzeug [sid=- rid=-] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5056
+2026-11-03 11:35:19,420 INFO    werkzeug [sid=- rid=-] [33mPress CTRL+C to quit[0m
+2026-11-03 11:36:54,334 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:36:54] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 11:36:54,359 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:36:54] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 11:36:54,372 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:36:54] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 11:37:22,099 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:37:22] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 11:37:22,106 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:37:22] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 11:37:22,117 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:37:22] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 11:37:23,675 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:37:23] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 11:37:23,683 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:37:23] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 11:37:23,688 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:37:23] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 11:38:11,545 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:38:11] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 11:38:11,558 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:38:11] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 11:38:11,578 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:38:11] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 11:39:05,994 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:39:05] "OPTIONS /chat HTTP/1.1" 200 -
+2026-11-03 11:39:05,999 INFO    app.session [sid=81b4ec7dfc3a rid=-] Session 81b4ec7dfc3a created (id sent by the visual)
+2026-11-03 11:39:06,010 INFO    chatbot [sid=81b4ec7dfc3a rid=-] Chat message received: action=- visual_type=auto role=CEO chars=54 new_session=True
+2026-11-03 11:39:06,013 INFO    app.pipeline [sid=81b4ec7dfc3a rid=-] LLM planner call started (groq/openai/gpt-oss-120b, 1 messages)
+2026-11-03 11:39:08,104 INFO    app.pipeline [sid=81b4ec7dfc3a rid=-] LLM planner call finished in 2091 ms (tokens in 3510, out 105)
+2026-11-03 11:39:08,105 INFO    app.pipeline [sid=81b4ec7dfc3a rid=-] Plan: intent=clarify score=45 sufficient=False chart=auto
+2026-11-03 11:39:08,146 INFO    chatbot [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Report request created (status initiated)
+2026-11-03 11:39:08,148 INFO    chatbot [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Asking a clarifying question (#1, score 45)
+2026-11-03 11:39:08,283 INFO    chatbot [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Chat turn finished: status=clarify http=200 intent=clarify in 2270 ms
+2026-11-03 11:39:08,285 INFO    werkzeug [sid=81b4ec7dfc3a rid=7ffffb77a8c9] 127.0.0.1 - - [03/Nov/2026 11:39:08] "POST /chat HTTP/1.1" 200 -
+2026-11-03 11:39:13,137 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:39:13] "OPTIONS /chat HTTP/1.1" 200 -
+2026-11-03 11:39:13,145 INFO    chatbot [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Chat message received: action=- visual_type=auto role=CEO chars=4 new_session=False
+2026-11-03 11:39:13,152 INFO    app.pipeline [sid=81b4ec7dfc3a rid=7ffffb77a8c9] LLM planner call started (groq/openai/gpt-oss-120b, 3 messages)
+2026-11-03 11:39:14,460 INFO    app.pipeline [sid=81b4ec7dfc3a rid=7ffffb77a8c9] LLM planner call finished in 1306 ms (tokens in 3558, out 230)
+2026-11-03 11:39:14,460 INFO    app.pipeline [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Plan: intent=new_report score=95 sufficient=True chart=auto
+2026-11-03 11:39:14,461 INFO    chatbot [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Request clarified; asking for the chart type
+2026-11-03 11:39:14,507 INFO    chatbot [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Chat turn finished: status=awaiting_chart_choice http=200 intent=choose_chart in 1354 ms
+2026-11-03 11:39:14,507 INFO    werkzeug [sid=81b4ec7dfc3a rid=7ffffb77a8c9] 127.0.0.1 - - [03/Nov/2026 11:39:14] "POST /chat HTTP/1.1" 200 -
+2026-11-03 11:39:16,746 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:39:16] "OPTIONS /chat HTTP/1.1" 200 -
+2026-11-03 11:39:16,753 INFO    chatbot [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Chat message received: action=choose_chart visual_type=auto role=CEO chars=4 new_session=False
+2026-11-03 11:39:16,753 INFO    app.conversation [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Chart choice auto received for the pending request; generating
+2026-11-03 11:39:16,788 INFO    app.conversation [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Generating new_report: chart=auto title='Payments by Status 2025'
+2026-11-03 11:39:16,788 INFO    app.pipeline [sid=81b4ec7dfc3a rid=7ffffb77a8c9] SQL generation started (c5b27f3a, role CEO, revising=False)
+2026-11-03 11:39:16,788 INFO    app.pipeline [sid=81b4ec7dfc3a rid=7ffffb77a8c9] LLM sql#1 call started (groq/openai/gpt-oss-120b, 1 messages)
+2026-11-03 11:39:24,828 INFO    app.pipeline [sid=81b4ec7dfc3a rid=7ffffb77a8c9] LLM sql#1 call finished in 8038 ms (tokens in 2524, out 110)
+2026-11-03 11:39:24,853 INFO    app.pipeline [sid=81b4ec7dfc3a rid=7ffffb77a8c9] SQL ran in 4 ms: 2 rows, 2 columns
+2026-11-03 11:39:24,853 INFO    app.pipeline [sid=81b4ec7dfc3a rid=7ffffb77a8c9] SQL generation finished: status=ok attempts=1 in 8.07 s
+2026-11-03 11:39:24,946 INFO    chatbot [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Created view vw_payments_by_status_2025_20261103_7ffffb77a8c9 in 37 ms
+2026-11-03 11:39:25,014 INFO    chatbot [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Building Power BI page for view=vw_payments_by_status_2025_20261103_7ffffb77a8c9 chart=auto reuse_table=False
+2026-11-03 11:39:25,015 INFO    app.powerbi_service [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Desktop automation 'prepare' started (table -, timeout 180 s)
+2026-11-03 11:39:28,165 INFO    app.powerbi_service [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Desktop automation 'prepare' finished in 3150 ms
+2026-11-03 11:39:28,212 INFO    app.powerbi_project_generator [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Page 'Payments by Status 2025' for vw_payments_by_status_2025_20261103_7ffffb77a8c9: visual=clusteredColumnChart (requested auto) dimension=charge_status measure=charge_count, 2 columns
+2026-11-03 11:39:28,351 INFO    app.powerbi_project_generator [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Wrote table file billing vw_payments_by_status_2025_20261103_7ffffb77a8c9.tmdl and page 84b4445ce9474ebc902e (5 visuals) to the project
+2026-11-03 11:39:28,367 INFO    app.powerbi_project_generator [sid=81b4ec7dfc3a rid=7ffffb77a8c9] 'Open latest report' button now targets 'Payments by Status 2025'
+2026-11-03 11:39:28,373 INFO    chatbot [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Power BI page step finished: status=generated_pending_reload_and_refresh page='Payments by Status 2025' visual=clusteredColumnChart in 3358 ms
+2026-11-03 11:39:28,374 INFO    chatbot [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Request 7ffffb77a8c9 finished as completed after 15020 ms
+2026-11-03 11:39:28,435 INFO    chatbot [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Power BI reload/refresh scheduled for page 'Payments by Status 2025' (table billing vw_payments_by_status_2025_20261103_7ffffb77a8c9) in 2.0 s
+2026-11-03 11:39:28,483 INFO    chatbot [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Chat turn finished: status=ok http=200 intent=new_report in 11729 ms
+2026-11-03 11:39:28,484 INFO    werkzeug [sid=81b4ec7dfc3a rid=7ffffb77a8c9] 127.0.0.1 - - [03/Nov/2026 11:39:28] "POST /chat HTTP/1.1" 200 -
+2026-11-03 11:39:30,436 INFO    chatbot [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Power BI reload/refresh started for page 'Payments by Status 2025'
+2026-11-03 11:39:30,436 INFO    app.powerbi_service [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Desktop automation 'reload_refresh' started (table billing vw_payments_by_status_2025_20261103_7ffffb77a8c9, timeout 180 s)
+2026-11-03 11:39:36,057 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:39:36] "GET /session/latest?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 11:39:36,076 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:39:36] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 11:39:36,109 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:39:36] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 11:39:37,323 ERROR   app.powerbi_service [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Desktop automation 'reload_refresh' failed after 6886 ms (exit code 1): Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder. (step details: logs/powerbi_automation.log)
+2026-11-03 11:39:37,324 ERROR   chatbot [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Power BI reload/refresh failed for page 'Payments by Status 2025' after 6887 ms (step details: logs/powerbi_automation.log)
+Traceback (most recent call last):
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\chatbot_api.py", line 917, in job
+    self.powerbi.reload_refresh(project)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_service.py", line 270, in reload_refresh
+    return self.run_desktop_automation("reload_refresh", table_name=generated["model_table"])
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_service.py", line 188, in run_desktop_automation
+    raise PowerBIProjectError(f"Power BI Desktop automation '{action}' failed: {details}")
+app.powerbi_project_generator.PowerBIProjectError: Power BI Desktop automation 'reload_refresh' failed: Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder.
+2026-11-03 11:39:40,782 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:39:40] "GET /session/latest?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 11:39:40,783 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:39:40] "GET /session/latest?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 11:39:40,799 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:39:40] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 11:39:40,802 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:39:40] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 11:39:40,804 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:39:40] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 11:39:40,807 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:39:40] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 11:39:40,822 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:39:40] "GET /reports/saved/7ffffb77a8c9?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 11:39:51,237 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:39:51] "OPTIONS /reports/save HTTP/1.1" 200 -
+2026-11-03 11:39:51,240 INFO    chatbot [sid=- rid=7ffffb77a8c9] Save report requested
+2026-11-03 11:39:51,297 INFO    app.powerbi_service [sid=- rid=7ffffb77a8c9] Desktop automation 'prepare' started (table -, timeout 180 s)
+2026-11-03 11:39:53,832 INFO    app.powerbi_service [sid=- rid=7ffffb77a8c9] Desktop automation 'prepare' finished in 2534 ms
+2026-11-03 11:39:53,840 INFO    app.powerbi_project_generator [sid=- rid=7ffffb77a8c9] Exported page 84b4445ce9474ebc902e (6 files) for request 7ffffb77a8c9
+2026-11-03 11:39:53,887 INFO    chatbot.saved_reports [sid=- rid=7ffffb77a8c9] Report 7ffffb77a8c9 saved as 'Payments by Status 2025' (6 page files)
+2026-11-03 11:39:53,888 INFO    werkzeug [sid=- rid=7ffffb77a8c9] 127.0.0.1 - - [03/Nov/2026 11:39:53] "[35m[1mPOST /reports/save HTTP/1.1[0m" 201 -
+2026-11-03 11:41:23,767 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:41:23] "GET /session/latest?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 11:41:23,771 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:41:23] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 11:41:23,778 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:41:23] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 11:41:45,329 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:41:45] "GET /reports/saved?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 11:41:48,746 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:41:48] "OPTIONS /reports/saved/7ffffb77a8c9/open HTTP/1.1" 200 -
+2026-11-03 11:41:48,751 INFO    chatbot [sid=- rid=7ffffb77a8c9] Open saved report requested
+2026-11-03 11:41:48,840 INFO    app.powerbi_service [sid=- rid=7ffffb77a8c9] Desktop automation 'prepare' started (table -, timeout 180 s)
+2026-11-03 11:41:50,140 INFO    app.powerbi_service [sid=- rid=7ffffb77a8c9] Desktop automation 'prepare' finished in 1299 ms
+2026-11-03 11:41:50,141 INFO    app.powerbi_project_generator [sid=- rid=7ffffb77a8c9] Saved report page 84b4445ce9474ebc902e ('Payments by Status 2025') is still in the report; nothing restored
+2026-11-03 11:41:50,185 INFO    werkzeug [sid=- rid=7ffffb77a8c9] 127.0.0.1 - - [03/Nov/2026 11:41:50] "POST /reports/saved/7ffffb77a8c9/open HTTP/1.1" 200 -
+2026-11-03 11:42:03,086 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:03] "GET /reports/saved/7ffffb77a8c9?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 11:42:06,091 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:06] "OPTIONS /feedback HTTP/1.1" 200 -
+2026-11-03 11:42:06,096 INFO    chatbot [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Feedback received: satisfied
+2026-11-03 11:42:06,135 INFO    chatbot [sid=81b4ec7dfc3a rid=7ffffb77a8c9] Feedback saved as satisfied (previous: none)
+2026-11-03 11:42:06,170 INFO    werkzeug [sid=81b4ec7dfc3a rid=7ffffb77a8c9] 127.0.0.1 - - [03/Nov/2026 11:42:06] "POST /feedback HTTP/1.1" 200 -
+2026-11-03 11:42:13,683 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:13] "GET /session/latest?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 11:42:13,774 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:13] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 11:42:13,783 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:13] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 11:42:15,462 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:15] "GET /session/latest?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 11:42:15,469 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:15] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 11:42:15,475 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:15] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 11:42:20,319 INFO    werkzeug [sid=81b4ec7dfc3a rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:20] "OPTIONS /session/81b4ec7dfc3a/end HTTP/1.1" 200 -
+2026-11-03 11:42:20,321 INFO    chatbot [sid=81b4ec7dfc3a rid=-] Session ended (reason: user)
+2026-11-03 11:42:20,382 INFO    werkzeug [sid=81b4ec7dfc3a rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:20] "POST /session/81b4ec7dfc3a/end HTTP/1.1" 200 -
+2026-11-03 11:42:25,450 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:25] "GET /reports/saved?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 11:42:28,583 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:28] "OPTIONS /reports/saved/7ffffb77a8c9/open HTTP/1.1" 200 -
+2026-11-03 11:42:28,585 INFO    chatbot [sid=- rid=7ffffb77a8c9] Open saved report requested
+2026-11-03 11:42:28,674 INFO    app.powerbi_service [sid=- rid=7ffffb77a8c9] Desktop automation 'prepare' started (table -, timeout 180 s)
+2026-11-03 11:42:30,371 INFO    app.powerbi_service [sid=- rid=7ffffb77a8c9] Desktop automation 'prepare' finished in 1696 ms
+2026-11-03 11:42:30,425 INFO    app.powerbi_project_generator [sid=- rid=7ffffb77a8c9] Restored saved page 84b4445ce9474ebc902e ('Payments by Status 2025')
+2026-11-03 11:42:30,465 INFO    werkzeug [sid=- rid=7ffffb77a8c9] 127.0.0.1 - - [03/Nov/2026 11:42:30] "POST /reports/saved/7ffffb77a8c9/open HTTP/1.1" 200 -
+2026-11-03 11:42:32,465 INFO    app.powerbi_service [sid=- rid=7ffffb77a8c9] Desktop automation 'reload_refresh' started (table billing vw_payments_by_status_2025_20261103_7ffffb77a8c9, timeout 180 s)
+2026-11-03 11:42:36,135 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:36] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 11:42:36,169 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:36] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 11:42:36,211 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:36] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 11:42:37,287 ERROR   app.powerbi_service [sid=- rid=7ffffb77a8c9] Desktop automation 'reload_refresh' failed after 4821 ms (exit code 1): Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder. (step details: logs/powerbi_automation.log)
+2026-11-03 11:42:37,287 ERROR   chatbot [sid=- rid=7ffffb77a8c9] Power BI reload/refresh failed for restored page 'Payments by Status 2025'
+Traceback (most recent call last):
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\chatbot_api.py", line 1259, in job
+    self.powerbi.reload_refresh(project)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_service.py", line 270, in reload_refresh
+    return self.run_desktop_automation("reload_refresh", table_name=generated["model_table"])
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_service.py", line 188, in run_desktop_automation
+    raise PowerBIProjectError(f"Power BI Desktop automation '{action}' failed: {details}")
+app.powerbi_project_generator.PowerBIProjectError: Power BI Desktop automation 'reload_refresh' failed: Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder.
+2026-11-03 11:42:45,865 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:45] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 11:42:45,866 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:45] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 11:42:45,976 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:45] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 11:42:45,990 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:45] "GET /reports/saved/7ffffb77a8c9?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 11:42:45,991 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:45] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 11:42:46,001 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:46] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 11:42:46,010 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:46] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 11:42:51,142 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:51] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 11:42:51,147 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:51] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 11:42:51,151 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:51] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 11:42:54,264 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:42:54] "GET /reports/saved/7ffffb77a8c9?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 11:43:17,005 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:43:17] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 11:43:17,009 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:43:17] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 11:43:17,036 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 11:43:17] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:13:59,669 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:13:59] "OPTIONS /chat HTTP/1.1" 200 -
+2026-11-03 12:13:59,678 INFO    app.session [sid=0f9c43040c4f rid=-] Session 0f9c43040c4f created (id sent by the visual)
+2026-11-03 12:13:59,688 INFO    chatbot [sid=0f9c43040c4f rid=-] Chat message received: action=- visual_type=auto role=Analyst chars=25 new_session=True
+2026-11-03 12:13:59,690 WARNING app.access [sid=0f9c43040c4f rid=-] Access denied before any AI call: role Analyst asked for payment_methods (matched 'payment method')
+2026-11-03 12:13:59,690 WARNING chatbot [sid=0f9c43040c4f rid=-] Access denied for role Analyst: Access denied: request needs restricted data (payment_methods)
+2026-11-03 12:13:59,783 INFO    chatbot [sid=0f9c43040c4f rid=-] Chat turn finished: status=failed http=400 intent=denied in 94 ms
+2026-11-03 12:13:59,784 INFO    werkzeug [sid=0f9c43040c4f rid=-] 127.0.0.1 - - [03/Nov/2026 12:13:59] "[31m[1mPOST /chat HTTP/1.1[0m" 400 -
+2026-11-03 12:14:02,278 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:14:02] "GET /reports/saved?demo_role=Analyst HTTP/1.1" 200 -
+2026-11-03 12:14:20,553 INFO    werkzeug [sid=0f9c43040c4f rid=-] 127.0.0.1 - - [03/Nov/2026 12:14:20] "OPTIONS /session/0f9c43040c4f/end HTTP/1.1" 200 -
+2026-11-03 12:14:20,557 INFO    chatbot [sid=0f9c43040c4f rid=-] Session ended (reason: user)
+2026-11-03 12:14:20,621 INFO    werkzeug [sid=0f9c43040c4f rid=-] 127.0.0.1 - - [03/Nov/2026 12:14:20] "POST /session/0f9c43040c4f/end HTTP/1.1" 200 -
+2026-11-03 12:14:24,252 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:14:24] "GET /reports/saved?demo_role=Analyst HTTP/1.1" 200 -
+2026-11-03 12:14:36,130 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:14:36] "GET /reports/saved/7ffffb77a8c9?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:14:44,126 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:14:44] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:14:44,194 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:14:44] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:14:44,236 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:14:44] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:14:46,622 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:14:46] "GET /reports/saved?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:14:51,600 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:14:51] "GET /reports/saved?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:14:57,129 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:14:57] "GET /reports/saved?demo_role=Analyst HTTP/1.1" 200 -
+2026-11-03 12:15:29,013 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:15:29] "OPTIONS /chat HTTP/1.1" 200 -
+2026-11-03 12:15:29,021 INFO    app.session [sid=c785213881fd rid=-] Session c785213881fd created (id sent by the visual)
+2026-11-03 12:15:29,029 INFO    chatbot [sid=c785213881fd rid=-] Chat message received: action=- visual_type=auto role=Analyst chars=61 new_session=True
+2026-11-03 12:15:29,034 INFO    app.pipeline [sid=c785213881fd rid=-] LLM planner call started (groq/openai/gpt-oss-120b, 1 messages)
+2026-11-03 12:15:30,352 INFO    app.pipeline [sid=c785213881fd rid=-] LLM planner call finished in 1317 ms (tokens in 3566, out 124)
+2026-11-03 12:15:30,352 INFO    app.pipeline [sid=c785213881fd rid=-] Plan: intent=new_report score=95 sufficient=True chart=auto
+2026-11-03 12:15:30,388 INFO    chatbot [sid=c785213881fd rid=e16dd38647b9] Report request created (status initiated)
+2026-11-03 12:15:30,388 INFO    chatbot [sid=c785213881fd rid=e16dd38647b9] Request clarified; asking for the chart type
+2026-11-03 12:15:30,413 INFO    chatbot [sid=c785213881fd rid=e16dd38647b9] Chat turn finished: status=awaiting_chart_choice http=200 intent=choose_chart in 1382 ms
+2026-11-03 12:15:30,413 INFO    werkzeug [sid=c785213881fd rid=e16dd38647b9] 127.0.0.1 - - [03/Nov/2026 12:15:30] "POST /chat HTTP/1.1" 200 -
+2026-11-03 12:16:05,066 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:16:05] "OPTIONS /chat HTTP/1.1" 200 -
+2026-11-03 12:16:05,070 INFO    chatbot [sid=c785213881fd rid=e16dd38647b9] Chat message received: action=choose_chart visual_type=barChart role=Analyst chars=9 new_session=False
+2026-11-03 12:16:05,071 INFO    app.conversation [sid=c785213881fd rid=e16dd38647b9] Chart choice barChart received for the pending request; generating
+2026-11-03 12:16:05,102 INFO    app.conversation [sid=c785213881fd rid=e16dd38647b9] Generating new_report: chart=barChart title='Daily Transactions'
+2026-11-03 12:16:05,102 INFO    app.pipeline [sid=c785213881fd rid=e16dd38647b9] SQL generation started (d6b5537f, role Analyst, revising=False)
+2026-11-03 12:16:05,102 INFO    app.pipeline [sid=c785213881fd rid=e16dd38647b9] LLM sql#1 call started (groq/openai/gpt-oss-120b, 1 messages)
+2026-11-03 12:16:06,045 INFO    app.pipeline [sid=c785213881fd rid=e16dd38647b9] LLM sql#1 call finished in 942 ms (tokens in 2444, out 113)
+2026-11-03 12:16:06,050 INFO    app.pipeline [sid=c785213881fd rid=e16dd38647b9] SQL ran in 2 ms: 23 rows, 2 columns
+2026-11-03 12:16:06,050 INFO    app.pipeline [sid=c785213881fd rid=e16dd38647b9] SQL generation finished: status=ok attempts=1 in 0.95 s
+2026-11-03 12:16:06,128 INFO    chatbot [sid=c785213881fd rid=e16dd38647b9] Created view vw_daily_transactions_20261103_e16dd38647b9 in 26 ms
+2026-11-03 12:16:06,201 INFO    chatbot [sid=c785213881fd rid=e16dd38647b9] Building Power BI page for view=vw_daily_transactions_20261103_e16dd38647b9 chart=barChart reuse_table=False
+2026-11-03 12:16:06,202 INFO    app.powerbi_service [sid=c785213881fd rid=e16dd38647b9] Desktop automation 'prepare' started (table -, timeout 180 s)
+2026-11-03 12:16:08,270 INFO    app.powerbi_service [sid=c785213881fd rid=e16dd38647b9] Desktop automation 'prepare' finished in 2068 ms
+2026-11-03 12:16:08,304 INFO    app.powerbi_project_generator [sid=c785213881fd rid=e16dd38647b9] Page 'Daily Transactions' for vw_daily_transactions_20261103_e16dd38647b9: visual=barChart (requested barChart) dimension=charge_date measure=charges_count, 2 columns
+2026-11-03 12:16:08,542 INFO    app.powerbi_project_generator [sid=c785213881fd rid=e16dd38647b9] Wrote table file billing vw_daily_transactions_20261103_e16dd38647b9.tmdl and page 5bfc880a632444f2b233 (5 visuals) to the project
+2026-11-03 12:16:08,569 INFO    app.powerbi_project_generator [sid=c785213881fd rid=e16dd38647b9] 'Open latest report' button now targets 'Daily Transactions'
+2026-11-03 12:16:08,602 INFO    chatbot [sid=c785213881fd rid=e16dd38647b9] Power BI page step finished: status=generated_pending_reload_and_refresh page='Daily Transactions' visual=barChart in 2400 ms
+2026-11-03 12:16:08,608 INFO    chatbot [sid=c785213881fd rid=e16dd38647b9] Request e16dd38647b9 finished as completed after 4859 ms
+2026-11-03 12:16:08,657 INFO    chatbot [sid=c785213881fd rid=e16dd38647b9] Power BI reload/refresh scheduled for page 'Daily Transactions' (table billing vw_daily_transactions_20261103_e16dd38647b9) in 2.0 s
+2026-11-03 12:16:08,686 INFO    chatbot [sid=c785213881fd rid=e16dd38647b9] Chat turn finished: status=ok http=200 intent=new_report in 3615 ms
+2026-11-03 12:16:08,687 INFO    werkzeug [sid=c785213881fd rid=e16dd38647b9] 127.0.0.1 - - [03/Nov/2026 12:16:08] "POST /chat HTTP/1.1" 200 -
+2026-11-03 12:16:10,658 INFO    chatbot [sid=c785213881fd rid=e16dd38647b9] Power BI reload/refresh started for page 'Daily Transactions'
+2026-11-03 12:16:10,659 INFO    app.powerbi_service [sid=c785213881fd rid=e16dd38647b9] Desktop automation 'reload_refresh' started (table billing vw_daily_transactions_20261103_e16dd38647b9, timeout 180 s)
+2026-11-03 12:16:14,999 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:16:14] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:16:15,017 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:16:15] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:16:15,072 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:16:15] "GET /session/latest?demo_role=Analyst HTTP/1.1" 200 -
+2026-11-03 12:16:16,444 ERROR   app.powerbi_service [sid=c785213881fd rid=e16dd38647b9] Desktop automation 'reload_refresh' failed after 5785 ms (exit code 1): Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder. (step details: logs/powerbi_automation.log)
+2026-11-03 12:16:16,444 ERROR   chatbot [sid=c785213881fd rid=e16dd38647b9] Power BI reload/refresh failed for page 'Daily Transactions' after 5786 ms (step details: logs/powerbi_automation.log)
+Traceback (most recent call last):
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\chatbot_api.py", line 917, in job
+    self.powerbi.reload_refresh(project)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_service.py", line 270, in reload_refresh
+    return self.run_desktop_automation("reload_refresh", table_name=generated["model_table"])
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_service.py", line 188, in run_desktop_automation
+    raise PowerBIProjectError(f"Power BI Desktop automation '{action}' failed: {details}")
+app.powerbi_project_generator.PowerBIProjectError: Power BI Desktop automation 'reload_refresh' failed: Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder.
+2026-11-03 12:16:18,959 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:16:18] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:16:18,959 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:16:18] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:16:18,977 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:16:18] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:16:18,980 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:16:18] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:16:18,994 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:16:18] "GET /reports/saved/e16dd38647b9?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:16:19,005 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:16:19] "GET /session/latest?demo_role=Analyst HTTP/1.1" 200 -
+2026-11-03 12:16:19,012 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:16:19] "GET /session/latest?demo_role=Analyst HTTP/1.1" 200 -
+2026-11-03 12:16:22,465 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:16:22] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:16:22,470 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:16:22] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:16:22,476 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:16:22] "GET /session/latest?demo_role=Analyst HTTP/1.1" 200 -
+2026-11-03 12:16:27,390 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:16:27] "GET /reports/saved/e16dd38647b9?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:16:44,423 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:16:44] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:16:44,428 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:16:44] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:16:44,432 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:16:44] "GET /session/latest?demo_role=Analyst HTTP/1.1" 200 -
+2026-11-03 12:16:47,025 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:16:47] "GET /reports/saved?demo_role=Analyst HTTP/1.1" 200 -
+2026-11-03 12:16:57,267 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:16:57] "OPTIONS /feedback HTTP/1.1" 200 -
+2026-11-03 12:16:57,274 INFO    chatbot [sid=c785213881fd rid=e16dd38647b9] Feedback received: satisfied
+2026-11-03 12:16:57,310 INFO    chatbot [sid=c785213881fd rid=e16dd38647b9] Feedback saved as satisfied (previous: none)
+2026-11-03 12:16:57,346 INFO    werkzeug [sid=c785213881fd rid=e16dd38647b9] 127.0.0.1 - - [03/Nov/2026 12:16:57] "POST /feedback HTTP/1.1" 200 -
+2026-11-03 12:17:02,028 INFO    werkzeug [sid=c785213881fd rid=-] 127.0.0.1 - - [03/Nov/2026 12:17:02] "OPTIONS /session/c785213881fd/end HTTP/1.1" 200 -
+2026-11-03 12:17:02,033 INFO    chatbot [sid=c785213881fd rid=-] Session ended (reason: user)
+2026-11-03 12:17:02,064 INFO    werkzeug [sid=c785213881fd rid=-] 127.0.0.1 - - [03/Nov/2026 12:17:02] "POST /session/c785213881fd/end HTTP/1.1" 200 -
+2026-11-03 12:38:59,610 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:38:59] "GET /reports/saved/e16dd38647b9?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:39:33,014 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:39:33] "OPTIONS /feedback HTTP/1.1" 200 -
+2026-11-03 12:39:33,017 INFO    chatbot [sid=c785213881fd rid=e16dd38647b9] Feedback received: unsatisfied
+2026-11-03 12:39:33,019 INFO    werkzeug [sid=c785213881fd rid=e16dd38647b9] 127.0.0.1 - - [03/Nov/2026 12:39:33] "[31m[1mPOST /feedback HTTP/1.1[0m" 409 -
+2026-11-03 12:39:37,700 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:39:37] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:39:37,706 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:39:37] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:39:37,712 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:39:37] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:39:49,482 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:39:49] "GET /reports/saved?demo_role=Analyst HTTP/1.1" 200 -
+2026-11-03 12:40:56,735 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:40:56] "OPTIONS /chat HTTP/1.1" 200 -
+2026-11-03 12:40:56,739 INFO    app.session [sid=aeae05e60c91 rid=-] Session aeae05e60c91 created (id sent by the visual)
+2026-11-03 12:40:56,739 INFO    chatbot [sid=aeae05e60c91 rid=-] Chat message received: action=- visual_type=auto role=Analyst chars=93 new_session=True
+2026-11-03 12:40:56,740 INFO    app.pipeline [sid=aeae05e60c91 rid=-] LLM planner call started (groq/openai/gpt-oss-120b, 1 messages)
+2026-11-03 12:40:58,016 INFO    app.pipeline [sid=aeae05e60c91 rid=-] LLM planner call finished in 1275 ms (tokens in 3568, out 146)
+2026-11-03 12:40:58,017 INFO    app.pipeline [sid=aeae05e60c91 rid=-] Plan: intent=decline score=100 sufficient=True chart=auto
+2026-11-03 12:40:58,066 INFO    chatbot [sid=aeae05e60c91 rid=-] Chat turn finished: status=chat http=200 intent=decline in 1326 ms
+2026-11-03 12:40:58,069 INFO    werkzeug [sid=aeae05e60c91 rid=-] 127.0.0.1 - - [03/Nov/2026 12:40:58] "POST /chat HTTP/1.1" 200 -
+2026-11-03 12:41:22,404 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:41:22] "OPTIONS /chat HTTP/1.1" 200 -
+2026-11-03 12:41:22,412 INFO    chatbot [sid=aeae05e60c91 rid=-] Chat message received: action=- visual_type=auto role=Analyst chars=24 new_session=False
+2026-11-03 12:41:22,427 INFO    app.pipeline [sid=aeae05e60c91 rid=-] LLM planner call started (groq/openai/gpt-oss-120b, 3 messages)
+2026-11-03 12:41:23,549 INFO    app.pipeline [sid=aeae05e60c91 rid=-] LLM planner call finished in 1120 ms (tokens in 3634, out 186)
+2026-11-03 12:41:23,551 INFO    app.pipeline [sid=aeae05e60c91 rid=-] Plan: intent=new_report score=95 sufficient=True chart=auto
+2026-11-03 12:41:23,601 INFO    chatbot [sid=aeae05e60c91 rid=9b9d4c399247] Report request created (status initiated)
+2026-11-03 12:41:23,602 INFO    chatbot [sid=aeae05e60c91 rid=9b9d4c399247] Request clarified; asking for the chart type
+2026-11-03 12:41:23,639 INFO    chatbot [sid=aeae05e60c91 rid=9b9d4c399247] Chat turn finished: status=awaiting_chart_choice http=200 intent=choose_chart in 1215 ms
+2026-11-03 12:41:23,639 INFO    werkzeug [sid=aeae05e60c91 rid=9b9d4c399247] 127.0.0.1 - - [03/Nov/2026 12:41:23] "POST /chat HTTP/1.1" 200 -
+2026-11-03 12:41:29,234 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:41:29] "OPTIONS /chat HTTP/1.1" 200 -
+2026-11-03 12:41:29,239 INFO    chatbot [sid=aeae05e60c91 rid=9b9d4c399247] Chat message received: action=choose_chart visual_type=auto role=Analyst chars=4 new_session=False
+2026-11-03 12:41:29,239 INFO    app.conversation [sid=aeae05e60c91 rid=9b9d4c399247] Chart choice auto received for the pending request; generating
+2026-11-03 12:41:29,295 INFO    app.conversation [sid=aeae05e60c91 rid=9b9d4c399247] Generating new_report: chart=auto title='Overall Decline Rate'
+2026-11-03 12:41:29,296 INFO    app.pipeline [sid=aeae05e60c91 rid=9b9d4c399247] SQL generation started (b26fb3dd, role Analyst, revising=False)
+2026-11-03 12:41:29,296 INFO    app.pipeline [sid=aeae05e60c91 rid=9b9d4c399247] LLM sql#1 call started (groq/openai/gpt-oss-120b, 1 messages)
+2026-11-03 12:41:30,343 INFO    app.pipeline [sid=aeae05e60c91 rid=9b9d4c399247] LLM sql#1 call finished in 1047 ms (tokens in 2449, out 132)
+2026-11-03 12:41:30,347 INFO    app.pipeline [sid=aeae05e60c91 rid=9b9d4c399247] SQL ran in 2 ms: 1 rows, 1 columns
+2026-11-03 12:41:30,347 INFO    app.pipeline [sid=aeae05e60c91 rid=9b9d4c399247] SQL generation finished: status=ok attempts=1 in 1.05 s
+2026-11-03 12:41:30,421 INFO    chatbot [sid=aeae05e60c91 rid=9b9d4c399247] Created view vw_overall_decline_rate_20261103_9b9d4c399247 in 29 ms
+2026-11-03 12:41:30,476 INFO    chatbot [sid=aeae05e60c91 rid=9b9d4c399247] Building Power BI page for view=vw_overall_decline_rate_20261103_9b9d4c399247 chart=auto reuse_table=False
+2026-11-03 12:41:30,476 INFO    app.powerbi_service [sid=aeae05e60c91 rid=9b9d4c399247] Desktop automation 'prepare' started (table -, timeout 180 s)
+2026-11-03 12:41:32,551 INFO    app.powerbi_service [sid=aeae05e60c91 rid=9b9d4c399247] Desktop automation 'prepare' finished in 2074 ms
+2026-11-03 12:41:32,693 INFO    app.powerbi_project_generator [sid=aeae05e60c91 rid=9b9d4c399247] Page 'Overall Decline Rate' for vw_overall_decline_rate_20261103_9b9d4c399247: visual=tableEx (requested auto) dimension=None measure=failed_payment_rate_pct, 1 columns
+2026-11-03 12:41:32,845 INFO    app.powerbi_project_generator [sid=aeae05e60c91 rid=9b9d4c399247] Wrote table file billing vw_overall_decline_rate_20261103_9b9d4c399247.tmdl and page 8d5d7d49d0764388b68d (4 visuals) to the project
+2026-11-03 12:41:32,862 INFO    app.powerbi_project_generator [sid=aeae05e60c91 rid=9b9d4c399247] 'Open latest report' button now targets 'Overall Decline Rate'
+2026-11-03 12:41:32,865 INFO    chatbot [sid=aeae05e60c91 rid=9b9d4c399247] Power BI page step finished: status=generated_pending_reload_and_refresh page='Overall Decline Rate' visual=tableEx in 2388 ms
+2026-11-03 12:41:32,865 INFO    chatbot [sid=aeae05e60c91 rid=9b9d4c399247] Request 9b9d4c399247 finished as completed after 4753 ms
+2026-11-03 12:41:32,995 INFO    chatbot [sid=aeae05e60c91 rid=9b9d4c399247] Power BI reload/refresh scheduled for page 'Overall Decline Rate' (table billing vw_overall_decline_rate_20261103_9b9d4c399247) in 2.0 s
+2026-11-03 12:41:33,135 INFO    chatbot [sid=aeae05e60c91 rid=9b9d4c399247] Chat turn finished: status=ok http=200 intent=new_report in 3895 ms
+2026-11-03 12:41:33,136 INFO    werkzeug [sid=aeae05e60c91 rid=9b9d4c399247] 127.0.0.1 - - [03/Nov/2026 12:41:33] "POST /chat HTTP/1.1" 200 -
+2026-11-03 12:41:35,037 INFO    chatbot [sid=aeae05e60c91 rid=9b9d4c399247] Power BI reload/refresh started for page 'Overall Decline Rate'
+2026-11-03 12:41:35,038 INFO    app.powerbi_service [sid=aeae05e60c91 rid=9b9d4c399247] Desktop automation 'reload_refresh' started (table billing vw_overall_decline_rate_20261103_9b9d4c399247, timeout 180 s)
+2026-11-03 12:41:39,589 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:41:39] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:41:39,603 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:41:39] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:41:39,626 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:41:39] "GET /session/latest?demo_role=Analyst HTTP/1.1" 200 -
+2026-11-03 12:41:40,978 ERROR   app.powerbi_service [sid=aeae05e60c91 rid=9b9d4c399247] Desktop automation 'reload_refresh' failed after 5940 ms (exit code 1): Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder. (step details: logs/powerbi_automation.log)
+2026-11-03 12:41:40,979 ERROR   chatbot [sid=aeae05e60c91 rid=9b9d4c399247] Power BI reload/refresh failed for page 'Overall Decline Rate' after 5941 ms (step details: logs/powerbi_automation.log)
+Traceback (most recent call last):
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\chatbot_api.py", line 917, in job
+    self.powerbi.reload_refresh(project)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_service.py", line 270, in reload_refresh
+    return self.run_desktop_automation("reload_refresh", table_name=generated["model_table"])
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_service.py", line 188, in run_desktop_automation
+    raise PowerBIProjectError(f"Power BI Desktop automation '{action}' failed: {details}")
+app.powerbi_project_generator.PowerBIProjectError: Power BI Desktop automation 'reload_refresh' failed: Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder.
+2026-11-03 12:41:41,980 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:41:41] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:41:41,984 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:41:41] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:41:42,024 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:41:42] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:41:42,028 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:41:42] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:41:42,033 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:41:42] "GET /session/latest?demo_role=Analyst HTTP/1.1" 200 -
+2026-11-03 12:41:42,034 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:41:42] "GET /session/latest?demo_role=Analyst HTTP/1.1" 200 -
+2026-11-03 12:41:42,041 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:41:42] "GET /reports/saved/9b9d4c399247?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:41:49,167 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:41:49] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:41:49,177 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:41:49] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:41:49,186 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:41:49] "GET /session/latest?demo_role=Analyst HTTP/1.1" 200 -
+2026-11-03 12:41:52,037 INFO    werkzeug [sid=aeae05e60c91 rid=-] 127.0.0.1 - - [03/Nov/2026 12:41:52] "OPTIONS /session/aeae05e60c91/end HTTP/1.1" 200 -
+2026-11-03 12:41:52,039 INFO    chatbot [sid=aeae05e60c91 rid=-] Session ended (reason: user)
+2026-11-03 12:41:52,249 INFO    werkzeug [sid=aeae05e60c91 rid=-] 127.0.0.1 - - [03/Nov/2026 12:41:52] "POST /session/aeae05e60c91/end HTTP/1.1" 200 -
+2026-11-03 12:42:33,619 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:42:33] "OPTIONS /chat HTTP/1.1" 200 -
+2026-11-03 12:42:33,625 INFO    app.session [sid=e6ca4ad674e8 rid=-] Session e6ca4ad674e8 created (id sent by the visual)
+2026-11-03 12:42:33,626 INFO    chatbot [sid=e6ca4ad674e8 rid=-] Chat message received: action=- visual_type=auto role=Developer chars=66 new_session=True
+2026-11-03 12:42:33,626 INFO    app.pipeline [sid=e6ca4ad674e8 rid=-] LLM planner call started (groq/openai/gpt-oss-120b, 1 messages)
+2026-11-03 12:42:34,590 INFO    app.pipeline [sid=e6ca4ad674e8 rid=-] LLM planner call finished in 963 ms (tokens in 3563, out 128)
+2026-11-03 12:42:34,591 INFO    app.pipeline [sid=e6ca4ad674e8 rid=-] Plan: intent=new_report score=95 sufficient=True chart=auto
+2026-11-03 12:42:34,620 INFO    chatbot [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Report request created (status initiated)
+2026-11-03 12:42:34,621 INFO    chatbot [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Request clarified; asking for the chart type
+2026-11-03 12:42:34,658 INFO    chatbot [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Chat turn finished: status=awaiting_chart_choice http=200 intent=choose_chart in 1032 ms
+2026-11-03 12:42:34,659 INFO    werkzeug [sid=e6ca4ad674e8 rid=2fe10ce0aad7] 127.0.0.1 - - [03/Nov/2026 12:42:34] "POST /chat HTTP/1.1" 200 -
+2026-11-03 12:42:37,399 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:42:37] "OPTIONS /chat HTTP/1.1" 200 -
+2026-11-03 12:42:37,403 INFO    chatbot [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Chat message received: action=choose_chart visual_type=auto role=Developer chars=4 new_session=False
+2026-11-03 12:42:37,404 INFO    app.conversation [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Chart choice auto received for the pending request; generating
+2026-11-03 12:42:37,433 INFO    app.conversation [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Generating new_report: chart=auto title='Declined Transactions by Reason'
+2026-11-03 12:42:37,434 INFO    app.pipeline [sid=e6ca4ad674e8 rid=2fe10ce0aad7] SQL generation started (d8c1b275, role Developer, revising=False)
+2026-11-03 12:42:37,434 INFO    app.pipeline [sid=e6ca4ad674e8 rid=2fe10ce0aad7] LLM sql#1 call started (groq/openai/gpt-oss-120b, 1 messages)
+2026-11-03 12:42:38,317 INFO    app.pipeline [sid=e6ca4ad674e8 rid=2fe10ce0aad7] LLM sql#1 call finished in 882 ms (tokens in 2441, out 137)
+2026-11-03 12:42:38,321 INFO    app.pipeline [sid=e6ca4ad674e8 rid=2fe10ce0aad7] SQL ran in 2 ms: 4 rows, 2 columns
+2026-11-03 12:42:38,321 INFO    app.pipeline [sid=e6ca4ad674e8 rid=2fe10ce0aad7] SQL generation finished: status=ok attempts=1 in 0.89 s
+2026-11-03 12:42:38,425 INFO    chatbot [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Created view vw_declined_transactions_by_reason_20261103_2fe10ce0aad7 in 38 ms
+2026-11-03 12:42:38,490 INFO    chatbot [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Building Power BI page for view=vw_declined_transactions_by_reason_20261103_2fe10ce0aad7 chart=auto reuse_table=False
+2026-11-03 12:42:38,491 INFO    app.powerbi_service [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Desktop automation 'prepare' started (table -, timeout 180 s)
+2026-11-03 12:42:40,583 INFO    app.powerbi_service [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Desktop automation 'prepare' finished in 2092 ms
+2026-11-03 12:42:40,653 INFO    app.powerbi_project_generator [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Page 'Declined Transactions by Reason' for vw_declined_transactions_by_reason_20261103_2fe10ce0aad7: visual=clusteredColumnChart (requested auto) dimension=failure_code measure=failed_charge_count, 2 columns
+2026-11-03 12:42:40,701 INFO    app.powerbi_project_generator [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Wrote table file billing vw_declined_transactions_by_reason_20261103_2fe10ce0aad7.tmdl and page 3cf9bbefba5f4850b435 (5 visuals) to the project
+2026-11-03 12:42:40,704 INFO    app.powerbi_project_generator [sid=e6ca4ad674e8 rid=2fe10ce0aad7] 'Open latest report' button now targets 'Declined Transactions by Reason'
+2026-11-03 12:42:40,704 INFO    chatbot [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Power BI page step finished: status=generated_pending_reload_and_refresh page='Declined Transactions by Reason' visual=clusteredColumnChart in 2213 ms
+2026-11-03 12:42:40,705 INFO    chatbot [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Request 2fe10ce0aad7 finished as completed after 4265 ms
+2026-11-03 12:42:40,797 INFO    chatbot [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Power BI reload/refresh scheduled for page 'Declined Transactions by Reason' (table billing vw_declined_transactions_by_reason_20261103_2fe10ce0aad7) in 2.0 s
+2026-11-03 12:42:40,883 INFO    chatbot [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Chat turn finished: status=ok http=200 intent=new_report in 3478 ms
+2026-11-03 12:42:40,883 INFO    werkzeug [sid=e6ca4ad674e8 rid=2fe10ce0aad7] 127.0.0.1 - - [03/Nov/2026 12:42:40] "POST /chat HTTP/1.1" 200 -
+2026-11-03 12:42:42,810 INFO    chatbot [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Power BI reload/refresh started for page 'Declined Transactions by Reason'
+2026-11-03 12:42:42,811 INFO    app.powerbi_service [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Desktop automation 'reload_refresh' started (table billing vw_declined_transactions_by_reason_20261103_2fe10ce0aad7, timeout 180 s)
+2026-11-03 12:42:47,015 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:42:47] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:42:47,045 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:42:47] "GET /session/latest?demo_role=Developer HTTP/1.1" 200 -
+2026-11-03 12:42:47,086 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:42:47] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:42:48,497 ERROR   app.powerbi_service [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Desktop automation 'reload_refresh' failed after 5686 ms (exit code 1): Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder. (step details: logs/powerbi_automation.log)
+2026-11-03 12:42:48,498 ERROR   chatbot [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Power BI reload/refresh failed for page 'Declined Transactions by Reason' after 5687 ms (step details: logs/powerbi_automation.log)
+Traceback (most recent call last):
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\chatbot_api.py", line 917, in job
+    self.powerbi.reload_refresh(project)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_service.py", line 270, in reload_refresh
+    return self.run_desktop_automation("reload_refresh", table_name=generated["model_table"])
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_service.py", line 188, in run_desktop_automation
+    raise PowerBIProjectError(f"Power BI Desktop automation '{action}' failed: {details}")
+app.powerbi_project_generator.PowerBIProjectError: Power BI Desktop automation 'reload_refresh' failed: Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder.
+2026-11-03 12:42:49,752 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:42:49] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:42:49,762 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:42:49] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:42:49,807 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:42:49] "GET /session/latest?demo_role=Developer HTTP/1.1" 200 -
+2026-11-03 12:42:49,815 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:42:49] "GET /session/latest?demo_role=Developer HTTP/1.1" 200 -
+2026-11-03 12:42:49,824 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:42:49] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:42:49,826 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:42:49] "GET /reports/saved/2fe10ce0aad7?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:42:49,827 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:42:49] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:42:58,102 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:42:58] "OPTIONS /feedback HTTP/1.1" 200 -
+2026-11-03 12:42:58,108 INFO    chatbot [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Feedback received: satisfied
+2026-11-03 12:42:58,141 INFO    chatbot [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Feedback saved as satisfied (previous: none)
+2026-11-03 12:42:58,184 INFO    werkzeug [sid=e6ca4ad674e8 rid=2fe10ce0aad7] 127.0.0.1 - - [03/Nov/2026 12:42:58] "POST /feedback HTTP/1.1" 200 -
+2026-11-03 12:42:59,825 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:42:59] "OPTIONS /reports/save HTTP/1.1" 200 -
+2026-11-03 12:42:59,833 INFO    chatbot [sid=- rid=2fe10ce0aad7] Save report requested
+2026-11-03 12:42:59,925 INFO    app.powerbi_service [sid=- rid=2fe10ce0aad7] Desktop automation 'prepare' started (table -, timeout 180 s)
+2026-11-03 12:43:02,050 INFO    app.powerbi_service [sid=- rid=2fe10ce0aad7] Desktop automation 'prepare' finished in 2124 ms
+2026-11-03 12:43:02,061 INFO    app.powerbi_project_generator [sid=- rid=2fe10ce0aad7] Exported page 3cf9bbefba5f4850b435 (6 files) for request 2fe10ce0aad7
+2026-11-03 12:43:02,149 INFO    chatbot.saved_reports [sid=- rid=2fe10ce0aad7] Report 2fe10ce0aad7 saved as 'Declined Transactions by Reason' (6 page files)
+2026-11-03 12:43:02,150 INFO    werkzeug [sid=- rid=2fe10ce0aad7] 127.0.0.1 - - [03/Nov/2026 12:43:02] "[35m[1mPOST /reports/save HTTP/1.1[0m" 201 -
+2026-11-03 12:43:05,763 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:05] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:43:05,775 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:05] "GET /session/latest?demo_role=Developer HTTP/1.1" 200 -
+2026-11-03 12:43:05,811 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:05] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:43:17,863 INFO    werkzeug [sid=e6ca4ad674e8 rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:17] "OPTIONS /session/e6ca4ad674e8/end HTTP/1.1" 200 -
+2026-11-03 12:43:17,868 INFO    chatbot [sid=e6ca4ad674e8 rid=-] Session ended (reason: user)
+2026-11-03 12:43:17,900 INFO    werkzeug [sid=e6ca4ad674e8 rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:17] "POST /session/e6ca4ad674e8/end HTTP/1.1" 200 -
+2026-11-03 12:43:20,159 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:20] "GET /reports/saved?demo_role=Developer HTTP/1.1" 200 -
+2026-11-03 12:43:23,324 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:23] "OPTIONS /reports/saved/2fe10ce0aad7/open HTTP/1.1" 200 -
+2026-11-03 12:43:23,327 INFO    chatbot [sid=- rid=2fe10ce0aad7] Open saved report requested
+2026-11-03 12:43:23,468 INFO    app.powerbi_service [sid=- rid=2fe10ce0aad7] Desktop automation 'prepare' started (table -, timeout 180 s)
+2026-11-03 12:43:24,026 INFO    app.powerbi_service [sid=- rid=2fe10ce0aad7] Desktop automation 'prepare' finished in 557 ms
+2026-11-03 12:43:24,027 INFO    app.powerbi_project_generator [sid=- rid=2fe10ce0aad7] Saved report page 3cf9bbefba5f4850b435 ('Declined Transactions by Reason') is still in the report; nothing restored
+2026-11-03 12:43:24,132 INFO    werkzeug [sid=- rid=2fe10ce0aad7] 127.0.0.1 - - [03/Nov/2026 12:43:24] "POST /reports/saved/2fe10ce0aad7/open HTTP/1.1" 200 -
+2026-11-03 12:43:32,600 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:32] "GET /reports/saved/2fe10ce0aad7?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:43:35,600 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:35] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:43:35,604 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:35] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:43:35,609 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:35] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:43:43,481 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:43] "GET /reports/saved/2fe10ce0aad7?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:43:54,066 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:54] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:43:54,067 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:54] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:43:54,091 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:54] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:43:54,091 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:54] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:43:54,098 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:54] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:43:54,101 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:54] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:43:54,102 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:54] "GET /reports/saved/9b9d4c399247?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:43:56,862 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:56] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:43:56,869 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:56] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:43:56,876 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:56] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:43:59,231 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:43:59] "GET /reports/saved?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:44:05,233 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:05] "GET /reports/saved?demo_role=Developer HTTP/1.1" 200 -
+2026-11-03 12:44:07,519 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:07] "OPTIONS /reports/saved/2fe10ce0aad7/open HTTP/1.1" 200 -
+2026-11-03 12:44:07,524 INFO    chatbot [sid=- rid=2fe10ce0aad7] Open saved report requested
+2026-11-03 12:44:07,576 INFO    app.powerbi_service [sid=- rid=2fe10ce0aad7] Desktop automation 'prepare' started (table -, timeout 180 s)
+2026-11-03 12:44:09,316 INFO    app.powerbi_service [sid=- rid=2fe10ce0aad7] Desktop automation 'prepare' finished in 1739 ms
+2026-11-03 12:44:09,367 INFO    app.powerbi_project_generator [sid=- rid=2fe10ce0aad7] Restored saved page 3cf9bbefba5f4850b435 ('Declined Transactions by Reason')
+2026-11-03 12:44:09,420 INFO    werkzeug [sid=- rid=2fe10ce0aad7] 127.0.0.1 - - [03/Nov/2026 12:44:09] "POST /reports/saved/2fe10ce0aad7/open HTTP/1.1" 200 -
+2026-11-03 12:44:11,422 INFO    app.powerbi_service [sid=- rid=2fe10ce0aad7] Desktop automation 'reload_refresh' started (table billing vw_declined_transactions_by_reason_20261103_2fe10ce0aad7, timeout 180 s)
+2026-11-03 12:44:15,272 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:15] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:44:15,306 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:15] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:44:15,322 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:15] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:44:16,439 ERROR   app.powerbi_service [sid=- rid=2fe10ce0aad7] Desktop automation 'reload_refresh' failed after 5016 ms (exit code 1): Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder. (step details: logs/powerbi_automation.log)
+2026-11-03 12:44:16,439 ERROR   chatbot [sid=- rid=2fe10ce0aad7] Power BI reload/refresh failed for restored page 'Declined Transactions by Reason'
+Traceback (most recent call last):
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\chatbot_api.py", line 1259, in job
+    self.powerbi.reload_refresh(project)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_service.py", line 270, in reload_refresh
+    return self.run_desktop_automation("reload_refresh", table_name=generated["model_table"])
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_service.py", line 188, in run_desktop_automation
+    raise PowerBIProjectError(f"Power BI Desktop automation '{action}' failed: {details}")
+app.powerbi_project_generator.PowerBIProjectError: Power BI Desktop automation 'reload_refresh' failed: Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder.
+2026-11-03 12:44:20,503 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:20] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:44:20,505 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:20] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:44:20,525 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:20] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:44:20,526 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:20] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:44:20,535 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:20] "GET /reports/saved/2fe10ce0aad7?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:44:20,535 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:20] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:44:20,536 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:20] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:44:32,461 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:32] "OPTIONS /feedback HTTP/1.1" 200 -
+2026-11-03 12:44:32,468 INFO    chatbot [sid=e6ca4ad674e8 rid=2fe10ce0aad7] Feedback received: satisfied
+2026-11-03 12:44:32,469 INFO    werkzeug [sid=e6ca4ad674e8 rid=2fe10ce0aad7] 127.0.0.1 - - [03/Nov/2026 12:44:32] "[31m[1mPOST /feedback HTTP/1.1[0m" 409 -
+2026-11-03 12:44:37,259 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:37] "[33mGET /session/latest?demo_role=CEO HTTP/1.1[0m" 404 -
+2026-11-03 12:44:37,266 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:37] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:44:37,274 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:37] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:44:41,598 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:41] "OPTIONS /chat HTTP/1.1" 200 -
+2026-11-03 12:44:41,606 INFO    app.session [sid=257f58959dba rid=-] Session 257f58959dba created (id sent by the visual)
+2026-11-03 12:44:41,612 INFO    chatbot [sid=257f58959dba rid=-] Chat message received: action=- visual_type=auto role=CEO chars=2 new_session=True
+2026-11-03 12:44:41,616 INFO    app.pipeline [sid=257f58959dba rid=-] LLM planner call started (groq/openai/gpt-oss-120b, 1 messages)
+2026-11-03 12:44:42,424 INFO    app.pipeline [sid=257f58959dba rid=-] LLM planner call finished in 806 ms (tokens in 3501, out 88)
+2026-11-03 12:44:42,425 INFO    app.pipeline [sid=257f58959dba rid=-] Plan: intent=chat score=100 sufficient=True chart=auto
+2026-11-03 12:44:42,524 INFO    chatbot [sid=257f58959dba rid=-] Chat turn finished: status=chat http=200 intent=chat in 908 ms
+2026-11-03 12:44:42,525 INFO    werkzeug [sid=257f58959dba rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:42] "POST /chat HTTP/1.1" 200 -
+2026-11-03 12:44:47,511 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:47] "GET /reports/saved?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:44:48,956 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:48] "OPTIONS /reports/saved/7ffffb77a8c9/open HTTP/1.1" 200 -
+2026-11-03 12:44:48,958 INFO    chatbot [sid=- rid=7ffffb77a8c9] Open saved report requested
+2026-11-03 12:44:49,007 INFO    app.powerbi_service [sid=- rid=7ffffb77a8c9] Desktop automation 'prepare' started (table -, timeout 180 s)
+2026-11-03 12:44:50,387 INFO    app.powerbi_service [sid=- rid=7ffffb77a8c9] Desktop automation 'prepare' finished in 1379 ms
+2026-11-03 12:44:50,389 INFO    app.powerbi_project_generator [sid=- rid=7ffffb77a8c9] Saved report page 84b4445ce9474ebc902e ('Payments by Status 2025') is still in the report; nothing restored
+2026-11-03 12:44:50,413 INFO    werkzeug [sid=- rid=7ffffb77a8c9] 127.0.0.1 - - [03/Nov/2026 12:44:50] "POST /reports/saved/7ffffb77a8c9/open HTTP/1.1" 200 -
+2026-11-03 12:44:56,759 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:56] "GET /session/latest?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:44:56,766 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:56] "GET /session/latest?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:44:56,800 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:56] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:44:56,818 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:56] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:44:56,860 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:56] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:44:56,862 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:56] "GET /reports/saved/7ffffb77a8c9?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:44:56,873 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:44:56] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:45:01,016 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:01] "GET /session/latest?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:45:01,018 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:01] "GET /session/latest?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:45:01,043 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:01] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:45:01,047 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:01] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:45:01,048 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:01] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:45:01,051 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:01] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:45:01,065 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:01] "GET /reports/saved/e16dd38647b9?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:45:03,874 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:03] "GET /session/latest?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:45:03,968 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:03] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:45:04,010 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:04] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:45:06,123 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:06] "GET /reports/saved?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:45:07,424 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:07] "OPTIONS /reports/saved/7ffffb77a8c9/open HTTP/1.1" 200 -
+2026-11-03 12:45:07,426 INFO    chatbot [sid=- rid=7ffffb77a8c9] Open saved report requested
+2026-11-03 12:45:07,474 INFO    app.powerbi_service [sid=- rid=7ffffb77a8c9] Desktop automation 'prepare' started (table -, timeout 180 s)
+2026-11-03 12:45:08,793 INFO    app.powerbi_service [sid=- rid=7ffffb77a8c9] Desktop automation 'prepare' finished in 1318 ms
+2026-11-03 12:45:08,841 INFO    app.powerbi_project_generator [sid=- rid=7ffffb77a8c9] Restored saved page 84b4445ce9474ebc902e ('Payments by Status 2025')
+2026-11-03 12:45:08,887 INFO    chatbot [sid=- rid=7ffffb77a8c9] Power BI reload/refresh scheduled for page 'Payments by Status 2025' (table billing vw_payments_by_status_2025_20261103_7ffffb77a8c9) in 2.0 s
+2026-11-03 12:45:08,888 INFO    werkzeug [sid=- rid=7ffffb77a8c9] 127.0.0.1 - - [03/Nov/2026 12:45:08] "POST /reports/saved/7ffffb77a8c9/open HTTP/1.1" 200 -
+2026-11-03 12:45:10,888 INFO    chatbot [sid=257f58959dba rid=7ffffb77a8c9] Power BI reload/refresh started for page 'Payments by Status 2025'
+2026-11-03 12:45:10,889 INFO    app.powerbi_service [sid=257f58959dba rid=7ffffb77a8c9] Desktop automation 'reload_refresh' started (table billing vw_payments_by_status_2025_20261103_7ffffb77a8c9, timeout 180 s)
+2026-11-03 12:45:14,950 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:14] "GET /session/latest?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:45:14,989 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:14] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:45:15,022 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:15] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:45:16,190 ERROR   app.powerbi_service [sid=257f58959dba rid=7ffffb77a8c9] Desktop automation 'reload_refresh' failed after 5300 ms (exit code 1): Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder. (step details: logs/powerbi_automation.log)
+2026-11-03 12:45:16,190 ERROR   chatbot [sid=257f58959dba rid=7ffffb77a8c9] Power BI reload/refresh failed for page 'Payments by Status 2025' after 5302 ms (step details: logs/powerbi_automation.log)
+Traceback (most recent call last):
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\chatbot_api.py", line 917, in job
+    self.powerbi.reload_refresh(project)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_service.py", line 270, in reload_refresh
+    return self.run_desktop_automation("reload_refresh", table_name=generated["model_table"])
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\basit\Documents\newest_backup\poc_report_page_1stnov_143\newest\nl2sql_poc\nl2sql_poc\app\powerbi_service.py", line 188, in run_desktop_automation
+    raise PowerBIProjectError(f"Power BI Desktop automation '{action}' failed: {details}")
+app.powerbi_project_generator.PowerBIProjectError: Power BI Desktop automation 'reload_refresh' failed: Could not find Microsoft.AnalysisServices.Tabular.dll in the running Desktop installation ('C:\Program Files\WindowsApps\Microsoft.MicrosoftPowerBIDesktop_2.159.883.0_x64__8wekyb3d8bbwe\bin') or its package folder.
+2026-11-03 12:45:26,809 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:26] "GET /session/latest?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:45:26,816 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:26] "GET /session/latest?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:45:26,833 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:26] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:45:26,834 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:26] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:45:26,839 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:26] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:45:26,842 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:26] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -
+2026-11-03 12:45:26,843 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:45:26] "GET /reports/saved/7ffffb77a8c9?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:46:15,434 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:46:15] "GET /session/latest?demo_role=CEO HTTP/1.1" 200 -
+2026-11-03 12:46:15,441 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:46:15] "[33mGET /session/latest?demo_role=Developer HTTP/1.1[0m" 404 -
+2026-11-03 12:46:15,446 INFO    werkzeug [sid=- rid=-] 127.0.0.1 - - [03/Nov/2026 12:46:15] "[33mGET /session/latest?demo_role=Analyst HTTP/1.1[0m" 404 -

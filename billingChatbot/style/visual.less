@@ -234,7 +234,7 @@
         font: inherit;
         &:disabled { opacity: 0.65; }
     }
-    .end-session-button, .feedback-button {
+    .end-session-button, .feedback-button, .saved-reports-button {
         padding: 5px 10px;
         font-size: @base-font - 3px;
         color: @muted;
@@ -408,4 +408,87 @@
         cursor: default;
         opacity: 0.55;
     }
+}
+
+// ── Saved reports (chat page) ───────────────────────────────────────────────
+// The panel replaces the chat area while it is open (toggleSavedReports in visual.ts).
+// Explicit [hidden] rules: both elements set `display`, which would beat the hidden attribute.
+.chatbot-container {
+    .chat-area[hidden], .saved-reports-panel[hidden] { display: none; }
+
+    .saved-reports-panel {
+        flex: 1;
+        min-height: 60px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+        overflow-y: auto;
+    }
+    .saved-reports-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: 700;
+        color: @title;
+    }
+    .saved-reports-close, .saved-report-open, .saved-report-delete {
+        padding: 5px 10px;
+        font-size: @base-font - 3px;
+        color: @muted;
+        background: #fff;
+        border: 1px solid @line;
+        border-radius: 8px;
+        cursor: pointer;
+        &:hover:not(:disabled) { color: @ink; border-color: @muted; }
+        &:disabled { opacity: 0.55; cursor: default; }
+    }
+    .saved-report-open { color: #fff; background: @accent; border-color: @accent; }
+    .saved-report-open:hover:not(:disabled) { color: #fff; border-color: @title; background: @title; }
+    .saved-report-delete.confirming { color: @err; background: @err-soft; border-color: @err; font-weight: 600; }
+    .saved-reports-status { color: @muted; font-size: @base-font - 2px; }
+    .saved-reports-status:empty { display: none; }
+    .saved-reports-list { display: flex; flex-direction: column; gap: 8px; }
+    .saved-report-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 12px;
+        border: 1px solid @line;
+        border-radius: 10px;
+        background: #f8fafc;
+    }
+    .saved-report-info { min-width: 0; }
+    .saved-report-title { font-weight: 600; overflow-wrap: anywhere; }
+    .saved-report-details { color: @muted; font-size: @base-font - 3px; margin-top: 2px; }
+    .saved-report-actions { display: flex; gap: 6px; flex: none; }
+}
+
+// ── "Save report" button (generated report page) ─────────────────────────────
+// Its own small visual right of the native "Back to AI Assistant" button (60 px tall).
+.report-save-panel {
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    padding: 4px;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+.report-save-button {
+    width: 100%;
+    height: 100%;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+    background: #1e7f4f;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    &:hover:not(:disabled) { background: #176640; }
+    &:focus-visible { outline: 2px solid #2b5fd9; outline-offset: 2px; }
+    &:disabled { cursor: default; opacity: 0.8; }
+    &.saved { color: #1e7f4f; background: #eaf6ef; border: 1.5px solid #1e7f4f; opacity: 1; }
 }
