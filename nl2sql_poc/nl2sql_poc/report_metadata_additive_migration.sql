@@ -4,8 +4,8 @@
 USE billing;
 
 CREATE TABLE IF NOT EXISTS report_request_metadata_v2 (
-    session_id VARCHAR(64) NOT NULL,
     request_id VARCHAR(64) NOT NULL,
+    session_id VARCHAR(64) NOT NULL,
     user_id VARCHAR(255) NULL,
     user_role VARCHAR(100) NULL,
     platform VARCHAR(50) NULL,
@@ -26,9 +26,9 @@ CREATE TABLE IF NOT EXISTS report_request_metadata_v2 (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO report_request_metadata_v2
-    (session_id, request_id, user_id, user_role, platform, view_name, request_status,
+    (request_id, session_id, user_id, user_role, platform, view_name, request_status,
      sql_source, response_time_ms, customer_satisfaction, request_ts, error_message, day_id)
-SELECT COALESCE(session_id, ''), request_id, NULL, NULL, NULL, view_name,
+SELECT request_id, COALESCE(session_id, ''), NULL, NULL, NULL, view_name,
        CASE WHEN request_status IN ('view_created', 'completed') THEN 'completed'
             WHEN request_status IN ('failed', 'error') THEN 'failed'
             WHEN request_status = 'initiated' THEN 'initiated'

@@ -40,6 +40,7 @@ export declare class Visual implements IVisual {
     private demoRoleReady;
     private demoRolePinnedToSession;
     private demoRoleRetryTimer;
+    private healthAttempts;
     constructor(options: VisualConstructorOptions);
     update(options: VisualUpdateOptions): void;
     private readObjectText;

@@ -9,11 +9,30 @@ PROVIDERS. Nothing else needs to know.
 The interface is deliberately tiny: (system prompt, message list) -> text + token usage.
 Prompt *quality* is NOT portable across vendors, so expect to re-tune prompt.py per provider.
 """
+# ----------------------------------------------------------------------------------------------
+# FILE OVERVIEW (for learners)
+# What it does: sends a prompt to an AI model over the internet and returns its text reply.
+# Who calls it: build_llm() is called by chatbot_api.py (create_app) and run.py. The returned
+#   provider's complete() is called by pipeline.py (for planning the conversation and for
+#   writing SQL). Config: the `llm:` section of config_billing.yaml (billing uses "groq").
+# What it calls: the vendor SDKs (Software Development Kits = official Python client libraries):
+#   * anthropic  - Anthropic's SDK for Claude models. anthropic.Anthropic() reads the API key
+#                  from the ANTHROPIC_API_KEY environment variable.
+#   * openai     - OpenAI's SDK. Groq offers an "OpenAI-compatible" API, so the same SDK is
+#                  reused for Groq just by pointing base_url at Groq's server.
+#   The SDKs handle HTTPS, JSON, authentication headers and automatic retries for us.
+# API keys always come from environment variables and are never logged.
+# ----------------------------------------------------------------------------------------------
+import logging
 import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
+log = logging.getLogger(__name__)   # "app.llm" -> logs/backend_billing.log
 
+
+# What every provider returns: the reply text plus token counts (used for cost/usage logging
+# in pipeline.py). field(default_factory=dict) gives each response its own new empty dict.
 @dataclass
 class LLMResponse:
     text: str
@@ -22,9 +41,12 @@ class LLMResponse:
     extra: dict = field(default_factory=dict)      # e.g. cache read/write tokens
 
 
+# Abstract base class (the "interface"). Each vendor class below inherits from it and must
+# implement complete(system, messages) -> LLMResponse.
 class LLMProvider(ABC):
     name: str = "base"
 
+    # cfg = the vendor's sub-section of the config, e.g. llm.groq (model, max_tokens, ...).
     def __init__(self, cfg: dict):
         self.cfg = cfg
         self.model = cfg["model"]
@@ -34,6 +56,7 @@ class LLMProvider(ABC):
         """messages: [{"role": "user" | "assistant", "content": str}, ...]"""
 
 
+# Anthropic Claude (selected with llm.provider: claude). Not the billing default.
 class ClaudeProvider(LLMProvider):
     name = "claude"
 
@@ -43,6 +66,8 @@ class ClaudeProvider(LLMProvider):
         # Reads ANTHROPIC_API_KEY from the environment. Never hard-code the key.
         self.client = anthropic.Anthropic()
 
+    # system = the instructions/schema prompt; messages = the conversation so far.
+    # Builds the request arguments in `kwargs` and calls the Messages API.
     def complete(self, system, messages):
         kwargs = dict(model=self.model, max_tokens=self.cfg.get("max_tokens", 1500),
                       messages=messages)
@@ -58,7 +83,10 @@ class ClaudeProvider(LLMProvider):
         if self.cfg.get("temperature") is not None:
             kwargs["temperature"] = self.cfg["temperature"]
 
+        # Network call. Errors (bad key, rate limit, outage) are raised by the SDK and are not
+        # caught here - the caller (pipeline.py) decides how to handle them.
         resp = self.client.messages.create(**kwargs)
+        # A Claude reply is a list of content blocks; join the text blocks into one string.
         text = "".join(b.text for b in resp.content if b.type == "text")
         u = resp.usage
         return LLMResponse(
@@ -86,6 +114,8 @@ class OpenAIProvider(LLMProvider):
                            output_tokens=resp.usage.completion_tokens)
 
 
+# THE PROVIDER USED BY config_billing.yaml (llm.provider: groq). Groq hosts open models such as
+# openai/gpt-oss-120b and speaks the same HTTP API as OpenAI, so the openai SDK is reused.
 class GroqProvider(LLMProvider):
     """Groq provider using the OpenAI-compatible API."""
 
@@ -94,10 +124,13 @@ class GroqProvider(LLMProvider):
     def __init__(self, cfg):
         super().__init__(cfg)
 
-        from openai import OpenAI
+        from openai import OpenAI   # imported here (lazily) so it is only needed when Groq is used
 
+        # Fail fast at startup with a clear message if the key is missing, rather than failing
+        # later on the first chat message.
         api_key = os.getenv("GROQ_API_KEY")
         if not api_key:
+            log.error("GROQ_API_KEY is not set; the Groq provider cannot start")
             raise RuntimeError("GROQ_API_KEY environment variable is not set.")
 
         # max_retries: the SDK backs off and honours Retry-After on HTTP 429 (per-minute token
@@ -108,6 +141,8 @@ class GroqProvider(LLMProvider):
             max_retries=int(cfg.get("max_retries", 4)),
         )
 
+    # Same contract as the other providers. The system prompt is sent as the first message
+    # with role "system" (OpenAI-style), followed by the conversation (*messages unpacks the list).
     def complete(self, system, messages):
         kwargs = dict(
             model=self.model,
@@ -120,9 +155,13 @@ class GroqProvider(LLMProvider):
             kwargs["extra_body"] = {"reasoning_effort": self.cfg["reasoning_effort"]}
 
         response = self.client.chat.completions.create(**kwargs)
-        choice = response.choices[0]
+        choice = response.choices[0]          # we only ask for one answer
         text = choice.message.content or ""
+        # finish_reason "length" + empty text = the token budget ran out before any answer was
+        # written. Raise a clear error instead of returning "" (which would look like a bad reply).
         if not text.strip() and choice.finish_reason == "length":
+            log.warning("Groq reply was empty: the model used all %s output tokens on reasoning",
+                        kwargs["max_completion_tokens"])
             raise RuntimeError("The model ran out of output tokens before answering "
                                "(raise llm.groq.max_tokens or lower reasoning_effort).")
         usage = response.usage
@@ -133,12 +172,18 @@ class GroqProvider(LLMProvider):
         )
 
 
+# Registry: config value of llm.provider -> class to create.
 PROVIDERS = {"claude": ClaudeProvider, "openai": OpenAIProvider, "groq": GroqProvider}
 
 
 
+# Factory. llm_cfg = the whole `llm:` config section. Picks the class named by llm.provider and
+# passes it that vendor's own sub-section (e.g. llm.groq). Called by chatbot_api.py and run.py.
 def build_llm(llm_cfg: dict) -> LLMProvider:
     name = llm_cfg["provider"]
     if name not in PROVIDERS:
         raise ValueError(f"Unknown llm.provider '{name}'. Available: {', '.join(PROVIDERS)}")
-    return PROVIDERS[name](llm_cfg[name])
+    provider = PROVIDERS[name](llm_cfg[name])
+    # Provider and model only - the API key is never logged.
+    log.info("LLM provider ready: %s, model %s", provider.name, provider.model)
+    return provider

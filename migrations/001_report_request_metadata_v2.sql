@@ -38,12 +38,12 @@ PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- ---- Step 2: create the new table (does nothing if it already exists in the new shape) ------
 CREATE TABLE IF NOT EXISTS report_request_metadata (
+    request_id            VARCHAR(64)     NOT NULL,                 -- one report-generation request (PK, also in the view name)
     session_id            VARCHAR(64)     NOT NULL,                 -- the conversation (NOT unique: one session, many reports)
-    request_id            VARCHAR(64)     NOT NULL,                 -- one report-generation request
     user_id               VARCHAR(255)    NULL,                     -- VERIFIED user only; NULL when identity is unknown
     user_role             VARCHAR(100)    NULL,                     -- VERIFIED role only
     platform              VARCHAR(50)     NULL,                     -- Power BI (Tableau only when implemented)
-    view_name             VARCHAR(128)    NULL,                     -- vw_<description>_<YYYYMMDD>_<session>
+    view_name             VARCHAR(128)    NULL,                     -- vw_<description>_<YYYYMMDD>_<request>
     request_status        VARCHAR(30)     NOT NULL DEFAULT 'initiated',   -- initiated | in_progress | completed | failed
     sql_source            VARCHAR(30)     NULL,                     -- e.g. groq_api, claude_api, manual_mock, chart_change
     response_time_ms      BIGINT UNSIGNED NULL,                     -- processing time of the whole request
@@ -66,9 +66,9 @@ SET @new_rows      := (SELECT COUNT(*) FROM report_request_metadata);
 SET @sql := IF(@legacy_exists = 1 AND @new_rows = 0,
     CONCAT(
       'INSERT INTO report_request_metadata ',
-      '(session_id, request_id, user_id, user_role, platform, view_name, request_status, sql_source, ',
+      '(request_id, session_id, user_id, user_role, platform, view_name, request_status, sql_source, ',
       ' response_time_ms, customer_satisfaction, request_ts, error_message, day_id) ',
-      'SELECT COALESCE(NULLIF(session_id, ''''), ''unknown''), request_id, NULL, NULL, ''Power BI'', view_name, ',
+      'SELECT request_id, COALESCE(NULLIF(session_id, ''''), ''unknown''), NULL, NULL, ''Power BI'', view_name, ',
       ' CASE request_status ',
       '   WHEN ''view_created'' THEN ''completed'' ',
       '   WHEN ''failed'' THEN ''failed'' WHEN ''error'' THEN ''failed'' ',

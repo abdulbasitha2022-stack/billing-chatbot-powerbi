@@ -9,6 +9,14 @@ run.py - ask questions in plain English, get SQL + results.
   python run.py --show-prompt                      # print the system prompt and exit
   python run.py --config clients/other.yaml "..."  # a different client's config
 """
+# ----------------------------------------------------------------------------------------------
+# FILE OVERVIEW (for learners)
+# A command-line tool for trying the question -> SQL -> rows part WITHOUT the Flask backend,
+# Power BI, sessions or role permissions. Useful to test prompts and SQL quickly.
+# It calls build_llm (app/llm.py), build_db (app/db.py) and Pipeline.ask (app/pipeline.py).
+# Nobody imports it; you run it yourself. NOTE: the default --config is config.yaml (the
+# membership demo); pass --config config_billing.yaml to use the billing database.
+# ----------------------------------------------------------------------------------------------
 import argparse
 import csv
 import sys
@@ -21,6 +29,8 @@ from app.llm import build_llm
 from app.pipeline import Pipeline
 
 
+# Formats one value for the console table: NULL for None, 2 decimals for floats, and cuts
+# long text to `width` characters with "…".
 def cell(v, width=28):
     if v is None:
         s = "NULL"
@@ -31,6 +41,8 @@ def cell(v, width=28):
     return s if len(s) <= width else s[: width - 1] + "…"
 
 
+# Prints up to `limit` rows as an aligned text table. Each column is as wide as its longest
+# value (or header); `line` is a small helper that pads and joins one row.
 def show_table(columns, rows, limit=20):
     shown = rows[:limit]
     widths = [max(len(c), *(len(cell(r[i])) for r in shown)) if shown else len(c)
@@ -44,6 +56,8 @@ def show_table(columns, rows, limit=20):
         print(f"... {len(rows) - limit} more rows not shown")
 
 
+# Prints one pipeline result. res.status is "chat" (a plain answer), "clarify" (the model needs
+# more detail), "ok" (SQL ran) or anything else (failed), followed by a usage summary line.
 def show(res):
     print(f"\n> {res.question}")
     if res.status == "chat":
@@ -66,6 +80,7 @@ def show(res):
           f"{res.input_tokens} in / {res.output_tokens} out tokens{cached}")
 
 
+# Writes the header + all result rows to a CSV file (--csv option).
 def save_csv(res, path):
     with open(path, "w", newline="") as f:
         w = csv.writer(f)
@@ -74,7 +89,10 @@ def save_csv(res, path):
     print(f"saved {len(res.rows)} rows to {path}")
 
 
+# Entry point: parse the command line, load the YAML config, build the pipeline, then answer
+# questions from the argument, a file, or an interactive prompt.
 def main():
+    # argparse builds the --help text from the module docstring (__doc__) and the options below.
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("question", nargs="?", help="question in plain English")
     ap.add_argument("--config", default="config.yaml")
@@ -84,7 +102,9 @@ def main():
     args = ap.parse_args()
 
     cfg_path = Path(args.config).resolve()
-    cfg = yaml.safe_load(cfg_path.read_text())
+    cfg = yaml.safe_load(cfg_path.read_text())   # safe_load: plain data only, never runs code
+    # Building the pipeline connects to the DB (to describe tables) and checks the API key.
+    # Any setup problem stops the script with a short message instead of a long traceback.
     try:
         pipe = Pipeline(build_llm(cfg["llm"]), build_db(cfg["db"]), cfg, base_dir=cfg_path.parent)
     except Exception as e:
@@ -94,6 +114,7 @@ def main():
         print(pipe.system)
         return
 
+    # Questions file: one per line; blank lines and lines starting with "#" are skipped.
     if args.file:
         questions = [q.strip() for q in Path(args.file).read_text().splitlines()
                      if q.strip() and not q.startswith("#")]
@@ -111,6 +132,7 @@ def main():
     else:
         print("Ask a question (blank line to quit).")
         while True:
+            # Ctrl+C (KeyboardInterrupt) or end of input (EOFError) ends the loop cleanly.
             try:
                 q = input("\n? ").strip()
             except (EOFError, KeyboardInterrupt):

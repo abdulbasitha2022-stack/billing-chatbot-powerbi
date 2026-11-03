@@ -74,11 +74,11 @@ def test_insert_creates_the_row_with_the_13_columns_in_order(store, conn):
     store.insert_metadata(session_id="s1", request_id="r1", user_id=None, user_role=None, platform="Power BI",
                           sql_source="groq_api", request_ts=datetime(2026, 10, 26, 20, 0), day_id=date(2026, 10, 27))
     sql, params = conn.log[0]
-    assert sql.startswith("INSERT INTO report_request_metadata (session_id, request_id, user_id, user_role, "
+    assert sql.startswith("INSERT INTO report_request_metadata (request_id, session_id, user_id, user_role, "
                           "platform, view_name, request_status, sql_source, response_time_ms, "
                           "customer_satisfaction, request_ts, error_message, day_id)")
     assert "VALUES (%s, %s, %s, %s, %s, NULL, %s, %s, NULL, NULL, %s, NULL, %s)" in sql
-    assert params == ("s1", "r1", None, None, "Power BI", "initiated", "groq_api",
+    assert params == ("r1", "s1", None, None, "Power BI", "initiated", "groq_api",
                       datetime(2026, 10, 26, 20, 0), date(2026, 10, 27))
 
 

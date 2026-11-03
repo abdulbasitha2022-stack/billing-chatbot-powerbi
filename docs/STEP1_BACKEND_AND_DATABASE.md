@@ -11,7 +11,7 @@ Satisfied / Unsatisfied buttons arrive in Step 2.
   the transcript from the server. That part is unchanged.
 
 ## 2. report_request_metadata: one row per report request
-Columns (in order): session_id, request_id (PK), user_id, user_role, platform, view_name,
+Columns (in order): request_id (PK, 12 hex characters), session_id, user_id, user_role, platform, view_name,
 request_status, sql_source, response_time_ms, customer_satisfaction, request_ts, error_message, day_id.
 Chat messages are NOT stored here (they stay in `chat_conversation_log`). The full question and
 SQL stay in the existing `report_views` registry.
@@ -31,14 +31,16 @@ SQL stay in the existing `report_views` registry.
   reload/refresh that runs after the reply is not included.
 * `request_ts` is UTC. `day_id` is the date of `request_ts` in `app.timezone` (config), also used
   in the view name, so both always agree.
-* Existing table: run `migrations/001_report_request_metadata_v2.sql` (non-destructive, see below).
+* Existing table: run `migrations/001_report_request_metadata_v2.sql`, then
+  `migrations/002_request_id_first.sql` (both non-destructive, see below).
 
 ## 3. View names
-`vw_<description>_<YYYYMMDD>_<session>` e.g. `vw_refunds_by_reason_20261027_f5ba1970c8cf`.
+`vw_<description>_<YYYYMMDD>_<request>` e.g. `vw_refunds_by_reason_20261027_3fa91c07b2de`.
 Description = the report title, lowercased, only `a-z 0-9 _`, shortened first when needed (MySQL
-limit 64). Session = first 12 letters/digits of the session id. If the name is already used (this
-session, the database, or a race at CREATE VIEW) a request-derived suffix is added:
-`..._f5ba1970c8cf_ab12`. The same final name is used for CREATE VIEW, `report_views`, the metadata
+limit 64). Request = the request_id (12 hex characters; older 32-character ids are cut to 12).
+Since request_id is the primary key, each request's name is normally unique on its own. If the
+name is already used (this session, the database, or a race at CREATE VIEW) a random suffix is
+added: `..._3fa91c07b2de_ab12`. The same final name is used for CREATE VIEW, `report_views`, the metadata
 row, the Power BI table and the reply. Names are validated (`^vw_[a-z0-9_]+$`, <= 64) before use.
 
 ## 4. Sessions, feedback, identity (backend part)

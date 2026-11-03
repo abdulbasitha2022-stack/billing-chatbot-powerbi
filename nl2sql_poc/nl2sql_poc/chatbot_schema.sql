@@ -87,18 +87,19 @@ GRANT INSERT, SELECT ON billing.chat_conversation_log TO 'view_builder'@'%';
 -- Everything behind one generated view (questions, answers, SQL):
 --   SELECT c.seq, c.role, c.message_text, m.resolved_request, m.generated_sql, m.view_name
 --   FROM report_request_metadata m JOIN chat_conversation_log c ON c.request_id = m.request_id
---   WHERE m.view_name = 'vw_refunds_by_reason_2026_3fa91c' ORDER BY c.seq;
+--   WHERE m.view_name = 'vw_refunds_by_reason_20261027_3fa91c07b2de' ORDER BY c.seq;
 
 
 -- ============================================================================
 -- report_request_metadata: ONE ROW PER REPORT-GENERATION REQUEST (not per chat message).
 -- Use this only for a NEW install. If the table already exists in the old shape,
--- CREATE TABLE IF NOT EXISTS will NOT change it: run migrations/001_report_request_metadata_v2.sql instead.
+-- CREATE TABLE IF NOT EXISTS will NOT change it: run migrations/001_report_request_metadata_v2.sql instead
+-- (and migrations/002_request_id_first.sql to move request_id to the first column).
 -- request_status: initiated -> in_progress -> completed | failed
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS report_request_metadata (
+    request_id            VARCHAR(64)     NOT NULL,     -- 12 hex characters; also part of the view name
     session_id            VARCHAR(64)     NOT NULL,
-    request_id            VARCHAR(64)     NOT NULL,
     user_id               VARCHAR(255)    NULL,
     user_role             VARCHAR(100)    NULL,
     platform              VARCHAR(50)     NULL,

@@ -1,23 +1,30 @@
 # Billing-domain config for the chatbot. Separate from config.yaml (membership domain) -
 # same pipeline code, different database and different business-rule context.
+# Loaded by chatbot_api.py at startup (yaml.safe_load). Changes take effect after a backend restart.
+# Secrets (API keys, gateway secret) are NOT stored here - they come from environment variables.
 
+# ---- AI model (read by app/llm.py -> build_llm) -------------------------------------------------
+# provider picks which sub-section below is used. groq/claude are the vendor sections.
 llm:
-  provider: groq
+  provider: groq                    # groq | claude | openai ; the key needs GROQ_API_KEY in the environment
   groq:
-    model: openai/gpt-oss-120b
-    max_tokens: 1500
+    model: openai/gpt-oss-120b      # model name as Groq knows it
+    max_tokens: 1500                # upper limit on the length of each reply (sent as max_completion_tokens)
     reasoning_effort: low           # gpt-oss spends tokens on hidden reasoning; "low" leaves room for the answer
     max_retries: 4                  # automatic back-off on HTTP 429 rate limits
-    base_url: https://api.groq.com/openai/v1
-  claude:
+    base_url: https://api.groq.com/openai/v1   # Groq's OpenAI-compatible endpoint (the openai SDK talks to it)
+  claude:                           # only used if provider is set to claude (needs ANTHROPIC_API_KEY)
     model: claude-sonnet-5-5
     max_tokens: 1500
-    prompt_caching: true
+    prompt_caching: true            # lets Anthropic reuse the large, unchanging system prompt (cheaper/faster)
 
+# ---- Read-only query database (read by app/db.py -> build_db, and app/pipeline.py) ------------
 db:
   type: sqlalchemy                  # MySQL via SQLAlchemy; dialect auto-detected as "mysql"
-  url_env: DATABASE_URL
-  url: mysql+pymysql://billing_readonly:billing_readonly@localhost:3306/billing
+  url_env: DATABASE_URL             # if this environment variable is set, its URL wins over `url` below
+  url: mysql+pymysql://billing_readonly:billing_readonly@localhost:3306/billing   # driver pymysql, READ-ONLY account, database "billing"
+  # Whitelist: the only tables the LLM is told about and that guardrails.py lets a query read.
+  # Which of these each role may actually see is decided by the role_permissions table (app/access.py).
   allowed_tables:
     - products
     - plans
@@ -27,13 +34,21 @@ db:
     - invoices
     - charges
     - refunds
-  max_rows: 1000
+  max_rows: 1000                    # row cap: guardrails.py adds/clamps LIMIT to this; results are cut here too
 
 # Everyday wording for a table or "table.column", so a request is refused before any AI call.
 # Vocabulary only - it grants or denies nothing: a term applies only when role_permissions
 # denies that resource to the user's role. Table and column names are matched automatically.
+# (No terms are configured at the moment. app/pipeline.py reads them from access.resource_terms,
+#  e.g.  access:
+#          resource_terms:
+#            customers.email: [email address, mail id]  )
 
 
+# ---- Business context for the prompts (read by app/pipeline.py) -------------------------------
+# files: extra documents (paths relative to this file's folder) pasted into the LLM's system prompt.
+# extra_rules: free text appended to the prompt. Note: everything inside the `|` block below is
+# literal text sent to the model, so do not put YAML comments inside it.
 context:
   files:
     - context/billing_runtime_context.md
@@ -41,32 +56,42 @@ context:
     Dialect is MySQL. Use backticks only if an identifier clashes with a reserved word -
     none of these table/column names do, so plain identifiers are fine.
 
-pipeline:
-  max_retries: 2
-  log_file: logs/requests_billing.jsonl
-  conversation_log_file: logs/conversations_billing.jsonl   # every question and answer, one JSON line each
+pipeline:                           # conversation + SQL generation settings (app/pipeline.py, app/conversation.py)
+  max_retries: 2                    # extra LLM attempts when the SQL is rejected by guardrails or fails in MySQL
+  log_file: logs/requests_billing.jsonl   # one JSON line per SQL generation request (question, SQL, tokens, timing)
   conversation_log_file: logs/conversations_billing.jsonl   # every question + answer, one JSON object per line
   prompt_eval_threshold: 40         # a report request scoring below this is always clarified, never built
   max_clarifications: 4             # safety cap on questions per request (0 = unlimited); below-threshold requests ignore it
   history_chars: 3500               # how much recent conversation the assistant re-reads each turn
   data_rows_in_prompt: 20           # rows of the last report the assistant can see when explaining it
 
+logging:                            # backend diagnostics (separate from the JSONL request/conversation logs)
+  level: INFO                       # DEBUG adds full LLM prompts/replies and SQL text
+  file: logs/backend_billing.log    # also printed to the console; remove to log to the console only
+  max_mb: 10                        # rotate the file at this size...
+  backup_count: 5                   # ...keeping this many old files (backend_billing.log.1 ...)
+  # Power BI Desktop automation writes its own step log to logs/powerbi_automation.log
+
+# ---- Chat behaviour (read by chatbot_api.py and app/conversation.py) ---------------------------
 chat:
-  resume_latest_session: true       # visual falls back to the newest session if it has no local storage
+  resume_latest_session: true     # visual falls back to the newest session if it has no local storage
   resume_window_minutes: 480        # ...but only if it was active within this window (turn off for multi-user use)
   end_wait_seconds: 2               # End session waits this long for a running request before finishing it afterwards
   ask_chart_type: true              # ask for the chart type as the LAST question, after all clarifications
   skip_empty_reports: true          # a request that matches no rows gets a message, not a blank page
   allow_mock_sql: true              # lets /chat accept mock_sql for tests; set false in production
 
+# ---- Power BI output (read by app/powerbi_service.py) -----------------------------------------
+# report_dir / model_dir: the two folders of the Power BI project (PBIP) that pages and tables are
+# written into. Power BI Desktop must have this same project open for the reload to work.
 powerbi:
-  enabled: true
+  enabled: true                     # false = create the MySQL view only, no Power BI page
   report_dir: "C:/Users/basit/Documents/billing_POC.Report"
   model_dir: "C:/Users/basit/Documents/billing_POC.SemanticModel"
-  include_detail_table: true
-  desktop_automation:
+  include_detail_table: true        # also add a table visual with the report rows under the chart
+  desktop_automation:               # runs app/powerbi_desktop_automation.ps1 to reload Power BI Desktop
     enabled: true
-    timeout_seconds: 180
+    timeout_seconds: 180            # give up on the PowerShell script after this many seconds
     reload_delay_seconds: 2         # wait after replying before Desktop reloads (the chatbot reloads too)
 
 # ---- Application settings -------------------------------------------------------------------

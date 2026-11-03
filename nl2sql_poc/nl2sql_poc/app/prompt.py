@@ -10,8 +10,22 @@ Three ingredients, deliberately kept apart so each can change without touching t
 Ingredient 3 is the "10% client-specific configuration" from the deck. Onboarding a new client
 means new context files and extra_rules, not new code.
 """
+# ---------------------------------------------------------------------------------------------
+# WHAT THIS FILE DOES (beginner overview)
+#   Pure text building: no network, no database. It holds two prompt templates and two
+#   functions that fill them in:
+#     TEMPLATE          + build_system_prompt()  -> system prompt for the SQL-writing LLM call
+#     PLANNER_TEMPLATE  + build_planner_prompt() -> system prompt for the conversational planner
+# WHO CALLS IT
+#   app/pipeline.py: Pipeline.sql_system() and Pipeline.planner_system(). Those pass in the
+#   live schema (from app/db.py), the data dictionary files and extra rules (from config).
+# NOTE: the two big templates are triple-quoted strings. Everything inside them is sent to the
+#   LLM word for word, so comments must stay OUTSIDE the strings (a "#" inside would be sent too).
+# ---------------------------------------------------------------------------------------------
 from datetime import date
 
+# Short, dialect-specific SQL hints inserted into both prompts. The key is db.dialect
+# ("mysql" for this project). Unknown dialects fall back to "Standard <dialect> SQL.".
 DIALECT_NOTES = {
     "postgres": ("PostgreSQL. Single quotes for strings, CAST or :: for casts, DATE_TRUNC / EXTRACT "
                  "for dates, ILIKE for case-insensitive match, COUNT(*) FILTER (WHERE ...) for "
@@ -27,6 +41,12 @@ DIALECT_NOTES = {
     ),
 }
 
+# TEMPLATE: system prompt for stage 2 (SQL generation, Pipeline.generate_sql).
+# It is filled with str.format(), so {dialect}, {today}, {max_rows}, {dialect_notes}, {schema},
+# {extra_rules} and {context} are placeholders. It defines a strict reply protocol
+# (a ```sql block, optional ASSUMPTION: lines, or a single CLARIFY: line) that
+# pipeline.parse_response() later parses. The trailing "\" at the end of a line inside the
+# string joins it with the next line (the newline is not part of the text).
 TEMPLATE = """\
 You are a senior analytics engineer. You translate a business question into ONE read-only SQL \
 query for a {dialect} database.
@@ -65,8 +85,15 @@ request and keep every part that still applies. Do not start from scratch unless
 """
 
 
+# build_system_prompt: fill TEMPLATE for the SQL-writing LLM. Called by Pipeline.sql_system().
+#   The "*" makes every argument keyword-only (callers must write dialect=..., etc.).
+#   dialect: e.g. "mysql"; schema_text: "table(col type, ...)" lines the role may read;
+#   context_texts: list of data dictionary file contents; extra_rules: free text from config;
+#   max_rows: row cap mentioned to the model; today: date used to resolve "last month" etc.
+#   Returns the finished prompt string.
 def build_system_prompt(*, dialect, schema_text, context_texts, extra_rules, max_rows, today=None):
-    extra = f"\n## Environment notes\n{extra_rules.strip()}\n" if extra_rules and extra_rules.strip() else ""
+    # Only add an "Environment notes" section when there actually are extra rules.
+    extra =f"\n## Environment notes\n{extra_rules.strip()}\n" if extra_rules and extra_rules.strip() else ""
     return TEMPLATE.format(
         dialect=dialect,
         today=(today or date.today()).isoformat(),
@@ -74,9 +101,15 @@ def build_system_prompt(*, dialect, schema_text, context_texts, extra_rules, max
         dialect_notes=DIALECT_NOTES.get(dialect, f"Standard {dialect} SQL."),
         schema=schema_text,
         extra_rules=extra,
-        context="\n\n---\n\n".join(t.strip() for t in context_texts),
+        context="\n\n---\n\n".join(t.strip() for t in context_texts),   # files separated by ---
     )
 
+# PLANNER_TEMPLATE: system prompt for stage 1 (the planner, Pipeline.plan).
+# The planner decides the intent of each user message (chat / explain / new_report /
+# modify_report / change_chart / clarify / decline), scores how complete a report request is,
+# and must reply with ONE JSON object that pipeline.parse_plan() reads.
+# Unlike TEMPLATE it uses __TOKEN__ placeholders replaced with str.replace(), NOT str.format():
+# the template itself contains literal JSON braces { } which str.format() would try to fill.
 PLANNER_TEMPLATE = """\
 You are "Billing AI Assistant", the conversational brain of a Power BI report builder for a \
 subscription-billing database. You chat with business users, answer questions about the report \
@@ -184,8 +217,13 @@ __STATE__
 """
 
 
+# build_planner_prompt: fill PLANNER_TEMPLATE. Called by Pipeline.planner_system().
+#   state: the "Conversation state" text from ConversationEngine.state_block() (clarification
+#   budget, pending chart choice, a summary of the LAST REPORT, earlier reports).
+#   Other arguments are as in build_system_prompt(). Returns the finished prompt string.
 def build_planner_prompt(*, dialect, schema_text, context_texts, extra_rules, state="", today=None):
     """System prompt for the conversational planner (intent + self-contained request)."""
+    # placeholder -> value to put in its place
     replacements = {
         "__TODAY__": (today or date.today()).isoformat(),
         "__DIALECT__": DIALECT_NOTES.get(dialect, f"Standard {dialect} SQL."),
@@ -200,4 +238,5 @@ def build_planner_prompt(*, dialect, schema_text, context_texts, extra_rules, st
     for token, value in replacements.items():
         if token != "__STATE__":
             text = text.replace(token, value)
+    # Finally insert the state (it can contain user-typed text, hence done last).
     return text.replace("__STATE__", replacements["__STATE__"])
