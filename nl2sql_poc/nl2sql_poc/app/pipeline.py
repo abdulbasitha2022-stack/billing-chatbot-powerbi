@@ -124,7 +124,8 @@ def parse_response(text: str) -> Parsed:
 #   intent: one of INTENTS; reply: text for the user; request: self-contained report request
 #   (for new/modify_report); title: page title; chart_type: Power BI visual type or "auto";
 #   assumptions: defaults the model chose; sufficient/clarification: is the request ready, and
-#   if not, the question to ask. ConversationEngine.handle() acts on it.
+#   if not, the question to ask; restricted: restricted tables/columns the user wants to SEE
+#   (not ones they only mention to leave out). ConversationEngine.handle() acts on it.
 @dataclass
 class Plan:
     intent: str  # What the AI decided to do, such as chat, explain, or create a report.
@@ -137,6 +138,7 @@ class Plan:
     scored: bool = False         # False when the model gave no score at all
     sufficient: bool = True
     clarification: str = ""
+    restricted: list = field(default_factory=list)   # e.g. ["table.column"]; checked by the backend
 
 
 # _extract_json_object: LLMs sometimes wrap JSON in ```json fences or add chatter around it.
@@ -209,9 +211,16 @@ def parse_plan(text: str) -> Plan:
         sufficient = intent != "clarify"
     else:
         sufficient = bool(raw_sufficient)
+    # Restricted data the user wants to see: a list of names, or a single name as a string.
+    raw_restricted = data.get("restricted")
+    if isinstance(raw_restricted, str):
+        raw_restricted = [raw_restricted]
+    restricted = [str(r).strip() for r in raw_restricted if str(r).strip()] \
+        if isinstance(raw_restricted, list) else []
     return Plan(intent=intent, reply=reply, request=request, title=title,
                 chart_type=chart or "auto", assumptions=assumptions, confidence=confidence,
-                scored=scored, sufficient=sufficient, clarification=as_text("clarification"))
+                scored=scored, sufficient=sufficient, clarification=as_text("clarification"),
+                restricted=restricted)
 
 
 # --------------------------------------------------------------------------- results
@@ -298,8 +307,6 @@ class Pipeline:
         discover = getattr(db, "table_columns", None)
         self.columns = {t.lower(): list(cols) for t, cols in discover(self.allowed).items()} \
             if callable(discover) else {}
-        # Everyday words for tables/columns (config), used only when the DB denies that resource.
-        self.resource_terms = (cfg.get("access") or {}).get("resource_terms") or {}
         # Cache of built SQL system prompts {schema_text: prompt} and the day it was built for
         # (see sql_system()). Different roles see different schemas, so one entry per schema.
         self._sql_systems, self._sql_system_day = {}, None
@@ -329,16 +336,33 @@ class Pipeline:
                 lines += [l for l in self._schema_text.splitlines() if l.lower().startswith(f"{t}(")]
         return "\n".join(lines) or "(no tables are available to this user)"
 
-    # denied_reference: an early, text-based access check. ConversationEngine calls it (through
-    # its _denied_reference) on the user's message and on the planner's restatement BEFORE any
-    # SQL is written. The real matching logic lives in AccessController.denied_reference
-    # (app/access.py); here we only pass the table/column names and the everyday "terms".
-    # *texts collects any number of strings to scan.
-    def denied_reference(self, role, access, *texts):
-        """Restricted table/column (per role_permissions) the texts ask for, else None."""
-        return access.denied_reference(
-            role, self.allowed, *texts, terms=self.resource_terms,
-            columns={t: [n for n, _ in cols] for t, cols in self.columns.items()})
+    # restricted_requested: the early access check. The planner lists in `restricted` the
+    # restricted data the user wants to SEE (it understands "without <column>", which a word match
+    # cannot). ConversationEngine and ask() call this right after planning, BEFORE any SQL is
+    # written. Only names this role is really denied count (per role_permissions, app/access.py),
+    # so a wrong guess by the model can never refuse an allowed request. The SQL guardrail
+    # (guardrails.py) still enforces access on the generated SQL either way.
+    def restricted_requested(self, names, role, access):
+        """The first name in the planner's `restricted` list this role may not read, else None."""
+        if access is None or not names:
+            return None
+        columns = {t: [n.lower() for n, _ in cols] for t, cols in self.columns.items()}
+        tables, denied_columns = access.denied_resources(role, self.allowed, columns)
+        for name in names:
+            # "Customers.Email" / "customers email" -> "customers.email";
+            # "payment_methods(id, card_last4)" (as listed in restricted_note) -> "payment_methods"
+            key = re.sub(r"\s+", ".", re.sub(r"\(.*$", "", str(name)).strip().lower())
+            # Any column of a denied table counts as the table itself.
+            resource = key.partition(".")[0] if key.partition(".")[0] in tables else key
+            if resource in tables or resource in denied_columns:
+                log.warning("Access denied: role %s asked for restricted data %s", role, resource)
+                return resource
+            # A bare column name ("email") counts when exactly one denied column has it.
+            matches = [c for c in denied_columns if c.partition(".")[2] == key]
+            if len(matches) == 1:
+                log.warning("Access denied: role %s asked for restricted data %s", role, matches[0])
+                return matches[0]
+        return None
 
     # The prompts embed today's date. Rebuild when the day changes so a server that stays up
     # for days still resolves "last month" / "this year" correctly.
@@ -366,8 +390,9 @@ class Pipeline:
         """Planner-only note naming the data role_permissions denies to this role, so a request
         for it is restated by name (and refused by the backend) instead of called missing data."""
         # Why tell the planner about restricted data at all? Otherwise it would answer "that
-        # data does not exist" (a decline). Instead it restates the request by name, the
-        # denied_reference() check catches it, and the user gets the proper "not permitted" reply.
+        # data does not exist" (a decline), or build the report without it. Instead it lists the
+        # data in `restricted`, restricted_requested() catches it, and the user gets the proper
+        # "not permitted" reply. Data the user only wants left out is not listed.
         if access is None:
             return ""
         columns = {t: [n for n, _ in cols] for t, cols in self.columns.items()}
@@ -378,10 +403,13 @@ class Pipeline:
             return ""
         return ("\n\nRestricted for this user - this data EXISTS, but the system decides access:\n"
                 + "\n".join(lines)
-                + "\nIf the user asks for any of this data, in any wording, never decline it and never "
-                  "say it does not exist: set intent \"new_report\" and name it in `request` exactly as "
-                  "written above. Never mention it in `reply`, and never add it to a request that did "
-                  "not ask for it.")
+                + "\nIf the user wants to SEE any of this data, in any wording (its name, a synonym, "
+                  "or a description of what it contains), never decline it and never say it does not "
+                  "exist: set intent \"new_report\" and list it in `restricted` exactly as written above "
+                  "(\"table.column\" for a column, the table name for a table). Also list it when it is "
+                  "only one part of a larger request. If the user mentions it only to EXCLUDE it "
+                  "(\"... without <it>\", \"everything except <it>\"), do NOT list it: build the request "
+                  "without it and leave it out of `request`. Never mention restricted data in `reply`.")
 
     # planner_system: the planner's system prompt = role-filtered schema + restricted-data note
     # + business rules + the conversation state text from ConversationEngine.state_block().
@@ -576,17 +604,10 @@ class Pipeline:
     # ------------------------------------------------------------------ CLI convenience
     def ask(self, question: str, *, role: str | None = None, access=None) -> Result:
         """Single-shot use (run.py): plan, then build SQL when the plan is a report.
-        This method now checks permissions *before* any LLM call. If the request
-        contains a table or column that the caller's role is not allowed to read,
-        it returns an immediate denial without invoking the planner or generating
-        any intermediate AI response.
-        """
+        A plan that asks to see data the caller's role may not read is denied before any SQL
+        is written (see restricted_requested)."""
         # Not used by the chatbot API (that goes through ConversationEngine); this is a simpler
         # one-question path with no memory, for the command-line tool run.py.
-        # Early RBAC check: restricted tables/columns named in the request (backend rules).
-        if access is not None and self.denied_reference(role, access, question):
-            return Result(request_id=uuid.uuid4().hex[:8], question=question, status="failed",
-                          error=DENIED_ERROR)
         started = time.perf_counter()
         try:
             plan, usage = self.plan([
@@ -599,6 +620,10 @@ class Pipeline:
                 question=question,
                 status="error",
                 error=f"Prompt evaluation failed: {exc}")
+        # RBAC check on what the planner says the user wants to see (backend rules).
+        if self.restricted_requested(plan.restricted, role, access):
+            return Result(request_id=uuid.uuid4().hex[:8], question=question, status="failed",
+                          error=DENIED_ERROR)
         # Report intent -> write and run SQL; anything else -> return the planner's reply as-is.
         if plan.intent in REPORT_INTENTS:
             result = self.generate_sql(

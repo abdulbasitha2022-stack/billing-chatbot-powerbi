@@ -6,10 +6,10 @@ from app.llm import LLMProvider, LLMResponse
 
 
 def plan_json(intent="chat", reply="", request="", title="", chart_type="auto",
-              assumptions=None, confidence=90, sufficient=None, clarification=""):
+              assumptions=None, confidence=90, sufficient=None, clarification="", restricted=None):
     data = {"intent": intent, "reply": reply, "request": request, "title": title,
             "chart_type": chart_type, "assumptions": assumptions or [], "score": confidence,
-            "clarification": clarification}
+            "clarification": clarification, "restricted": restricted or []}
     if sufficient is not None:
         data["sufficient"] = sufficient
     return json.dumps(data)

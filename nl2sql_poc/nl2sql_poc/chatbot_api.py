@@ -172,7 +172,10 @@ class ChatService:
         # AccessController knows which role may read which table. It is built from the live
         # database when there is one; tests with a fake DB get an empty controller instead.
         db_engine = getattr(pipeline.db, "engine", None)
-        self.access = AccessController.from_engine(db_engine) if db_engine is not None else AccessController([])
+        # access.refresh_seconds: how often role_permissions is re-read, so new rules apply without a restart.
+        refresh_s = (cfg.get("access") or {}).get("refresh_seconds", 60)
+        self.access = AccessController.from_engine(db_engine, refresh_s) if db_engine is not None \
+            else AccessController([])
         self.max_rows = int(cfg["db"].get("max_rows", 1000))   # row cap enforced by the guardrails
         self.source = f"{pipeline.llm.name}_api"           # stored as sql_source in the metadata row
         # Optional `chat:` section of the config; every setting has a default.

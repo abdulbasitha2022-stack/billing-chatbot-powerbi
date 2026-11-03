@@ -194,7 +194,9 @@ assumptions instead of asking again, unless there is still nothing at all to bui
 
 ## Output
 Return ONLY one JSON object, with no code fences and no text around it:
-{"intent": "chat", "reply": "", "request": "", "title": "", "chart_type": "auto", "assumptions": [], "score": 100, "sufficient": true, "clarification": ""}
+{"intent": "chat", "reply": "", "request": "", "title": "", "chart_type": "auto", "assumptions": [], "score": 100, "sufficient": true, "clarification": "", "restricted": []}
+- restricted: always an empty list, unless the schema section lists data restricted for this \
+user and says when to fill it in.
 - clarify: put the single question in `clarification` and repeat it in `reply`; sufficient false.
 - chat / explain / decline: leave request, title and clarification empty; score 100, sufficient true.
 - change_chart: set chart_type to the requested type (never "auto").

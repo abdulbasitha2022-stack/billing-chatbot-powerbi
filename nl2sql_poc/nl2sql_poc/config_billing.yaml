@@ -36,13 +36,15 @@ db:
     - refunds
   max_rows: 1000                    # row cap: guardrails.py adds/clamps LIMIT to this; results are cut here too
 
-# Everyday wording for a table or "table.column", so a request is refused before any AI call.
-# Vocabulary only - it grants or denies nothing: a term applies only when role_permissions
-# denies that resource to the user's role. Table and column names are matched automatically.
-# (No terms are configured at the moment. app/pipeline.py reads them from access.resource_terms,
-#  e.g.  access:
-#          resource_terms:
-#            customers.email: [email address, mail id]  )
+# ---- Access (read by app/access.py via chatbot_api.py) ----------------------------------------
+# role_permissions in MySQL is the only source of truth for what each role may read: a table needs
+# an allowed row; a 'table.column' row with allowed = 0 makes that column confidential. Nothing is
+# hard-coded - add a row and it is enforced on the next request (after at most refresh_seconds).
+# The planner LLM says which restricted data the user wants to SEE (checked against these rules);
+# the generated SQL is checked again by app/guardrails.py. Mentioning data only to exclude it
+# ("customers without <column>") is allowed.
+access:
+  refresh_seconds: 60               # re-read role_permissions this often (0 = on every check)
 
 
 # ---- Business context for the prompts (read by app/pipeline.py) -------------------------------

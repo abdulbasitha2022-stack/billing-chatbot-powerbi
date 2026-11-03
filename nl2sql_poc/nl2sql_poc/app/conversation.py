@@ -7,11 +7,11 @@ change). It does not touch MySQL or Power BI - the API layer performs those side
 # WHAT THIS FILE DOES (beginner overview)
 #   The "brain" of one chat turn. ConversationEngine.handle(session, message) decides what the
 #   bot should do and returns an Outcome describing it. Steps in handle():
-#     1. access check on the raw message (before any LLM call),
-#     2. if a chart-type answer was pending, use it and go straight to SQL,
-#     3. otherwise ask the planner LLM (Pipeline.plan) for an intent,
-#     4. access check again on the planner's restatement,
-#     5. apply guard rails: clarify if not ready, answer chat/explain, change chart,
+#     1. if a chart-type answer was pending, use it and go straight to SQL,
+#     2. otherwise ask the planner LLM (Pipeline.plan) for an intent,
+#     3. access check on the restricted data the planner says the user wants to see
+#        (plan.restricted; mentioning data only to leave it out is fine),
+#     4. apply guard rails: clarify if not ready, answer chat/explain, change chart,
 #        ask for the chart type, or generate SQL (Pipeline.generate_sql via _generate()).
 #   It also builds the text summary of the last report that the planner reads (state_block).
 # WHO CALLS IT
@@ -19,7 +19,7 @@ change). It does not touch MySQL or Power BI - the API layer performs those side
 #   /chat message (while holding session.lock). It then acts on Outcome.kind: saves the view
 #   in MySQL, generates the Power BI page, writes metadata rows, etc.
 # WHAT IT CALLS
-#   app/pipeline.py (plan, generate_sql, denied_reference), app/session.py fields/methods,
+#   app/pipeline.py (plan, generate_sql, restricted_requested), app/session.py fields/methods,
 #   app/util.py formatting helpers, app/coverage.py (date range message for empty results).
 # ---------------------------------------------------------------------------------------------
 from __future__ import annotations
@@ -319,13 +319,8 @@ class ConversationEngine:
         # Small helper: milliseconds since this turn started (called at each return point).
         elapsed = lambda:round((time.perf_counter() - started) * 1000)
 
-        # Access check BEFORE any LLM call: a message (or the request still waiting for its chart
-        # choice) that names restricted data is refused outright; nothing the AI wrote is shown.
+        # A request waiting for its chart choice already passed the access check when it was planned.
         pending = session.pending_chart
-        denied = self._denied_reference(role, access, user_text,
-                                        (pending or {}).get("request"), (pending or {}).get("title"))
-        if denied:
-            return self._denied(denied, elapsed())
 
         # 0. Are we waiting for the chart choice? ----------------------------------------------
         # A chip was clicked but no request is waiting for it (e.g. an old chip): treat a real
@@ -371,12 +366,11 @@ class ConversationEngine:
             return Outcome(kind="error", intent="error", error=str(exc), elapsed_ms=elapsed(),
                            reply="Sorry, I couldn't reach my AI service just now, so I didn't get "
                                  "your request. Please try again in a moment.")
-        # Second check on the planner's own restatement (catches paraphrases and follow-ups that
-        # complete an earlier question), still before any of its text reaches the user.
-        # Every intent's text is checked: a decline or chat reply about restricted data must not
-        # reach the user as "the data does not exist".
-        restated = [plan.request, plan.title, *plan.assumptions, plan.clarification, plan.reply]
-        denied = self._denied_reference(role, access, *restated)
+        # Access check on what the planner says the user wants to SEE (it understands paraphrases,
+        # follow-ups and "without <column>"), before any of its text reaches the user and before any
+        # SQL is written. Every intent is checked: a reply about restricted data must not reach
+        # the user as "the data does not exist".
+        denied = self._denied_reference(role, access, plan)
         if denied:
             return self._denied(denied, elapsed())
         intent = plan.intent
@@ -537,11 +531,11 @@ class ConversationEngine:
         return Outcome(kind="failed", error=detail, reply=reply, **common)
 
     # ------------------------------------------------------------------ access
-    def _denied_reference(self, role, access, *texts):
-        """Restricted table/column the texts ask for (per the backend rules), else None."""
+    def _denied_reference(self, role, access, plan):
+        """Restricted table/column the plan says the user wants to see (per the backend rules), else None."""
         if access is None:
             return None                   # no rules loaded here; the SQL guardrail still denies
-        return self.pipeline.denied_reference(role, access, *texts)
+        return self.pipeline.restricted_requested(plan.restricted, role, access)
 
     # _denied: the "access denied" Outcome. Only the generic DENIED_REPLY reaches the user; the
     # restricted resource name goes into `error` (for logs and the metadata table).

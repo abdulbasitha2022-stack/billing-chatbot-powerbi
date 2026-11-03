@@ -285,24 +285,85 @@ def test_requesting_a_restricted_column_is_denied_without_running_sql():
     assert db.ran == [] and len(llm.calls) == 1                      # denied, not retried around
 
 
-def test_pre_llm_check_uses_database_rules_and_discovered_columns():
-    pipe = Pipeline(ScriptedLLM([]), SchemaDB(), cfg(), base_dir=".")     # no configured wording
+def test_restricted_check_trusts_only_the_database_rules():
+    pipe = Pipeline(ScriptedLLM([]), SchemaDB(), cfg(), base_dir=".")
     acc = access()
-    assert pipe.denied_reference("Developer", acc, "customer emails by country") == "customers.email"
-    assert pipe.denied_reference("Analyst", acc, "count by card_last4") == "payment_methods"
-    assert pipe.denied_reference("Developer", acc, "show the customer table") is None
-    assert pipe.denied_reference("CEO", acc, "customer emails by country") is None
-    # A bare column name shared with a readable column elsewhere is not treated as a request.
+    check = lambda names, role, a=acc: pipe.restricted_requested(names, role, a)
+    assert check(["customers.email"], "Developer") == "customers.email"
+    assert check(["Customers Email"], "Developer") == "customers.email"         # tolerant spelling
+    assert check(["email"], "Developer") == "customers.email"                   # unambiguous bare column
+    assert check(["payment_methods(payment_method_id, card_last4)"], "Analyst") == "payment_methods"
+    assert check(["payment_methods.card_last4"], "Analyst") == "payment_methods"
+    assert check([], "Developer") is None
+    # The model naming data the role MAY read never causes a denial.
+    assert check(["customers.email"], "CEO") is None
+    assert check(["customers.country"], "Developer") is None
     rows = with_rule("Developer", "column", "subscriptions.status", 0)
-    assert pipe.denied_reference("Developer", access(rows), "invoice status by month") is None
-    assert pipe.denied_reference("Developer", access(rows), "subscriptions status") == "subscriptions.status"
+    assert check(["subscriptions.status"], "Developer", access(rows)) == "subscriptions.status"
+    assert check(["invoices.status"], "Developer", access(rows)) is None
 
 
-def test_ask_denies_before_the_planner_and_passes_the_role_schema_to_it():
-    llm = ScriptedLLM([plan_json("chat", reply="Hi")])
+def test_mentioning_restricted_data_only_to_exclude_it_is_allowed():
+    """The words are not scanned: "without email" reaches the planner, which leaves it out."""
+    llm = ScriptedLLM([plan_json("new_report", request="Customer list (id, name, country, created date)",
+                                 title="Customers", sufficient=True, confidence=95),
+                       "```sql\nSELECT customer_id, name, country, created_at FROM customers\n```"])
+    pipe = Pipeline(llm, SchemaDB(columns=("customer_id", "name", "country", "created_at")), cfg(), base_dir=".")
+    result = pipe.ask("show the customer table without email", role="Developer", access=access())
+    assert result.status == "ok" and result.error in (None, "")
+    assert "email" not in result.sql.lower()
+
+
+def test_ask_denies_what_the_planner_says_is_restricted_and_passes_the_role_schema_to_it():
+    llm = ScriptedLLM([plan_json("new_report", request="Customer emails", title="Emails",
+                                 sufficient=True, restricted=["customers.email"])])
     pipe = Pipeline(llm, SchemaDB(), cfg(), base_dir=".")
     assert pipe.ask("list customer emails", role="Developer", access=access()).error == DENIED_ERROR
-    assert llm.calls == []
-    pipe.ask("what can you do?", role="Developer", access=access())
+    assert len(llm.calls) == 1                                       # no SQL was written
     assert pipe.schema_for("Developer", access()) in llm.calls[0][0]
     assert "email VARCHAR" not in llm.calls[0][0]
+
+
+# ------------------------------------------------------------------ any confidential data
+def add_permission(engine, role, kind, name, allowed):
+    with engine.begin() as conn:
+        conn.execute(text("INSERT INTO role_permissions (role, resource_type, resource_name, allowed) "
+                          "VALUES (:r, :k, :n, :a)"), {"r": role, "k": kind, "n": name, "a": allowed})
+
+
+def test_any_column_marked_confidential_is_restricted_everywhere():
+    """Nothing is special about email: a new allowed = 0 row works the same for any column."""
+    acc = access(with_rule("Analyst", "column", "invoices.amount_due_cents", 0))
+    pipe = Pipeline(ScriptedLLM([]), SchemaDB(), cfg(), base_dir=".")
+    # Hidden from the SQL prompt, named in the planner's restricted list ...
+    assert "amount_due_cents" not in pipe.sql_system("Analyst", acc)
+    assert "invoices.amount_due_cents" in pipe.planner_system("state", "Analyst", acc)
+    # ... refused when the planner says the user wants it, and by the SQL check.
+    assert pipe.restricted_requested(["invoices.amount_due_cents"], "Analyst", acc) == "invoices.amount_due_cents"
+    with pytest.raises(GuardrailError, match=DENIED):
+        check("SELECT invoice_id, amount_due_cents FROM invoices", "Analyst", acc)
+    # Leaving it out is fine, and other roles keep their access.
+    assert check("SELECT invoice_id, status FROM invoices", "Analyst", acc)
+    assert pipe.restricted_requested(["invoices.amount_due_cents"], "CEO", acc) is None
+
+
+def test_a_rule_added_while_running_applies_without_a_restart(permissions_db):
+    acc = AccessController.from_engine(permissions_db, refresh_seconds=0)   # re-read on every check
+    assert check("SELECT refund_id, reason FROM refunds", "Developer", acc)
+    add_permission(permissions_db, "Developer", "column", "refunds.reason", 0)
+    with pytest.raises(GuardrailError, match=DENIED):
+        check("SELECT refund_id, reason FROM refunds", "Developer", acc)
+    assert acc.denied_resources("Developer", BILLING_TABLES)[1] >= {"refunds.reason"}
+
+
+def test_rules_are_cached_until_refresh_seconds_and_kept_if_mysql_fails(permissions_db, monkeypatch):
+    acc = AccessController.from_engine(permissions_db, refresh_seconds=3600)
+    add_permission(permissions_db, "Developer", "column", "refunds.reason", 0)
+    assert check("SELECT refund_id, reason FROM refunds", "Developer", acc)     # not re-read yet
+    acc._loaded_at -= 3601                                                      # an hour later
+    monkeypatch.setattr(AccessController, "_load_rows", staticmethod(lambda engine: 1 / 0))
+    assert check("SELECT refund_id, reason FROM refunds", "Developer", acc)     # MySQL down: old rules
+    monkeypatch.undo()
+    acc._loaded_at -= 3601
+    with pytest.raises(GuardrailError, match=DENIED):
+        check("SELECT refund_id, reason FROM refunds", "Developer", acc)
