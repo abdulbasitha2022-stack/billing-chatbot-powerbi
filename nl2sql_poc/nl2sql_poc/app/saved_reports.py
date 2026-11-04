@@ -50,11 +50,18 @@ class SavedReports:
         self.clock = clock or utc_now
 
     # ------------------------------------------------------------------ save
-    def save(self, request_id: str, identity: Identity):
-        """Copy the generated page of request_id into saved_reports (once; a second save is a no-op)."""
+    def save(self, request_id: str, identity: Identity, session_id: str | None = None):
+        """Copy the generated page of request_id into saved_reports (once; a second save is a no-op).
+
+        session_id = the chat session stored in the page's Save button. Without a user_id it also
+        proves ownership: a Save button re-created after a page switch may only know the "last
+        role used", not the role of the session that made the report."""
         record = self.store.fetch_metadata(request_id)
-        if record is None or not owns(record, identity):
-            log.warning("Save refused: request %s not found for this user", request_id)
+        same_session = (not identity.user_id and record is not None and record.get("user_id") is None
+                        and bool(session_id) and record.get("session_id") == session_id)
+        if record is None or not (owns(record, identity) or same_session):
+            log.warning("Save refused: request %s not found for this user (role %s)",
+                        request_id, identity.user_role)
             return {"error": "That report was not found."}, 404
         if record.get("request_status") != "completed" or not record.get("view_name"):
             return {"error": "Only a completed report can be saved."}, 409

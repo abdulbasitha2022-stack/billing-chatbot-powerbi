@@ -1,134 +1,258 @@
-// Billing AI Assistant - chat styling.
-// Text size: change @base-font (16px now; try 17px) and run `npm run package` again.
+// Billing AI Assistant - styling in the Reflections brand colours (green + black).
+// Text size: change @base-font (15px now) and run `npm run package` again.
 // Everything else scales from it.
-@base-font: 16px;
+@base-font: 15px;
 
-@ink: #1f2933;
-@muted: #6b7785;
-@line: #e4e8ee;
-@accent: #2b5fd9;
-@accent-soft: #e8f0fe;
-@title: #1e3a8a;           // deep blue for the header title
-@ok: #1e7f4f;
-@ok-soft: #eaf6ef;
-@err: #b3261e;
-@err-soft: #fdecea;
-@code-bg: #0f1b2d;
-@code-ink: #dbe5f3;
+// ---- Palette -----------------------------------------------------------------------------
+// Brand green is used for fills with dark text (white text on it would be too faint to read);
+// the darker greens are for green text, focus rings and hover states on white.
+@brand: #7AC143;            // Reflections green
+@brand-hover: #6BB236;
+@brand-dark: #4E8A24;       // focus rings, accents on white
+@brand-deep: #3F7A1C;       // green text on white
+@brand-soft: #EEF7E6;       // tinted surfaces (your messages, selected states)
+@brand-line: #CFE6BC;
+@ink: #1A1A1A;              // Reflections black
+@ink-2: #3A4350;
+@muted: #5F6B7A;
+@line: #E3E8EE;
+@surface: #F5F7F9;          // assistant messages, hover backgrounds
+@white: #FFFFFF;
+@err: #B3261E;
+@err-soft: #FDECEA;
+@code-bg: #14181F;
+@code-ink: #DDE3EA;
 
+@radius: 10px;
+@radius-sm: 8px;
+@shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
+@font: "Segoe UI", "Segoe UI Web (West European)", -apple-system, Arial, sans-serif;
+
+// Shared button looks.
+.ghost-button() {
+    height: 30px;
+    padding: 0 12px;
+    font-family: @font;
+    font-size: @base-font - 2px;
+    font-weight: 500;
+    color: @ink-2;
+    background: @white;
+    border: 1px solid @line;
+    border-radius: @radius-sm;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+    &:hover:not(:disabled) { background: @surface; border-color: #C9D1DA; color: @ink; }
+    &:focus-visible { outline: 2px solid @brand-dark; outline-offset: 2px; }
+    &:disabled { opacity: 0.5; cursor: default; }
+}
+.primary-button() {
+    .ghost-button();
+    color: @ink;
+    font-weight: 600;
+    background: @brand;
+    border-color: @brand;
+
+    &:hover:not(:disabled) { background: @brand-hover; border-color: @brand-hover; color: @ink; }
+}
+// The small round "AI" badge used in the header and next to assistant messages.
+.ai-badge(@size) {
+    content: "AI";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: @size;
+    height: @size;
+    font-size: round(@size * 0.42);
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: @white;
+    background: @brand;
+    border-radius: round(@size * 0.3);
+}
+
+// ==========================================================================================
+// Chat window
+// ==========================================================================================
 .chatbot-container {
     width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
-    font-family: "Segoe UI", Arial, sans-serif;
+    font-family: @font;
     font-size: @base-font;
+    line-height: 1.5;
     color: @ink;
-    background: #ffffff;
+    background: @white;
     border: 1px solid @line;
-    border-radius: 10px;
+    border-radius: @radius;
     overflow: hidden;
 
+    // ---- Header ----
     .chatbot-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 8px;
+        gap: 12px;
         padding: 12px 16px;
+        background: @white;
         border-bottom: 1px solid @line;
+        // A thin brand stripe along the top edge.
+        box-shadow: inset 0 3px 0 @brand;
     }
-
     .chatbot-title {
-        font-size: @base-font + 4px;
-        font-weight: 700;
-        letter-spacing: 0.2px;
-        color: @title;
-    }
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: @base-font + 2px;
+        font-weight: 600;
+        letter-spacing: 0.1px;
+        color: @ink;
+        white-space: nowrap;
 
-    .new-chat-button {
-        padding: 5px 12px;
-        font-size: @base-font - 3px;
+        &::before { .ai-badge(26px); }
+    }
+    .header-actions { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+    .demo-role-control {
+        display: flex;
+        align-items: center;
+        gap: 6px;
         color: @muted;
-        background: transparent;
+        font-size: @base-font - 3px;
+    }
+    .demo-role-select {
+        height: 30px;
+        padding: 0 8px;
+        font-family: @font;
+        font-size: @base-font - 2px;
+        color: @ink;
+        background: @white;
         border: 1px solid @line;
-        border-radius: 12px;
+        border-radius: @radius-sm;
         cursor: pointer;
-
-        &:hover { color: @ink; border-color: @muted; }
+        &:focus-visible { outline: 2px solid @brand-dark; outline-offset: 2px; }
+        &:disabled { opacity: 0.6; cursor: default; }
+    }
+    .saved-reports-button, .end-session-button, .new-chat-button { .ghost-button(); }
+    .saved-reports-button.selected { color: @brand-deep; background: @brand-soft; border-color: @brand-line; }
+    .new-chat-button { .primary-button(); }
+    .end-session-button.confirming {
+        color: @err;
+        background: @err-soft;
+        border-color: @err;
+        font-weight: 600;
     }
 
+    // ---- Messages ----
     .chat-area {
         flex: 1;
         min-height: 60px;
-        padding: 12px;
+        padding: 16px;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 12px;
+        background: @white;
     }
-
-    .greeting { display: flex; flex-direction: column; gap: 8px; }
+    .greeting { display: flex; flex-direction: column; gap: 10px; }
 
     .bubble {
-        max-width: 88%;
-        padding: 9px 13px;
-        border-radius: 12px;
+        max-width: 85%;
+        padding: 10px 14px;
+        border-radius: 14px;
         font-size: @base-font;
-        line-height: 1.45;
+        line-height: 1.55;
         overflow-wrap: anywhere;
 
-        p { margin: 0 0 6px; }
+        p { margin: 0 0 8px; }
         p:last-child, ul:last-child { margin-bottom: 0; }
-        ul { margin: 0 0 6px; padding-left: 18px; }
+        ul { margin: 0 0 8px; padding-left: 20px; }
+        li { margin: 2px 0; }
+        strong { font-weight: 600; }
         code {
-            padding: 0 4px;
-            font-family: Consolas, monospace;
-            font-size: @base-font - 1px;
-            background: rgba(0, 0, 0, 0.06);
-            border-radius: 3px;
+            padding: 1px 5px;
+            font-family: Consolas, "Cascadia Mono", monospace;
+            font-size: @base-font - 2px;
+            background: rgba(26, 26, 26, 0.06);
+            border-radius: 4px;
         }
 
-        &.assistant { align-self: flex-start; background: #f2f4f7; border-bottom-left-radius: 4px; }
-        &.user { align-self: flex-end; background: @accent-soft; border-bottom-right-radius: 4px; }
-        &.report { background: @ok-soft; border-left: 3px solid @ok; }
-        &.error { background: @err-soft; border-left: 3px solid @err; }
-        &.clarify { border-left: 3px solid @accent; }
-        &.status { color: @muted; font-size: @base-font - 1px; font-style: italic; background: transparent; padding-left: 0; }
+        // Assistant: soft grey card with the "AI" badge on its left.
+        &.assistant {
+            position: relative;
+            align-self: flex-start;
+            margin-left: 34px;
+            color: @ink;
+            background: @surface;
+            border-top-left-radius: 4px;
+
+            &::before {
+                .ai-badge(24px);
+                position: absolute;
+                top: 0;
+                left: -34px;
+            }
+        }
+        // You: light brand tint on the right.
+        &.user {
+            align-self: flex-end;
+            color: @ink;
+            background: @brand-soft;
+            border: 1px solid @brand-line;
+            border-top-right-radius: 4px;
+        }
+        &.report { background: @white; border: 1px solid @line; border-left: 3px solid @brand; box-shadow: @shadow; }
+        &.error { background: @white; border: 1px solid #F3C7C3; border-left: 3px solid @err; }
+        &.clarify { background: @white; border: 1px solid @line; border-left: 3px solid @brand-dark; }
+        // Status lines (e.g. "Power BI has reloaded"): quiet text, no card, no badge.
+        &.status {
+            margin-left: 34px;
+            padding: 0 2px;
+            color: @muted;
+            font-size: @base-font - 2px;
+            font-style: normal;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            &::before { display: none; }
+        }
     }
 
     // SQL shown by the assistant
     .code-block {
-        margin: 6px 0 8px;
+        margin: 8px 0;
         padding: 12px 14px;
         overflow-x: auto;
-        font-family: Consolas, monospace;
-        font-size: @base-font - 2px;
-        line-height: 1.55;
+        font-family: Consolas, "Cascadia Mono", monospace;
+        font-size: @base-font - 3px;
+        line-height: 1.6;
         color: @code-ink;
         background: @code-bg;
-        border-radius: 8px;
+        border-radius: @radius-sm;
         white-space: pre;
 
         &:last-child { margin-bottom: 0; }
 
         code { padding: 0; font-size: inherit; color: inherit; background: transparent; }
-        .kw { color: #7db4ff; font-weight: 600; }
-        .str { color: #a6e3b4; }
-        .num { color: #f5c87a; }
+        .kw { color: #9BD46A; font-weight: 600; }      // brand-tinted keywords
+        .str { color: #F2C98A; }
+        .num { color: #8FC7FF; }
     }
 
+    // Typing indicator: the same three dots, inside an assistant bubble.
     .typing {
         display: flex;
         align-items: center;
-        gap: 4px;
-        padding: 11px 14px;
+        gap: 5px;
+        padding: 12px 14px;
 
         .dot {
             flex: none;
             width: 6px;
             height: 6px;
-            background: @muted;
+            background: @brand-dark;
             border-radius: 50%;
             animation: chatbot-bounce 1.1s infinite ease-in-out;
         }
@@ -137,283 +261,118 @@
 
         .typing-label {
             margin-left: 6px;
-            font-size: @base-font - 3px;
+            font-size: @base-font - 2px;
             color: @muted;
         }
         .typing-label:empty { display: none; }
     }
 
+    // ---- Suggestion chips ----
     .chip-row {
         display: flex;
         flex-wrap: wrap;
         gap: 6px;
-        margin-top: 8px;
+        margin-top: 2px;
     }
-
+    .greeting-chips { margin-left: 34px; }
+    .bubble .chip-row { margin-top: 10px; }
     .chip {
-        padding: 5px 11px;
-        font-size: @base-font - 3px;
-        line-height: 1.2;
-        color: #233b5d;
-        background: #ffffff;
-        border: 1px solid #c8d4e7;
-        border-radius: 14px;
+        height: 30px;
+        padding: 0 12px;
+        font-family: @font;
+        font-size: @base-font - 2px;
+        font-weight: 500;
+        line-height: 1;
+        color: @ink-2;
+        background: @white;
+        border: 1px solid @line;
+        border-radius: 999px;
         cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 
-        &:hover:not(:disabled) { background: @accent-soft; border-color: @accent; }
-        &:focus-visible { outline: 2px solid @accent; outline-offset: 2px; }
-        &:disabled { opacity: 0.55; cursor: default; }
+        &:hover:not(:disabled) { color: @brand-deep; background: @brand-soft; border-color: @brand-line; }
+        &:focus-visible { outline: 2px solid @brand-dark; outline-offset: 2px; }
+        &:disabled { opacity: 0.5; cursor: default; }
     }
 
+    // ---- Satisfied / Unsatisfied inside a report message ----
+    .feedback-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px solid @line;
+    }
+    .feedback-label { color: @muted; font-size: @base-font - 2px; margin-right: 2px; }
+    .feedback-button {
+        .ghost-button();
+        height: 28px;
+        &.selected { color: @brand-deep; background: @brand-soft; border-color: @brand; font-weight: 600; }
+    }
+    .feedback-followup { margin-top: 10px; }
+    .feedback-followup p { margin: 0 0 8px; color: @ink-2; }
+
+    // ---- Message box ----
     .composer {
         display: flex;
         align-items: flex-end;
         gap: 8px;
-        padding: 10px;
+        padding: 12px 16px;
+        background: @white;
         border-top: 1px solid @line;
     }
-
     .chat-input {
         flex: 1;
         min-width: 0;
         box-sizing: border-box;
-        padding: 8px 10px;
-        font: inherit;
+        min-height: 40px;
+        padding: 9px 14px;
+        font-family: @font;
         font-size: @base-font;
-        line-height: 1.35;
+        line-height: 1.4;
+        color: @ink;
         resize: none;
-        border: 1px solid #cdd3dc;
-        border-radius: 8px;
+        background: @white;
+        border: 1px solid #CDD4DC;
+        border-radius: 20px;
         outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
-        &:focus { border-color: @accent; }
-        &:disabled { background: #f6f7f9; }
+        &::placeholder { color: #8A94A1; }
+        &:focus { border-color: @brand-dark; box-shadow: 0 0 0 3px rgba(122, 193, 67, 0.25); }
+        &:disabled { background: @surface; }
     }
-
+    // Round send button with an arrow.
     .send-button {
-        padding: 8px 16px;
-        font-size: @base-font - 2px;
-        color: #ffffff;
-        background: @accent;
+        flex: none;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        font-size: 16px;
+        line-height: 1;
+        color: @ink;
+        background: @brand;
         border: none;
-        border-radius: 8px;
+        border-radius: 50%;
         cursor: pointer;
+        transition: background 0.15s ease;
 
-        &:disabled { opacity: 0.55; cursor: default; }
+        &:hover:not(:disabled) { background: @brand-hover; }
+        &:focus-visible { outline: 2px solid @brand-dark; outline-offset: 2px; }
+        &:disabled { opacity: 0.45; cursor: default; }
     }
 
     .status-text {
-        min-height: 14px;
-        padding: 0 12px 8px;
-        font-size: @base-font - 4px;
-        color: @muted;
-    }
-}
-
-@keyframes chatbot-bounce {
-    0%, 80%, 100% { transform: translateY(0); opacity: 0.45; }
-    40% { transform: translateY(-4px); opacity: 1; }
-}
-
-// Header actions and per-report customer feedback.
-.chatbot-container {
-    .header-actions { display: flex; align-items: center; gap: 6px; }
-    .demo-role-control {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        color: @muted;
-        font-size: @base-font - 3px;
-    }
-    .demo-role-select {
-        padding: 5px 8px;
-        color: @ink;
-        background: #fff;
-        border: 1px solid @line;
-        border-radius: 8px;
-        font: inherit;
-        &:disabled { opacity: 0.65; }
-    }
-    .end-session-button, .feedback-button, .saved-reports-button {
-        padding: 5px 10px;
+        min-height: 16px;
+        padding: 0 16px 8px;
         font-size: @base-font - 3px;
         color: @muted;
-        background: #fff;
-        border: 1px solid @line;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        &:hover:not(:disabled) { color: @ink; border-color: @muted; }
-        &:disabled { opacity: 0.55; cursor: default; }
-        &.selected {
-            background: @accent-soft;
-            border-color: @accent;
-            color: @title;
-            font-weight: 600;
-        }
-    }
-    .end-session-button.confirming {
-        background: @err-soft !important;
-        border-color: @err !important;
-        color: @err !important;
-        font-weight: 600;
-    }
-    .feedback-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-    .feedback-label { color: @muted; font-size: @base-font - 2px; }
-    .feedback-followup { margin-top: 8px; }
-    .feedback-followup p { margin: 8px 0; }
-}
-
-// ── Report-page feedback panel ──────────────────────────────────────────────
-// Embedded as a custom visual on the generated report page.
-// Designed to be fully readable at the 180 px height / 1000 px width the
-// generator allocates (y = page_height - 210).
-.report-feedback-panel {
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 10px;
-    width: 100%;
-    height: 100%;
-    padding: 14px 20px;
-    color: #242424;
-    font-family: "Segoe UI", Arial, sans-serif;
-    background: linear-gradient(135deg, #f0f4ff 0%, #ffffff 100%);
-    border: 1.5px solid #c7d7f5;
-    border-radius: 10px;
-    overflow-y: auto;
-}
-.report-refresh-notice {
-    display: grid;
-    grid-template-columns: minmax(160px, 0.7fr) minmax(280px, 2fr) auto;
-    align-items: center;
-    gap: 12px;
-    padding: 8px 12px;
-    background: #ffffff;
-    border: 1px solid #dbe5f5;
-    border-radius: 8px;
-}
-
-.report-refresh-heading {
-    color: #1e3a8a;
-    font-size: 15px;
-    font-weight: 700;
-}
-
-.report-refresh-copy {
-    color: #1f2937;
-    font-size: 14px;
-    line-height: 1.5;
-}
-
-.report-refresh-hint {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 7px 10px;
-    border-radius: 7px;
-    background: #2563eb;
-    color: #ffffff;
-    font-size: 11px;
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-@media (max-width: 700px) {
-    .report-refresh-notice {
-        grid-template-columns: 1fr;
-        gap: 5px;
     }
 
-    .report-refresh-hint {
-        justify-self: start;
-    }
-}
-
-// Title row
-.report-feedback-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: #1e3a8a;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    &::before {
-        content: "📊";
-        font-size: 16px;
-    }
-}
-
-// Primary satisfied / unsatisfied button row
-.report-feedback-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-}
-
-// Status / confirmation line
-.report-feedback-status {
-    font-size: 12px;
-    color: #374151;
-    font-weight: 500;
-    min-height: 16px;
-}
-
-// Follow-up "return to conversation?" section
-.report-feedback-followup {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding-top: 6px;
-    border-top: 1px solid #e5eaf5;
-}
-
-.report-feedback-panel p {
-    margin: 0;
-    font-size: 12px;
-    color: #374151;
-    line-height: 1.4;
-}
-
-// Shared button style for feedback-panel buttons
-.report-feedback-panel .feedback-button {
-    padding: 7px 18px;
-    font-size: 13px;
-    font-weight: 500;
-    font-family: inherit;
-    color: #1f2933;
-    background: #ffffff;
-    border: 1.5px solid #c4ccd8;
-    border-radius: 7px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    white-space: nowrap;
-
-    &:hover:not(:disabled) {
-        background: #e8f0fe;
-        border-color: #2b5fd9;
-        color: #1e3a8a;
-        box-shadow: 0 2px 6px rgba(43, 95, 217, 0.15);
-    }
-    &.selected {
-        background: #e8f0fe;
-        border-color: #2b5fd9;
-        color: #1e3a8a;
-        font-weight: 700;
-        box-shadow: 0 2px 6px rgba(43, 95, 217, 0.2);
-    }
-    &:disabled {
-        cursor: default;
-        opacity: 0.55;
-    }
-}
-
-// ── Saved reports (chat page) ───────────────────────────────────────────────
-// The panel replaces the chat area while it is open (toggleSavedReports in visual.ts).
-// Explicit [hidden] rules: both elements set `display`, which would beat the hidden attribute.
-.chatbot-container {
+    // ---- Saved reports panel (replaces the chat area while open) ----
+    // Explicit [hidden] rules: both elements set `display`, which would beat the hidden attribute.
     .chat-area[hidden], .saved-reports-panel[hidden] { display: none; }
 
     .saved-reports-panel {
@@ -421,31 +380,20 @@
         min-height: 60px;
         display: flex;
         flex-direction: column;
-        gap: 8px;
-        padding: 12px;
+        gap: 10px;
+        padding: 16px;
         overflow-y: auto;
+        background: @white;
     }
     .saved-reports-heading {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        font-weight: 700;
-        color: @title;
+        font-size: @base-font + 1px;
+        font-weight: 600;
+        color: @ink;
     }
-    .saved-reports-close, .saved-report-open, .saved-report-delete {
-        padding: 5px 10px;
-        font-size: @base-font - 3px;
-        color: @muted;
-        background: #fff;
-        border: 1px solid @line;
-        border-radius: 8px;
-        cursor: pointer;
-        &:hover:not(:disabled) { color: @ink; border-color: @muted; }
-        &:disabled { opacity: 0.55; cursor: default; }
-    }
-    .saved-report-open { color: #fff; background: @accent; border-color: @accent; }
-    .saved-report-open:hover:not(:disabled) { color: #fff; border-color: @title; background: @title; }
-    .saved-report-delete.confirming { color: @err; background: @err-soft; border-color: @err; font-weight: 600; }
+    .saved-reports-close { .ghost-button(); }
     .saved-reports-status { color: @muted; font-size: @base-font - 2px; }
     .saved-reports-status:empty { display: none; }
     .saved-reports-list { display: flex; flex-direction: column; gap: 8px; }
@@ -453,42 +401,121 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 10px;
-        padding: 10px 12px;
+        gap: 12px;
+        padding: 12px 14px;
+        background: @white;
         border: 1px solid @line;
-        border-radius: 10px;
-        background: #f8fafc;
+        border-left: 3px solid @brand;
+        border-radius: @radius-sm;
+        transition: box-shadow 0.15s ease, border-color 0.15s ease;
+
+        &:hover { box-shadow: @shadow; border-color: #D3DAE2; border-left-color: @brand; }
     }
     .saved-report-info { min-width: 0; }
-    .saved-report-title { font-weight: 600; overflow-wrap: anywhere; }
+    .saved-report-title { font-weight: 600; color: @ink; overflow-wrap: anywhere; }
     .saved-report-details { color: @muted; font-size: @base-font - 3px; margin-top: 2px; }
     .saved-report-actions { display: flex; gap: 6px; flex: none; }
+    .saved-report-open { .primary-button(); }
+    .saved-report-delete { .ghost-button(); }
+    .saved-report-delete.confirming { color: @err; background: @err-soft; border-color: @err; font-weight: 600; }
+
+    // Thin scrollbars.
+    .chat-area, .saved-reports-panel {
+        scrollbar-width: thin;
+        scrollbar-color: #C9D1DA transparent;
+        &::-webkit-scrollbar { width: 8px; }
+        &::-webkit-scrollbar-thumb { background: #C9D1DA; border-radius: 4px; }
+        &::-webkit-scrollbar-track { background: transparent; }
+    }
 }
 
-// ── "Save report" button (generated report page) ─────────────────────────────
-// Its own small visual right of the native "Back to AI Assistant" button (60 px tall).
+@keyframes chatbot-bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40% { transform: translateY(-4px); opacity: 1; }
+}
+
+// ==========================================================================================
+// Generated report page: the toolbar row at the bottom
+//   [← Back to AI Assistant] [Save report] ............ [Was this report useful? 👍 👎 · status]
+// The feedback bar and the Save button are their own copies of this visual. They fill the whole
+// visual (sizeReportBar in visual.ts sets its size) and their text size follows the bar height
+// through --bar-font, so they stay readable when Power BI scales the page down.
+// ==========================================================================================
+.report-feedback-panel {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    height: 100%;
+    padding: 0 16px;
+    font-family: @font;
+    font-size: var(--bar-font, 15px);
+    color: @ink;
+    background: @white;
+    border: 1px solid @line;
+    border-radius: @radius-sm;
+    overflow: hidden;
+    white-space: nowrap;
+}
+.report-feedback-title { font-weight: 600; color: @ink; }
+.report-feedback-actions { display: flex; align-items: center; gap: 8px; flex: none; height: 100%; }
+// Long messages are cut with "…"; the full text is in the tooltip.
+.report-feedback-status {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: @muted;
+}
+// After "Unsatisfied": "Improve it? [Return to conversation] [Finish session]" in the same row.
+.report-feedback-followup {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: none;
+    height: 100%;
+    padding-left: 12px;
+    border-left: 1px solid @line;
+
+    p { margin: 0; color: @ink-2; font-weight: 600; }
+}
+// Buttons take ~60% of the bar height; 👍 / 👎 are square with a larger icon.
+.report-feedback-panel .feedback-button {
+    .ghost-button();
+    height: 60%;
+    min-height: 30px;
+    padding: 0 14px;
+    font-size: inherit;
+    color: @ink;
+
+    &.selected { color: @brand-deep; background: @brand-soft; border-color: @brand; font-weight: 600; }
+}
+.report-feedback-actions .feedback-button {
+    aspect-ratio: 1;
+    padding: 0;
+    font-size: 1.25em;
+    line-height: 1;
+}
+
+// "Save report": the whole visual is one brand-green button.
 .report-save-panel {
     box-sizing: border-box;
     width: 100%;
     height: 100%;
-    padding: 4px;
-    font-family: "Segoe UI", Arial, sans-serif;
+    font-family: @font;
 }
 .report-save-button {
+    .primary-button();
     width: 100%;
     height: 100%;
-    font-family: inherit;
-    font-size: 16px;
-    font-weight: 600;
-    color: #ffffff;
-    background: #1e7f4f;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.15s ease;
+    font-size: var(--bar-font, 15px);
+    border-radius: @radius-sm;
 
-    &:hover:not(:disabled) { background: #176640; }
-    &:focus-visible { outline: 2px solid #2b5fd9; outline-offset: 2px; }
-    &:disabled { cursor: default; opacity: 0.8; }
-    &.saved { color: #1e7f4f; background: #eaf6ef; border: 1.5px solid #1e7f4f; opacity: 1; }
+    &.saved {
+        color: @brand-deep;
+        background: @brand-soft;
+        border-color: @brand-line;
+        opacity: 1;
+    }
 }

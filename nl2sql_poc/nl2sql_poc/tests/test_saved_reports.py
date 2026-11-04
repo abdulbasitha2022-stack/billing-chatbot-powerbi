@@ -81,6 +81,17 @@ def test_only_the_owner_can_save_see_open_or_delete():
     assert rid in store.saved
 
 
+def test_the_reports_own_session_can_save_after_the_button_lost_its_role():
+    # A Save button re-created after a page switch may send the "last role used" (here Analyst
+    # for a CEO report); the report's session id still identifies the owner.
+    service, store, _, rid, sid = saved_report()
+    assert service.save_report({"request_id": rid, "session_id": "other"}, ANALYST)[1] == 404
+    payload, status = service.save_report({"request_id": rid, "session_id": sid}, ANALYST)
+    assert status == 201 and payload["status"] == "saved"
+    assert store.saved[rid]["user_role"] == "CEO"                 # owned by the report's role
+    assert [r["request_id"] for r in service.list_saved_reports(CEO)[0]["reports"]] == [rid]
+
+
 def test_a_verified_user_owns_reports_by_user_id():
     service, _, store, _ = make([REPORT, SQL])
     alice, bob = Identity("alice", "CEO", "Power BI", True), Identity("bob", "CEO", "Power BI", True)

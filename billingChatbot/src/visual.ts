@@ -342,7 +342,9 @@ export class Visual implements IVisual {
         this.sendButton = document.createElement("button");
         this.sendButton.type = "button";
         this.sendButton.className = "send-button";
-        this.sendButton.textContent = "Send";
+        this.sendButton.textContent = "➤";
+        this.sendButton.title = "Send";
+        this.sendButton.setAttribute("aria-label", "Send");
         this.sendButton.addEventListener("click", () => void this.send(this.input.value));
         composer.appendChild(this.input);
         composer.appendChild(this.sendButton);
@@ -406,6 +408,7 @@ export class Visual implements IVisual {
         const feedback = feedbackObjs?.feedback;
         const mode = this.readObjectText(feedback?.mode);
         if (mode === "feedback" || mode === "save") {
+            this.sizeReportBar(options.viewport);
             const requestId = this.readObjectText(feedback?.requestId);
             const sessionId = this.readObjectText(feedback?.sessionId);
             // Only once, and only if we know which report (requestId) the panel is for.
@@ -426,6 +429,18 @@ export class Visual implements IVisual {
         }
     }
 
+    // sizeReportBar: the Save button and the feedback bar fill their whole visual. Percentage
+    // heights need a parent with a real height, so the root element gets the viewport size on
+    // every update (resize included), and the text size follows the bar height (13-18 px) so it
+    // stays readable when Power BI scales the page down to fit the window.
+    private sizeReportBar(viewport: powerbi.IViewport | undefined): void {
+        if (!viewport) return;
+        const root = this.rootElement;
+        root.style.width = `${viewport.width}px`;
+        root.style.height = `${viewport.height}px`;
+        root.style.setProperty("--bar-font", `${Math.round(Math.max(13, Math.min(18, viewport.height * 0.3)))}px`);
+    }
+
     // readObjectText: turns one "objects" property value into a plain string. Depending on how
     // the value was saved in the report (PBIR files), Power BI may hand it over as a plain string,
     // as { value: "..." }, or as an expression { expr: { Literal: { Value: "'abc'" } } } where the
@@ -440,50 +455,36 @@ export class Visual implements IVisual {
         return "";
     }
 
-    // renderReportFeedback: FEEDBACK MODE ONLY (called once by update()). Builds the small panel
-    // shown on a generated report page:
-    //   - a "Your report is ready / click Refresh" notice (new pages may show blank visuals until
-    //     Power BI refreshes the data),
-    //   - "Was this report useful?" with Satisfied / Unsatisfied buttons (POST /feedback),
-    //   - after "Unsatisfied": "Return to conversation" / "Finish session" follow-up buttons.
+    // renderReportFeedback: FEEDBACK MODE ONLY (called once by update()). Builds the one-row bar
+    // at the bottom right of a generated report page (48 px tall, next to Back / Save):
+    //   - "Was this useful?" with 👍 Satisfied / 👎 Unsatisfied buttons (POST /feedback),
+    //   - after "Unsatisfied": "Improve it? [Return to conversation] [Finish session]" in the same row,
+    //   - a status text that is cut with "…" when long; the full text is its tooltip.
     // requestId identifies the generated report; sessionId is the chat it came from ("" if unknown).
     // The little state variables below (currentSatisfaction, isSubmitting, followupContainer) live
     // in this function's closure: the button handlers created here share them.
     private renderReportFeedback(requestId: string, sessionId: string): void {
         const panel = document.createElement("div");
         panel.className = "report-feedback-panel";
-        const refreshNotice = document.createElement("div");
-        refreshNotice.className = "report-refresh-notice";
-
-        const refreshHeading = document.createElement("div");
-        refreshHeading.className = "report-refresh-heading";
-        refreshHeading.textContent = "↻ Your report is ready";
-
-        const refreshCopy = document.createElement("div");
-        refreshCopy.className = "report-refresh-copy";
-        refreshCopy.textContent =
-            "If your chart or table is blank, Click Refresh in Power BI Desktop to load the report data.";
-
-        const refreshHint = document.createElement("span");
-        refreshHint.className = "report-refresh-hint";
-        refreshHint.textContent = "Power BI Desktop  ·  Home → Refresh";
-
-        refreshNotice.append(
-            refreshHeading,
-            refreshCopy,
-            refreshHint
-        );
         const title = document.createElement("div");
         title.className = "report-feedback-title";
-        title.textContent = "Was this report useful?";
+        title.textContent = "Was this useful?";
         const actions = document.createElement("div");
         actions.className = "report-feedback-actions";
+        // Icon buttons; their name is still read out and shown as a tooltip.
         const yes = document.createElement("button");
-        yes.type = "button"; yes.className = "feedback-button"; yes.textContent = "Satisfied";
+        yes.type = "button"; yes.className = "feedback-button"; yes.textContent = "👍";
+        yes.title = "Satisfied"; yes.setAttribute("aria-label", "Satisfied");
         const no = document.createElement("button");
-        no.type = "button"; no.className = "feedback-button"; no.textContent = "Unsatisfied";
+        no.type = "button"; no.className = "feedback-button"; no.textContent = "👎";
+        no.title = "Unsatisfied"; no.setAttribute("aria-label", "Unsatisfied");
         const status = document.createElement("div");
         status.className = "report-feedback-status";
+        status.setAttribute("role", "status");
+        // The bar is one short row, so long status texts are cut with "…": keep the full text
+        // in the tooltip whenever it changes.
+        new MutationObserver(() => { status.title = status.textContent || ""; })
+            .observe(status, { childList: true, characterData: true, subtree: true });
 
         let currentSatisfaction: boolean | null = null;   // last answer saved on the server (null = none yet)
         let isSubmitting = false;                          // a /feedback request is in flight
@@ -495,6 +496,7 @@ export class Visual implements IVisual {
                 followupContainer.remove();
                 followupContainer = null;
             }
+            title.hidden = false;
         };
 
         // Shows "Would you like to return to the conversation?" with two buttons, after "Unsatisfied".
@@ -503,7 +505,8 @@ export class Visual implements IVisual {
             followupContainer = document.createElement("div");
             followupContainer.className = "report-feedback-followup";
             const question = document.createElement("p");
-            question.textContent = "Would you like to return to the conversation with the assistant to improve this report?";
+            question.textContent = "Improve it?";
+            question.title = "Would you like to return to the conversation with the assistant to improve this report?";
             const followupActions = document.createElement("div");
             followupActions.className = "report-feedback-actions";
 
@@ -548,8 +551,8 @@ export class Visual implements IVisual {
                 }
                 // Power BI custom visuals cannot trigger page navigation directly.
                 // Show a clear instruction so the user knows what to do.
-                status.textContent = "✅ Session preserved. Click the 'Back to AI Assistant' button at the bottom left " +
-                    "(Ctrl+click while editing in Power BI Desktop), or the 'AI Assistant' page tab, to continue.";
+                status.textContent = "Session kept. Use '← Back to AI Assistant' (Ctrl+click while editing) " +
+                    "or the 'AI Assistant' page tab to continue.";
             });
 
             const finishBtn = document.createElement("button");
@@ -559,7 +562,9 @@ export class Visual implements IVisual {
 
             followupActions.append(returnBtn, finishBtn);
             followupContainer.append(question, followupActions);
-            panel.appendChild(followupContainer);
+            // Same row, before the status text; the question label makes room for it.
+            title.hidden = true;
+            panel.insertBefore(followupContainer, status);
         };
 
         // Sends the Satisfied/Unsatisfied answer.
@@ -635,7 +640,7 @@ export class Visual implements IVisual {
         yes.addEventListener("click", () => void submitFeedback(true));
         no.addEventListener("click", () => void submitFeedback(false));
         actions.append(yes, no);
-        panel.append(refreshNotice, title, actions, status);
+        panel.append(title, actions, status);
         // Added directly to Power BI's element, next to the (now hidden) chat container.
         this.rootElement.appendChild(panel);
     }

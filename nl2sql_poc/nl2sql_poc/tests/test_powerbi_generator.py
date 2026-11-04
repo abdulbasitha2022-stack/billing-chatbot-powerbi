@@ -3,7 +3,8 @@ import json
 
 import pytest
 
-from app.powerbi_project_generator import PowerBIProjectError, generate_native_report_page
+from app.powerbi_project_generator import (PowerBIProjectError, generate_native_report_page,
+                                           hide_generated_tables)
 
 COLUMNS = [{"name": "month_start", "type": "date"}, {"name": "revenue_usd", "type": "double"}]
 
@@ -34,6 +35,29 @@ def test_new_page_creates_table_and_page(tmp_path):
     assert (model / "definition" / "tables" / "billing vw_1_abc.tmdl").exists()
     assert "ref table 'billing vw_1_abc'" in (model / "definition" / "model.tmdl").read_text()
     assert out["needs_model_refresh"] is True
+
+
+def test_generated_table_is_hidden_in_the_data_pane(tmp_path):
+    report, model = skeleton(tmp_path)
+    generate(report, model)
+    lines = (model / "definition" / "tables" / "billing vw_1_abc.tmdl").read_text().split("\n")
+    assert lines[0] == "table 'billing vw_1_abc'" and lines[1] == "\tisHidden"
+
+
+def test_hide_generated_tables_hides_only_generated_tables_once(tmp_path):
+    report, model = skeleton(tmp_path)
+    tables = model / "definition" / "tables"
+    original = "table Charges\n\tlineageTag: x\n\n\tcolumn amount\n\t\tisHidden\n"
+    (tables / "Charges.tmdl").write_text(original)
+    old = "table 'billing vw_old_1'\n\tlineageTag: y\n\n\tcolumn a\n\t\tdataType: string\n"
+    (tables / "billing vw_old_1.tmdl").write_text(old)
+    generate(report, model)                                                 # already hidden
+    new_text = (tables / "billing vw_1_abc.tmdl").read_text()
+    assert hide_generated_tables(model) == ["billing vw_old_1"]
+    assert (tables / "billing vw_old_1.tmdl").read_text() == old.replace("\n", "\n\tisHidden\n", 1)
+    assert (tables / "Charges.tmdl").read_text() == original
+    assert (tables / "billing vw_1_abc.tmdl").read_text() == new_text
+    assert hide_generated_tables(model) == []                               # second run: no change
 
 
 def test_reuse_adds_only_a_page_and_leaves_the_model_untouched(tmp_path):
@@ -160,7 +184,7 @@ def test_a_report_activates_the_button_and_gets_a_back_button(tmp_path):
     assert text_of(button) == "'Open latest report'" and "Monthly Revenue" in link_of(button)["tooltip"]
 
     (back,) = nav_buttons(report, result["page_id"], "backToAssistant")
-    assert link_of(back)["navigationSection"] == "'p1'" and text_of(back) == "'Back to Chatbot'"
+    assert link_of(back)["navigationSection"] == "'p1'" and text_of(back) == "'← Back to Chatbot'"
     assert set(back) <= CONTAINER_KEYS and set(back["visual"]) <= VISUAL_KEYS
     pos = back["position"]
     assert pos["y"] + pos["height"] <= 720 and pos["x"] + pos["width"] <= 1280
@@ -278,7 +302,7 @@ def test_the_save_visual_sits_right_of_the_back_button(tmp_path):
     assert props["mode"]["expr"]["Literal"]["Value"] == "'save'"
     assert props["requestId"]["expr"]["Literal"]["Value"] == "'req1'"
     assert save["position"]["y"] == back["position"]["y"]
-    assert save["position"]["x"] == back["position"]["x"] + back["position"]["width"] + 15
+    assert save["position"]["x"] == back["position"]["x"] + back["position"]["width"] + gen.SAVE_VISUAL_GAP
     assert set(save) <= CONTAINER_KEYS and set(save["visual"]) <= VISUAL_KEYS
     # The save visual must not be mistaken for the main chatbot page.
     assert gen._find_chatbot_page(report / "definition" / "pages", page_order(report))[0] == "p1"
@@ -347,7 +371,64 @@ def test_restore_rejects_paths_outside_the_page_folder(tmp_path):
     assert not (report / "definition" / "evil.json").exists()
 
 
+def test_restore_hides_a_table_saved_before_tables_were_hidden(tmp_path):
+    report, model = skeleton(tmp_path)
+    result = generate(report, model, request_id="req1")
+    saved = export_report_page(report_dir=report, model_dir=model, request_id="req1", view_name="vw_1_abc")
+    saved["table_tmdl"] = saved["table_tmdl"].replace("\tisHidden\n", "", 1)     # an older save
+    import shutil
+    shutil.rmtree(report / "definition" / "pages" / result["page_id"])
+    (report / "definition" / "pages" / "pages.json").write_text(json.dumps({"pageOrder": ["p1"]}))
+    (model / "definition" / "tables" / "billing vw_1_abc.tmdl").unlink()
+    out = restore_report_page(report_dir=report, model_dir=model, saved=dict(saved, request_id="req1"))
+    assert out["table_restored"] is True
+    lines = (model / "definition" / "tables" / "billing vw_1_abc.tmdl").read_text().split("\n")
+    assert lines[1] == "\tisHidden" and lines.count("\tisHidden") == 1
+
+
 def test_export_of_an_unknown_request_returns_none(tmp_path):
     report, model = skeleton(tmp_path)
     generate(report, model, request_id="req1")
     assert export_report_page(report_dir=report, model_dir=model, request_id="nope", view_name="vw_1_abc") is None
+
+
+# ------------------------------------------------------------------ page design
+def test_page_has_a_header_and_one_toolbar_row_in_brand_colours(tmp_path):
+    report, model = skeleton(tmp_path)
+    with_chatbot(report)
+    result = generate(report, model, request_id="req1", session_id="s1", requested_visual_type="barChart")
+    visuals = {}
+    for f in (report / "definition" / "pages" / result["page_id"] / "visuals").glob("*/visual.json"):
+        v = json.loads(f.read_text(encoding="utf-8"))
+        assert set(v) <= CONTAINER_KEYS and set(v["visual"]) <= VISUAL_KEYS
+        visuals[v["name"]] = v
+    # Header: page title + a copyable line with the source view name.
+    header = visuals["aiReportHeader"]["visual"]["objects"]["general"][0]["properties"]["paragraphs"]
+    assert header[0]["textRuns"][0]["value"] == "Monthly Revenue"
+    assert "Source view: vw_1_abc" in header[1]["textRuns"][0]["value"]
+    # Chart in brand green with a readable title.
+    chart = next(v for v in visuals.values() if v["visual"]["visualType"] == "barChart")
+    assert chart["visual"]["objects"]["dataPoint"][0]["properties"]["fill"] == gen._color(gen.BRAND_GREEN)
+    title = chart["visual"]["visualContainerObjects"]["title"][0]["properties"]["text"]
+    assert title == gen._text_literal("Revenue USD by Month Start")
+    # Back, Save and feedback share one row at the bottom; feedback is right-aligned.
+    back = visuals["aiBackToAssistant"]["position"]
+    save = visuals["aiSaveReport"]["position"]
+    feedback = next(v["position"] for v in visuals.values()
+                    if v["visual"]["visualType"] == CHATBOT_VISUAL_TYPE and v["name"] != "aiSaveReport")
+    assert back["y"] == save["y"] == feedback["y"] and back["height"] == save["height"] == feedback["height"]
+    assert feedback["x"] + feedback["width"] == 1280 - gen.PAGE_MARGIN
+    # Nothing overlaps the toolbar.
+    for v in visuals.values():
+        p = v["position"]
+        if p["y"] < back["y"]:
+            assert p["y"] + p["height"] <= back["y"]
+
+
+def test_pie_charts_keep_the_theme_palette(tmp_path):
+    report, model = skeleton(tmp_path)
+    result = generate(report, model, requested_visual_type="pieChart")
+    chart = next(json.loads(f.read_text()) for f in
+                 (report / "definition" / "pages" / result["page_id"] / "visuals").glob("*/visual.json")
+                 if json.loads(f.read_text())["visual"]["visualType"] == "pieChart")
+    assert "dataPoint" not in chart["visual"].get("objects", {})

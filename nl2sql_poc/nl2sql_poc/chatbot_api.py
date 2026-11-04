@@ -1153,7 +1153,9 @@ class ChatService:
         bind_request(request_id)
         log.info("Save report requested")
         try:
-            return self.saved.save(request_id, identity)
+            session_id = body.get("session_id")
+            return self.saved.save(request_id, identity,
+                                   session_id.strip() if isinstance(session_id, str) else None)
         except PowerBIProjectError as exc:
             log.warning("Saving report %s failed: %s", request_id, exc)
             return {"error": f"The report page could not be read: {exc}"}, 500

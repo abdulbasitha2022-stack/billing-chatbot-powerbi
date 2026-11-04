@@ -48,6 +48,7 @@ export declare class Visual implements IVisual {
     private healthAttempts;
     constructor(options: VisualConstructorOptions);
     update(options: VisualUpdateOptions): void;
+    private sizeReportBar;
     private readObjectText;
     private renderReportFeedback;
     private finishFeedbackSession;

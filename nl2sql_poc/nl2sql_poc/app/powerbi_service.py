@@ -35,7 +35,7 @@ from pathlib import Path
 
 from .powerbi_project_generator import (PowerBIProjectError, ensure_latest_report_button,
                                         export_report_page, generate_native_report_page,
-                                        restore_report_page)
+                                        hide_generated_tables, restore_report_page)
 
 # Module logger; the handlers set up in logging_setup.py send it to logs/backend_billing.log.
 log = logging.getLogger(__name__)
@@ -72,6 +72,13 @@ class PowerBIService:
                 # A missing/broken project folder must not stop the whole backend from starting,
                 # so any error is only logged (with traceback) and start-up continues.
                 log.exception("Could not add the 'Open latest report' button to the chatbot page")
+        # Keep the Data pane to the original tables: hide AI-generated tables made before
+        # new ones were created hidden. Does nothing when they are hidden already.
+        if self.enabled and self.cfg.get("model_dir"):
+            try:
+                hide_generated_tables(self.cfg["model_dir"])
+            except Exception:
+                log.exception("Could not hide the generated tables in the Data pane")
 
     # The three properties below are read-only "computed settings". Using @property means callers
     # write `service.powerbi.enabled` (no brackets) and always see the current config value.
